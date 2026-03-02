@@ -44,6 +44,7 @@ export const ITEMS = {
   SHIELD: 148,
   NETHERITE_INGOT: 149,
   FLOWER: 150,
+  WASTELAND_TELEPORTER: 155,
 };
 
 // --- WORLD SETTINGS ---
@@ -233,6 +234,7 @@ export const ITEM_INFO = {
   [ITEMS.SHIELD]: { name: "Shield", stackable: false, durability: 336, color: "#8b6c42" },
   [ITEMS.NETHERITE_INGOT]: { name: "Netherite Ingot", stackable: true, maxStack: 64, color: "#444455" },
   [ITEMS.FLOWER]: { name: "Flower", stackable: true, maxStack: 64, color: "#ff6688" },
+  [ITEMS.WASTELAND_TELEPORTER]: { name: "Wasteland Teleporter", stackable: false, color: "#c8a030" },
 };
 
 // --- MOB DEFINITIONS ---
@@ -252,7 +254,7 @@ export const MOB_DEFS = {
   pigman: { name: "Pigman", width: 24, height: 46, maxHealth: 20, speed: 0.9, damage: 5, hostile: true, detectRange: 16, attackRange: 350, shootInterval: 2500, knockback: 5, drops: [{ id: BLOCKS.GOLD, min: 0, max: 2 }] },
   ghast: { name: "Ghast", width: 56, height: 56, maxHealth: 30, speed: 1.5, damage: 8, hostile: true, detectRange: 20, attackRange: 500, shootInterval: 3000, knockback: 0, drops: [{ id: BLOCKS.GLOWSTONE, min: 1, max: 2 }] },
   iron_golem: { name: "Iron Golem", width: 32, height: 54, maxHealth: 100, speed: 0.55, damage: 10, hostile: false, knockback: 10, detectRange: 16, attackRange: 55, drops: [{ id: BLOCKS.IRON, min: 1, max: 5 }, { id: ITEMS.FLOWER, min: 1, max: 1, chance: 0.1 }] },
-  grunture: { name: "Grunture", width: 48, height: 56, maxHealth: 200, speed: 4.4, damage: 7, fireDamage: 10, hostile: true, detectRange: 18, attackRange: 60, shootRange: 420, shootInterval: 2200, knockback: 12, drops: [{ id: BLOCKS.GLOWSTONE, min: 2, max: 5 }, { id: ITEMS.GUNPOWDER, min: 0, max: 2, chance: 0.7 }] },
+  grunture: { name: "Grunture", width: 48, height: 56, maxHealth: 200, speed: 4.4, damage: 7, fireDamage: 10, hostile: true, detectRange: 18, attackRange: 60, shootRange: 420, shootInterval: 2200, knockback: 12, drops: [{ id: BLOCKS.GLOWSTONE, min: 2, max: 5 }, { id: ITEMS.GUNPOWDER, min: 0, max: 2, chance: 0.7 }, { id: ITEMS.WASTELAND_TELEPORTER, min: 1, max: 1, chance: 0.35 }] },
 };
 
 // --- CRAFTING RECIPES ---

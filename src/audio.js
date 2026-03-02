@@ -220,6 +220,20 @@ export function playArrowShoot() {
     playSlide(800, 200, 0.15, "sawtooth", 0.15);
 }
 
+// --- GRUNTURE ROAR ---
+export function playGruntureRoar() {
+    if (!canPlaySound("gruntureRoar", 4000)) return;
+    // Deep, bassy beast roar — low sawtooth growl + sub-bass + noise texture
+    playSlide(200, 55, 0.8, "sawtooth", 0.7);
+    setTimeout(() => { if (audioReady) playSlide(170, 45, 0.6, "sawtooth", 0.5); }, 120);
+    setTimeout(() => { if (audioReady) playSlide(140, 35, 0.5, "sawtooth", 0.35); }, 280);
+    playNoise(0.7, 0.35, 350);
+    setTimeout(() => { if (audioReady) playNoise(0.5, 0.25, 250); }, 200);
+    // Sub-bass punch
+    playTone(38, 0.4, "sine", 0.6);
+    setTimeout(() => { if (audioReady) playTone(30, 0.3, "sine", 0.4); }, 200);
+}
+
 // --- SELECT SLOT ---
 export function playSelect() {
     if (!canPlaySound("select", 50)) return;

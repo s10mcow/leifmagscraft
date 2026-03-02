@@ -66,9 +66,13 @@ export function spawnMobs(dt, dayBrightness) {
                     const types = ["enderman", "enderman", "enderman", "enderman", "skeleton"];
                     type = types[Math.floor(Math.random() * types.length)];
                 } else {
-                    // Crimson biome: skeletons, pigmen, ghasts, gruntures
-                    const types = ["skeleton", "pigman", "pigman", "pigman", "ghast", "ghast", "grunture"];
-                    type = types[Math.floor(Math.random() * types.length)];
+                    // Crimson biome: skeletons, pigmen, ghasts — grunture is rare (8% chance)
+                    if (Math.random() < 0.08) {
+                        type = "grunture";
+                    } else {
+                        const types = ["skeleton", "pigman", "pigman", "pigman", "ghast", "ghast"];
+                        type = types[Math.floor(Math.random() * types.length)];
+                    }
                 }
                 state.mobs.push(createMob(type, pos.x, pos.y));
                 // Pigmen spawn in groups of 2-3

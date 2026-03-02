@@ -7,7 +7,7 @@ import { BLOCKS, ITEMS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, GRAVITY, MAX_FALL
 import { isBlockSolid } from '../world.js';
 import { hurtPlayer } from '../player.js';
 import { addToInventory, addFloatingText } from '../inventory.js';
-import { playMobHit } from '../audio.js';
+import { playMobHit, playGruntureRoar } from '../audio.js';
 import { createParticles } from './effects.js';
 import { creeperExplode } from './effects.js';
 import { createArrow, createFireball } from './projectiles.js';
@@ -655,6 +655,11 @@ export function updateMobs(dt, dayBrightness) {
         else if (mob.type === "grunture") {
             mob.shootCooldown -= dt;
             if (dist < def.detectRange * BLOCK_SIZE) {
+                // Roar the first time it spots the player (and again after losing sight)
+                if (!mob.detectedPlayer) {
+                    mob.detectedPlayer = true;
+                    playGruntureRoar();
+                }
                 // Always charge at the player
                 mob.velX = dirToPlayer * def.speed;
                 mob.facing = dirToPlayer;
@@ -679,6 +684,7 @@ export function updateMobs(dt, dayBrightness) {
                     createParticles(mob.x + def.width / 2, mob.y + def.height / 4, 6, "#ff6600", 4);
                 }
             } else {
+                mob.detectedPlayer = false;
                 mob.velX *= 0.8;
             }
         }
