@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leef & Maggie's Minecraft 2D</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Leef & Maggie's Minecraft 2D</h1>
+    <canvas id="gameCanvas" width="1280" height="800"></canvas>
+    <div id="controls">
+        <p><strong>WASD</strong> / <strong>Arrows</strong> to move &amp; jump | <strong>1-9</strong> select slot | <strong>E</strong> crafting</p>
+        <p><strong>Left Click</strong> mine/attack | <strong>Right Click</strong> place block / use flint &amp; steel | <strong>F</strong> interact (eat / sleep / trade / open chest / open door)</p>
+        <p><strong>R</strong> respawn | <strong>M</strong> toggle music | Click items in inventory to move them around!</p>
+        <p>Craft Torches (1 Stick + 1 Coal = 4) to light up the night and stop mob spawns!</p>
+        <p>Craft a Bed (3 Planks + 3 Leaves) to sleep through the night!</p>
+        <p>Explore caves underground for ores! Mine copper, iron, gold, and diamonds!</p>
+        <p>Build a 4x5 obsidian frame and use Flint &amp; Steel to open a Nether portal!</p>
+        <p>Craft guns! Pistol (2 Iron + 1 Copper + 1 Gunpowder) or AK-47 (4 Iron + 2 Copper + 1 Gunpowder)</p>
+        <p>Watch out for Husks in the desert and Endermen who teleport!</p>
+    </div>
+
+    <!-- Load scripts in order: definitions first, then systems, then rendering, then main loop -->
+    <script src="audio.js"></script>
+    <script src="constants.js"></script>
+    <script src="world.js"></script>
+    <script src="inventory.js"></script>
+    <script src="player.js"></script>
+    <script src="mobs.js"></script>
+    <script src="rendering.js"></script>
+    <script src="ui.js"></script>
+    <script src="input.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
