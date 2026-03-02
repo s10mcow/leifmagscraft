@@ -8,8 +8,9 @@
 
 import { state } from './state.js';
 import { BLOCKS, ITEMS, UI, RECIPES, TRADES, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, ITEM_INFO, isBlockId } from './constants.js';
-import { HOTBAR_SIZE, BACKPACK_SIZE, TOTAL_SLOTS, clickInventorySlot, rightClickInventorySlot, returnCursorItem, clickArmorSlot, countItem, addFloatingText, craft } from './inventory.js';
+import { HOTBAR_SIZE, BACKPACK_SIZE, TOTAL_SLOTS, clickInventorySlot, rightClickInventorySlot, returnCursorItem, clickArmorSlot, clickOffhandSlot, countItem, addFloatingText, craft } from './inventory.js';
 import { playSelect } from './audio.js';
+import { createParticles } from './mobs.js';
 
 // Late-bound function references (set by main.js to avoid circular imports)
 const fn = {};
@@ -68,6 +69,22 @@ export function getArmorSlotAtMouse() {
         }
     }
     return null;
+}
+
+// Figure out if the mouse is over the offhand slot (in crafting menu)
+export function getOffhandSlotAtMouse() {
+    if (!state.craftingOpen) return false;
+    const pw = UI.CRAFTING_PANEL_W, ph = UI.CRAFTING_PANEL_H;
+    const py = (state.canvas.height - ph) / 2;
+    const is = UI.SLOT_SIZE, ip = UI.SLOT_PAD;
+    const itw = UI.INV_TOTAL_W;
+    const isx = (state.canvas.width - itw) / 2 + UI.INV_OFFSET_X;
+    const armorX = isx + itw + UI.ARMOR_GAP;
+    const armorY = py + ph + UI.HOTBAR_ROW_Y;
+    const offX = armorX;
+    const offY = armorY + 4 * (is + ip) + 8;
+    return state.mouse.x >= offX && state.mouse.x <= offX + is &&
+           state.mouse.y >= offY && state.mouse.y <= offY + is;
 }
 
 // Figure out which chest slot the mouse is over (in chest menu)
@@ -198,9 +215,7 @@ function handleRightClickAction() {
     const slot = state.inventory.slots[state.inventory.selectedSlot];
     if (slot.count === 0 || slot.itemId === 0) return;
 
-    if (slot.itemId === ITEMS.FLINT_AND_STEEL) {
-        fn.useFlintAndSteel();
-    } else if (isBlockId(slot.itemId)) {
+    if (isBlockId(slot.itemId)) {
         fn.placeBlock();
     }
 }
@@ -265,7 +280,23 @@ export function setupInput() {
                 state.tradingOpen = false;
                 state.tradingVillager = null;
             } else {
-                fn.interact();
+                // Ender Pearl teleport: if holding a pearl, teleport to mouse cursor
+                const heldSlot = state.inventory.hotbar[state.inventory.selectedSlot];
+                if (heldSlot && heldSlot.itemId === ITEMS.ENDER_PEARL && heldSlot.count > 0) {
+                    const worldX = state.mouse.x + state.camera.x;
+                    const worldY = state.mouse.y + state.camera.y;
+                    createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 12, "#aa44ff", 4);
+                    state.player.x = Math.max(0, Math.min(worldX - state.player.width / 2, (WORLD_WIDTH - 1) * BLOCK_SIZE));
+                    state.player.y = Math.max(0, Math.min(worldY - state.player.height / 2, (WORLD_HEIGHT - 1) * BLOCK_SIZE));
+                    state.player.velX = 0;
+                    state.player.velY = 0;
+                    createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 12, "#aa44ff", 4);
+                    heldSlot.count--;
+                    if (heldSlot.count <= 0) { heldSlot.itemId = 0; heldSlot.durability = 0; }
+                    addFloatingText(state.player.x, state.player.y - 20, "Teleported!", "#aa44ff");
+                } else {
+                    fn.interact();
+                }
             }
         }
 
@@ -335,8 +366,9 @@ export function setupInput() {
             const rowH = UI.TRADE_ROW_H;
             const margin = UI.TRADE_MARGIN;
 
+            const activeTrades = (state.tradingVillager && state.tradingVillager.tradeList) || TRADES;
             state.tradingHover = -1;
-            for (let i = 0; i < TRADES.length; i++) {
+            for (let i = 0; i < activeTrades.length; i++) {
                 const ry = startY + i * rowH;
                 if (state.mouse.x >= px + margin && state.mouse.x <= px + pw - margin &&
                     state.mouse.y >= ry && state.mouse.y <= ry + rowH - 4) {
@@ -424,8 +456,9 @@ export function setupInput() {
         if (e.button === 0) { // Left click
             if (state.gameOver || state.sleeping) return;
             if (state.tradingOpen) {
-                if (state.tradingHover >= 0 && state.tradingHover < TRADES.length) {
-                    fn.executeTrade(TRADES[state.tradingHover]);
+                const activeTrades = (state.tradingVillager && state.tradingVillager.tradeList) || TRADES;
+                if (state.tradingHover >= 0 && state.tradingHover < activeTrades.length) {
+                    fn.executeTrade(activeTrades[state.tradingHover]);
                 }
                 return;
             }
@@ -443,6 +476,8 @@ export function setupInput() {
                 const armorSlot = getArmorSlotAtMouse();
                 if (armorSlot) {
                     clickArmorSlot(armorSlot);
+                } else if (getOffhandSlotAtMouse()) {
+                    clickOffhandSlot();
                 } else {
                     const slotIdx = getInventorySlotAtMouse();
                     if (slotIdx >= 0) {

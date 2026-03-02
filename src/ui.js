@@ -9,7 +9,7 @@ import { state } from './state.js';
 import { BLOCKS, ITEMS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, UI, RECIPES, TRADES, BLOCK_INFO, ITEM_INFO, MOB_DEFS, getItemName, isStackable, maxStackSize, isFood, PLAYER_REACH } from './constants.js';
 import { countItem, getArmorDefense, HOTBAR_SIZE, BACKPACK_SIZE, canCraft } from './inventory.js';
 import { drawItemIcon } from './rendering.js';
-import { getInventorySlotAtMouse, getArmorSlotAtMouse, getChestSlotAtMouse, getChestInventorySlotAtMouse } from './input.js';
+import { getInventorySlotAtMouse, getArmorSlotAtMouse, getChestSlotAtMouse, getChestInventorySlotAtMouse, getOffhandSlotAtMouse } from './input.js';
 
 // --- FLOATING TEXTS ---
 export function drawFloatingTexts() {
@@ -69,6 +69,12 @@ export function drawHotbar() {
     for (let i = 0; i < HOTBAR_SIZE; i++) {
         drawInventorySlot(sx + i * (s + p), sy, s, state.inventory.slots[i], i === state.inventory.selectedSlot, i + 1);
     }
+
+    // Offhand slot (to the right of the hotbar)
+    const offX = sx + total + 16, offY = sy;
+    state.ctx.fillStyle = "#9ca3af"; state.ctx.font = "9px 'Courier New', monospace"; state.ctx.textAlign = "center";
+    state.ctx.fillText("OFF", offX + s / 2, offY - 4);
+    drawInventorySlot(offX, offY, s, state.offhand, false);
 
     const held = state.inventory.slots[state.inventory.selectedSlot];
     if (held.count > 0 && held.itemId !== 0) {
@@ -297,6 +303,33 @@ export function drawCraftingMenu() {
         }
     }
 
+    // Offhand slot (below armor slots)
+    const offhandX = armorX;
+    const offhandY = armorY + 4 * (is + ip) + 8;
+    const isOffhandHover = getOffhandSlotAtMouse();
+    state.ctx.fillStyle = "#9ca3af"; state.ctx.font = "bold 11px 'Courier New', monospace"; state.ctx.textAlign = "center";
+    state.ctx.fillText("OFF", offhandX + is / 2, offhandY - 6);
+    state.ctx.fillStyle = isOffhandHover ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.6)";
+    state.ctx.fillRect(offhandX, offhandY, is, is);
+    state.ctx.strokeStyle = isOffhandHover ? "#4ade80" : "#666";
+    state.ctx.lineWidth = isOffhandHover ? 3 : 1;
+    state.ctx.strokeRect(offhandX, offhandY, is, is);
+    state.ctx.lineWidth = 1;
+    if (state.offhand.itemId !== 0) {
+        drawItemIcon(state.offhand.itemId, offhandX + 6, offhandY + 6, is - 12);
+        if (ITEM_INFO[state.offhand.itemId] && ITEM_INFO[state.offhand.itemId].durability) {
+            const maxD = ITEM_INFO[state.offhand.itemId].durability;
+            const pct = state.offhand.durability / maxD;
+            state.ctx.fillStyle = "rgba(0,0,0,0.5)";
+            state.ctx.fillRect(offhandX + 4, offhandY + is - 7, is - 8, 4);
+            state.ctx.fillStyle = pct > 0.5 ? "#4ade80" : pct > 0.25 ? "#fbbf24" : "#ef4444";
+            state.ctx.fillRect(offhandX + 4, offhandY + is - 7, (is - 8) * pct, 4);
+        }
+    } else {
+        state.ctx.fillStyle = "rgba(255,255,255,0.15)"; state.ctx.font = "16px 'Courier New', monospace"; state.ctx.textAlign = "center";
+        state.ctx.fillText("O", offhandX + is / 2, offhandY + is / 2 + 6);
+    }
+
     // Cursor item
     if (state.cursorItem.itemId !== 0 && state.cursorItem.count > 0) {
         const cs = 32;
@@ -393,8 +426,11 @@ export function drawTradingMenu() {
     state.ctx.fillStyle = "#2a2a3e"; state.ctx.fillRect(px, py, pw, ph);
     state.ctx.strokeStyle = "#ffd700"; state.ctx.lineWidth = 3; state.ctx.strokeRect(px, py, pw, ph); state.ctx.lineWidth = 1;
 
+    const professionLabel = (state.tradingVillager && state.tradingVillager.profession)
+        ? state.tradingVillager.profession.charAt(0).toUpperCase() + state.tradingVillager.profession.slice(1)
+        : "Villager";
     state.ctx.fillStyle = "#ffd700"; state.ctx.font = "bold 24px 'Courier New', monospace"; state.ctx.textAlign = "center";
-    state.ctx.fillText("VILLAGER TRADING", state.canvas.width / 2, py + 35);
+    state.ctx.fillText(professionLabel + " Trading", state.canvas.width / 2, py + 35);
     state.ctx.fillStyle = "#9ca3af"; state.ctx.font = "12px 'Courier New', monospace";
     state.ctx.fillText("Click to trade!  Press F or Escape to close", state.canvas.width / 2, py + 55);
 
@@ -402,12 +438,13 @@ export function drawTradingMenu() {
     state.ctx.fillStyle = "#2dd84a"; state.ctx.font = "bold 14px 'Courier New', monospace"; state.ctx.textAlign = "center";
     state.ctx.fillText("Your Emeralds: " + emeraldCount, state.canvas.width / 2, py + 78);
 
+    const activeTrades = (state.tradingVillager && state.tradingVillager.tradeList) || TRADES;
     const startY = py + UI.TRADE_START_Y;
     const rowH = UI.TRADE_ROW_H;
     const margin = UI.TRADE_MARGIN;
 
-    for (let i = 0; i < TRADES.length; i++) {
-        const trade = TRADES[i];
+    for (let i = 0; i < activeTrades.length; i++) {
+        const trade = activeTrades[i];
         const ry = startY + i * rowH;
         if (ry + rowH > py + ph - 10) break;
 

@@ -14,7 +14,7 @@ import { setupInput, registerFunctions } from './input.js';
 import {
     startGame, startNewWorld, loadWorld, deleteSave, saveAndQuit,
     interact, executeTrade, placeBlock, toggleDoor, teleportToOtherDimension,
-    handleGunFire, useFlintAndSteel
+    handleGunFire
 } from './game.js';
 import { attackMob, getMobAtCursor, respawnPlayer } from './player.js';
 
@@ -31,7 +31,6 @@ registerFunctions({
     interact,
     executeTrade,
     placeBlock,
-    useFlintAndSteel,
     attackMob,
     getMobAtCursor,
     respawnPlayer,

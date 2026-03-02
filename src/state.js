@@ -37,13 +37,15 @@ export const state = {
         active: false,
         blockX: -1, blockY: -1,
         progress: 0, targetTime: 0,
-        canMine: true
+        canMine: true,
+        isBgBlock: false
     },
     gunCooldown: 0,
 
     // World data
     world: [],
     biomeMap: [],
+    netherBiomeMap: [],
     chestData: {},
     netherWorld: [],
     inNether: false,
@@ -55,6 +57,9 @@ export const state = {
     portalCooldown: 0,
     villageLocations: [],
     structureLocations: [],
+    bgWorld: [],
+    netherBgWorld: [],
+    activeBgWorld: null,
 
     // Player
     player: {
@@ -66,7 +71,9 @@ export const state = {
         invincibleTimer: 0,
         attackCooldown: 0,
         fallStartY: 0,
-        isFalling: false
+        isFalling: false,
+        burnTimer: 0,
+        crouching: false
     },
     camera: { x: 0, y: 0 },
     screenShake: { x: 0, y: 0, intensity: 0 },
@@ -84,6 +91,9 @@ export const state = {
         }
     },
     cursorItem: { itemId: 0, count: 0, durability: 0 },
+    offhand: { itemId: 0, count: 0, durability: 0 },
+    leafDecayQueue: [],
+    placedBlocks: new Set(),
     floatingTexts: [],
 
     // Mobs & entities

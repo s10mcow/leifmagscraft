@@ -6,7 +6,7 @@
 // ============================================================
 
 import { state } from './state.js';
-import { BLOCKS, ITEMS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, BLOCK_INFO, ITEM_INFO, MOB_DEFS, TORCH_LIGHT_RADIUS, isBlockId, getItemColor } from './constants.js';
+import { BLOCKS, ITEMS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, BLOCK_INFO, ITEM_INFO, MOB_DEFS, TORCH_LIGHT_RADIUS, BIOMES, NETHER_BIOMES, isBlockId, getItemColor } from './constants.js';
 import { getArmorColor } from './inventory.js';
 
 // --- BLOCKS ---
@@ -272,6 +272,42 @@ export function drawBlock(blockType, screenX, screenY) {
         state.ctx.fillStyle = "#c06030";
         state.ctx.fillRect(screenX + 22, screenY + 6, 4, 4);
     }
+    // Warped Grass - blue top band like regular grass
+    if (blockType === BLOCKS.WARPED_GRASS && info.topColor) {
+        state.ctx.fillStyle = info.topColor;
+        state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, 6);
+        // Blue grass blades
+        state.ctx.fillStyle = "#2ab5df";
+        state.ctx.fillRect(screenX + 3, screenY - 2, 2, 4);
+        state.ctx.fillRect(screenX + 10, screenY - 3, 2, 5);
+        state.ctx.fillRect(screenX + 20, screenY - 2, 2, 4);
+        state.ctx.fillRect(screenX + 27, screenY - 3, 2, 5);
+        // Dark blue-purple spots on body
+        state.ctx.fillStyle = "#16103a";
+        state.ctx.fillRect(screenX + 4, screenY + 10, 5, 4);
+        state.ctx.fillRect(screenX + 18, screenY + 18, 6, 4);
+    }
+    // Warped Wood - purple log with grain lines
+    if (blockType === BLOCKS.WARPED_WOOD) {
+        state.ctx.fillStyle = "#360844";
+        state.ctx.fillRect(screenX + 6, screenY, 2, BLOCK_SIZE);
+        state.ctx.fillRect(screenX + 16, screenY, 2, BLOCK_SIZE);
+        state.ctx.fillRect(screenX + 24, screenY, 2, BLOCK_SIZE);
+        state.ctx.fillStyle = "#6a2080";
+        state.ctx.fillRect(screenX + 4, screenY, 1, BLOCK_SIZE);
+        state.ctx.fillRect(screenX + 14, screenY, 1, BLOCK_SIZE);
+    }
+    // Warped Leaves - blue-teal leaf clusters
+    if (blockType === BLOCKS.WARPED_LEAVES) {
+        state.ctx.fillStyle = "#0a4060";
+        state.ctx.fillRect(screenX + 2, screenY + 3, 5, 4);
+        state.ctx.fillRect(screenX + 14, screenY + 8, 6, 5);
+        state.ctx.fillRect(screenX + 6, screenY + 18, 5, 4);
+        state.ctx.fillRect(screenX + 20, screenY + 22, 6, 4);
+        state.ctx.fillStyle = "#1a8a9a";
+        state.ctx.fillRect(screenX + 8, screenY + 4, 4, 3);
+        state.ctx.fillRect(screenX + 22, screenY + 14, 4, 3);
+    }
     // Torch - special shape, no block border
     if (blockType === BLOCKS.TORCH) {
         // Stick
@@ -295,6 +331,31 @@ export function drawBlock(blockType, screenX, screenY) {
 // --- ITEM ICONS (for inventory) ---
 export function drawItemIcon(itemId, x, y, size) {
     if (itemId === 0) return;
+
+    // Miniature Nether Portal icon
+    if (itemId === ITEMS.MINIATURE_NETHER_PORTAL) {
+        const fw = size * 0.75, fh = size * 0.9;
+        const fx = x + (size - fw) / 2, fy = y + (size - fh) / 2;
+        const border = Math.max(2, size * 0.12);
+        // Obsidian frame
+        state.ctx.fillStyle = "#1a0a2e";
+        state.ctx.fillRect(fx, fy, fw, fh);
+        // Purple portal interior
+        state.ctx.fillStyle = "#6600cc";
+        state.ctx.fillRect(fx + border, fy + border, fw - border * 2, fh - border * 2);
+        // Inner shimmer
+        state.ctx.fillStyle = "#9933ff";
+        state.ctx.fillRect(fx + border + 1, fy + border + 1, (fw - border * 2) * 0.5, fh - border * 2 - 2);
+        state.ctx.fillStyle = "#cc66ff";
+        state.ctx.fillRect(fx + border + 1, fy + border + 1, (fw - border * 2) * 0.25, (fh - border * 2) * 0.4);
+        // Frame highlight edges
+        state.ctx.fillStyle = "#2a1a4e";
+        state.ctx.fillRect(fx, fy, fw, border);
+        state.ctx.fillRect(fx, fy + fh - border, fw, border);
+        state.ctx.fillRect(fx, fy, border, fh);
+        state.ctx.fillRect(fx + fw - border, fy, border, fh);
+        return;
+    }
 
     // Torch mini icon (before generic block path)
     if (itemId === BLOCKS.TORCH) {
@@ -430,6 +491,45 @@ export function drawItemIcon(itemId, x, y, size) {
         state.ctx.fillRect(x + 4, y + 6, size - 10, size - 12);
         state.ctx.fillStyle = "#e8ccaa";
         state.ctx.fillRect(x + size * 0.15, y + size * 0.6, size * 0.2, size * 0.25);
+    } else if (itemId === ITEMS.HUMAN_MEAT) {
+        // Distinct leg/drumstick shape — dark red with bone handle
+        // Bone handle (bottom right)
+        state.ctx.fillStyle = "#e8d8b0";
+        state.ctx.fillRect(x + size * 0.55, y + size * 0.55, size * 0.22, size * 0.38);
+        // Round bone knob
+        state.ctx.fillRect(x + size * 0.5, y + size * 0.85, size * 0.32, size * 0.12);
+        // Meat bulb (top left, irregular)
+        state.ctx.fillStyle = "#cc2233";
+        state.ctx.fillRect(x + size * 0.1, y + size * 0.08, size * 0.62, size * 0.55);
+        // Darker inner detail
+        state.ctx.fillStyle = "#991122";
+        state.ctx.fillRect(x + size * 0.18, y + size * 0.14, size * 0.38, size * 0.28);
+        // Blood drip
+        state.ctx.fillStyle = "#770011";
+        state.ctx.fillRect(x + size * 0.3, y + size * 0.58, size * 0.1, size * 0.18);
+        state.ctx.fillRect(x + size * 0.18, y + size * 0.52, size * 0.08, size * 0.12);
+    } else if (itemId === ITEMS.NETHERITE_INGOT) {
+        // Dark metallic ingot bar
+        state.ctx.fillStyle = "#2a2a35";
+        state.ctx.fillRect(x + size * 0.1, y + size * 0.2, size * 0.8, size * 0.6);
+        state.ctx.fillStyle = "#4a4a5a";
+        state.ctx.fillRect(x + size * 0.15, y + size * 0.25, size * 0.7, size * 0.2);
+        state.ctx.fillStyle = "#1a1a22";
+        state.ctx.fillRect(x + size * 0.15, y + size * 0.6, size * 0.7, size * 0.1);
+    } else if (itemId === ITEMS.FLOWER) {
+        // Stem
+        state.ctx.fillStyle = "#44aa44";
+        state.ctx.fillRect(x + size * 0.45, y + size * 0.45, size * 0.12, size * 0.5);
+        // Petals (5 squares around center)
+        state.ctx.fillStyle = "#ff6688";
+        state.ctx.fillRect(x + size * 0.35, y + size * 0.1, size * 0.3, size * 0.22);  // top
+        state.ctx.fillRect(x + size * 0.62, y + size * 0.22, size * 0.25, size * 0.25); // top-right
+        state.ctx.fillRect(x + size * 0.13, y + size * 0.22, size * 0.25, size * 0.25); // top-left
+        state.ctx.fillRect(x + size * 0.62, y + size * 0.48, size * 0.22, size * 0.22); // right
+        state.ctx.fillRect(x + size * 0.16, y + size * 0.48, size * 0.22, size * 0.22); // left
+        // Yellow center
+        state.ctx.fillStyle = "#ffee44";
+        state.ctx.fillRect(x + size * 0.35, y + size * 0.28, size * 0.3, size * 0.26);
     } else if (itemId === ITEMS.FLINT) {
         state.ctx.fillStyle = "#555555";
         state.ctx.beginPath();
@@ -603,6 +703,38 @@ export function drawItemIcon(itemId, x, y, size) {
     }
 }
 
+// --- BACKGROUND TREES (parallax layer) ---
+// Deterministic pseudo-random from a column index
+function bgRand(bx, salt) {
+    return Math.abs(Math.sin(bx * 127.1 + salt * 311.7) * 43758.5453) % 1;
+}
+
+export function drawBackgroundTrees() {
+    if (!state.activeBgWorld) return;
+    const camX = state.camera.x + state.screenShake.x;
+    const camY = state.camera.y + state.screenShake.y;
+
+    const sc = Math.max(0, Math.floor(camX / BLOCK_SIZE) - 1);
+    const ec = Math.min(WORLD_WIDTH, Math.ceil((camX + state.canvas.width) / BLOCK_SIZE) + 1);
+    const sr = Math.max(0, Math.floor(camY / BLOCK_SIZE) - 1);
+    const er = Math.min(WORLD_HEIGHT, Math.ceil((camY + state.canvas.height) / BLOCK_SIZE) + 1);
+
+    state.ctx.save();
+    state.ctx.globalAlpha = 0.9;
+
+    for (let x = sc; x < ec; x++) {
+        if (!state.activeBgWorld[x]) continue;
+        for (let y = sr; y < er; y++) {
+            const b = state.activeBgWorld[x][y];
+            if (b !== BLOCKS.AIR) {
+                drawBlock(b, x * BLOCK_SIZE - camX, y * BLOCK_SIZE - camY);
+            }
+        }
+    }
+
+    state.ctx.restore();
+}
+
 // --- SKY ---
 export function drawSky(dayBrightness) {
     if (state.inNether) {
@@ -646,6 +778,17 @@ export function drawPlayer() {
 
     if (state.player.invincibleTimer > 0 && Math.floor(state.player.invincibleTimer / 80) % 2 === 0) {
         state.ctx.globalAlpha = 0.4;
+    }
+
+    // Crouch: squish player vertically from the bottom
+    const isCrouching = state.player.crouching;
+    const playerBottomY = sy + state.player.height;
+    if (isCrouching) {
+        state.ctx.save();
+        const pcx = sx + state.player.width / 2;
+        state.ctx.translate(pcx, playerBottomY);
+        state.ctx.scale(1, 0.55);
+        state.ctx.translate(-pcx, -playerBottomY);
     }
 
     // Body
@@ -715,6 +858,41 @@ export function drawPlayer() {
     if (held.count > 0 && held.itemId !== 0) {
         const hx = state.player.facing === 1 ? sx + 22 : sx - 8;
         drawItemIcon(held.itemId, hx, sy + 16, 14);
+    }
+
+    // Restore crouch transform before drawing shield (shield stays at normal scale)
+    if (isCrouching) state.ctx.restore();
+
+    // Shield in offhand — drawn on the off-hand side of the player
+    const offhand = state.offhand;
+    if (offhand && offhand.itemId === ITEMS.SHIELD) {
+        const shx = state.player.facing === 1 ? sx - 10 : sx + state.player.width + 2;
+        const shBaseY = isCrouching ? playerBottomY - 24 : sy + 16;
+        const shH = isCrouching ? 22 : 18;
+        // Shield body
+        state.ctx.fillStyle = "#7a6040";
+        state.ctx.fillRect(shx, shBaseY, 8, shH);
+        // Shield rim
+        state.ctx.fillStyle = "#5a4020";
+        state.ctx.fillRect(shx, shBaseY, 8, 4);
+        state.ctx.fillRect(shx, shBaseY + shH - 3, 8, 3);
+        // Cross emblem
+        state.ctx.fillStyle = "#9a8060";
+        state.ctx.fillRect(shx + 3, shBaseY + 2, 2, shH - 4);
+        state.ctx.fillRect(shx + 1, shBaseY + shH / 2 - 1, 6, 2);
+        // Blocking glow when crouching
+        if (isCrouching) {
+            state.ctx.fillStyle = "rgba(74, 222, 128, 0.35)";
+            state.ctx.fillRect(shx - 2, shBaseY - 2, 12, shH + 4);
+        }
+    }
+
+    // Burn effect
+    if (state.player.burnTimer > 0) {
+        state.ctx.fillStyle = "rgba(255, 100, 0, 0.55)";
+        state.ctx.fillRect(sx, sy - 6, state.player.width, state.player.height + 6);
+        state.ctx.fillStyle = "rgba(255, 220, 0, 0.4)";
+        state.ctx.fillRect(sx + 2, sy - 10, state.player.width - 4, 8);
     }
 
     state.ctx.globalAlpha = 1;
@@ -984,8 +1162,196 @@ function drawMob(mob) {
         state.ctx.fillRect(tx, sy + 3, 3, 4);
     }
 
-    // Mob equipment overlay
-    if (mob.equipment) {
+    else if (mob.type === "wolf") {
+        const healthPct = mob.health / def.maxHealth;
+        const bodyColor = mob.tamed ? "#9a8070" : "#888888";
+        const darkColor = mob.tamed ? "#7a6050" : "#606060";
+        const bellyColor = mob.tamed ? "#c0b0a8" : "#aaaaaa";
+
+        // Body
+        state.ctx.fillStyle = isHurt ? "#ff8888" : bodyColor;
+        state.ctx.fillRect(sx + 2, sy + 4, 22, 10);
+
+        // Underbelly (lighter strip)
+        state.ctx.fillStyle = isHurt ? "#ffaaaa" : bellyColor;
+        state.ctx.fillRect(sx + 6, sy + 7, 12, 7);
+
+        // Head (extends in facing direction)
+        const hx = mob.facing === 1 ? sx + 18 : sx - 2;
+        state.ctx.fillStyle = isHurt ? "#ffaaaa" : darkColor;
+        state.ctx.fillRect(hx, sy, 12, 10);
+
+        // Snout (muzzle - lighter)
+        state.ctx.fillStyle = isHurt ? "#ffcccc" : bellyColor;
+        state.ctx.fillRect(mob.facing === 1 ? hx + 6 : hx + 1, sy + 5, 5, 4);
+
+        // Nose (black tip)
+        state.ctx.fillStyle = "#111111";
+        state.ctx.fillRect(mob.facing === 1 ? hx + 10 : hx + 0, sy + 5, 2, 2);
+
+        // Eye
+        state.ctx.fillStyle = mob.tamed ? "#d4a800" : "#222222";
+        state.ctx.fillRect(mob.facing === 1 ? hx + 2 : hx + 7, sy + 2, 3, 3);
+
+        // Pointy ears on top of head
+        state.ctx.fillStyle = isHurt ? "#ff7777" : darkColor;
+        state.ctx.fillRect(hx + 1, sy - 4, 3, 5);
+        state.ctx.fillRect(hx + 7, sy - 4, 3, 5);
+
+        // 4 legs
+        state.ctx.fillStyle = isHurt ? "#ff8888" : darkColor;
+        state.ctx.fillRect(sx + 4, sy + 14, 4, 8);
+        state.ctx.fillRect(sx + 10, sy + 14, 4, 8);
+        state.ctx.fillRect(sx + 16, sy + 14, 4, 8);
+        state.ctx.fillRect(sx + 20, sy + 14, 4, 8);
+
+        // Tail (at rear of body)
+        const tailX = mob.facing === 1 ? sx + 0 : sx + 24;
+        state.ctx.fillStyle = isHurt ? "#ff8888" : bodyColor;
+        if (mob.tamed) {
+            if (healthPct > 0.5) {
+                // Tail up — happy/healthy
+                state.ctx.fillRect(tailX, sy + 2, 3, 7);
+                state.ctx.fillRect(tailX - 1, sy - 2, 4, 5);
+            } else {
+                // Tail down — hurt/sad
+                state.ctx.fillRect(tailX, sy + 4, 3, 10);
+            }
+        } else {
+            // Wild wolf: neutral tail (slightly raised)
+            state.ctx.fillRect(tailX, sy + 2, 3, 7);
+        }
+
+        // Red collar for tamed wolf
+        if (mob.tamed) {
+            state.ctx.fillStyle = "#cc2222";
+            state.ctx.fillRect(hx + 1, sy + 7, 9, 3);
+        }
+
+        // "z" indicator when sitting
+        if (mob.sitting) {
+            state.ctx.save();
+            state.ctx.fillStyle = "#ffffff";
+            state.ctx.font = "bold 9px monospace";
+            state.ctx.fillText("z", sx + 13, sy - 6);
+            state.ctx.restore();
+        }
+    }
+
+    else if (mob.type === "pigman") {
+        // Humanoid pig — pink skin, pig snout
+        state.ctx.fillStyle = isHurt ? "#ff8888" : "#e8a0a0";
+        state.ctx.fillRect(sx + 4, sy + 14, 16, 16); // body
+        state.ctx.fillStyle = isHurt ? "#ffbbbb" : "#f0b8b8";
+        state.ctx.fillRect(sx + 4, sy, 16, 14); // head
+        // Pig snout
+        state.ctx.fillStyle = isHurt ? "#ffaaaa" : "#d88888";
+        state.ctx.fillRect(sx + 7, sy + 7, 10, 6);
+        state.ctx.fillStyle = "#9a5555";
+        state.ctx.fillRect(sx + 9, sy + 9, 2, 2);
+        state.ctx.fillRect(sx + 13, sy + 9, 2, 2);
+        // Eyes
+        state.ctx.fillStyle = "#333333";
+        if (mob.facing === 1) {
+            state.ctx.fillRect(sx + 14, sy + 3, 3, 3);
+        } else {
+            state.ctx.fillRect(sx + 7, sy + 3, 3, 3);
+        }
+        // Brown robe (body + lower)
+        state.ctx.fillStyle = isHurt ? "#cc9966" : "#7a4a20";
+        state.ctx.fillRect(sx + 3, sy + 14, 18, 18); // robe body
+        state.ctx.fillRect(sx + 2, sy + 30, 20, 6);  // robe skirt flare
+        // Robe trim
+        state.ctx.fillStyle = isHurt ? "#bb8855" : "#5a3010";
+        state.ctx.fillRect(sx + 3, sy + 14, 18, 3);
+        state.ctx.fillRect(sx + 3, sy + 35, 18, 2);
+        // Legs peeking below robe
+        state.ctx.fillStyle = isHurt ? "#ff8888" : "#c87878";
+        state.ctx.fillRect(sx + 5, sy + 37, 5, 9);
+        state.ctx.fillRect(sx + 14, sy + 37, 5, 9);
+        // Arm with gold sword
+        state.ctx.fillStyle = isHurt ? "#cc9966" : "#7a4a20";
+        const armDir = mob.facing === 1 ? 1 : -1;
+        state.ctx.fillRect(sx + (armDir === 1 ? 18 : -10), sy + 14, 16, 5);
+        // Gold sword
+        state.ctx.fillStyle = "#ffd700";
+        const swx = mob.facing === 1 ? sx + 22 : sx - 8;
+        state.ctx.fillRect(swx, sy + 8, 3, 16);
+        state.ctx.fillRect(swx - 3, sy + 10, 9, 3);
+        // Gold armor overlay if equipped
+        if (mob.equipment && mob.equipment.armor) {
+            state.ctx.fillStyle = "rgba(255, 215, 0, 0.35)";
+            state.ctx.fillRect(sx + 2, sy + 12, def.width - 4, 20);
+        }
+    }
+
+    else if (mob.type === "iron_golem") {
+        // Body — big grey iron block
+        state.ctx.fillStyle = isHurt ? "#ff9999" : "#888888";
+        state.ctx.fillRect(sx + 4, sy + 16, 24, 26);
+        // Head — square, slightly lighter
+        state.ctx.fillStyle = isHurt ? "#ffbbbb" : "#aaaaaa";
+        state.ctx.fillRect(sx + 6, sy, 20, 16);
+        // Eyes
+        state.ctx.fillStyle = "#333333";
+        if (mob.facing === 1) {
+            state.ctx.fillRect(sx + 18, sy + 4, 4, 4);
+            state.ctx.fillRect(sx + 24, sy + 4, 2, 4);
+        } else {
+            state.ctx.fillRect(sx + 6, sy + 4, 4, 4);
+            state.ctx.fillRect(sx + 12, sy + 4, 2, 4);
+        }
+        // Nose
+        state.ctx.fillStyle = "#777777";
+        state.ctx.fillRect(sx + 13, sy + 8, 6, 5);
+        // Arms — bulky
+        state.ctx.fillStyle = isHurt ? "#ff9999" : "#888888";
+        state.ctx.fillRect(sx - 2, sy + 14, 8, 20);
+        state.ctx.fillRect(sx + 26, sy + 14, 8, 20);
+        // Iron knuckles highlight
+        state.ctx.fillStyle = "#bbbbbb";
+        state.ctx.fillRect(sx - 2, sy + 30, 8, 4);
+        state.ctx.fillRect(sx + 26, sy + 30, 8, 4);
+        // Legs
+        state.ctx.fillStyle = isHurt ? "#ff9999" : "#777777";
+        state.ctx.fillRect(sx + 5, sy + 42, 9, 12);
+        state.ctx.fillRect(sx + 18, sy + 42, 9, 12);
+        // Iron plate lines
+        state.ctx.fillStyle = "rgba(50,50,50,0.3)";
+        state.ctx.fillRect(sx + 4, sy + 24, 24, 2);
+        state.ctx.fillRect(sx + 4, sy + 34, 24, 2);
+    }
+
+    else if (mob.type === "ghast") {
+        // Big white square body with sad face
+        state.ctx.fillStyle = isHurt ? "#ff9999" : "#f0f0f0";
+        state.ctx.fillRect(sx, sy, def.width, def.height);
+        state.ctx.fillStyle = isHurt ? "#ffbbbb" : "#ffffff";
+        state.ctx.fillRect(sx + 2, sy + 2, def.width - 4, def.height - 4);
+        // Eyes (sad/closed)
+        state.ctx.fillStyle = "#333333";
+        state.ctx.fillRect(sx + 12, sy + 16, 8, 6);
+        state.ctx.fillRect(sx + 36, sy + 16, 8, 6);
+        // Sad mouth
+        state.ctx.fillStyle = "#333333";
+        state.ctx.fillRect(sx + 18, sy + 30, 20, 3);
+        state.ctx.fillRect(sx + 15, sy + 27, 3, 6);
+        state.ctx.fillRect(sx + 38, sy + 27, 3, 6);
+        // Tentacles hanging below
+        state.ctx.fillStyle = isHurt ? "#ffaaaa" : "#e0e0e0";
+        const tentacleOffsets = [4, 10, 18, 26, 34, 42, 50];
+        for (let t = 0; t < tentacleOffsets.length; t++) {
+            const tx = sx + tentacleOffsets[t];
+            const tentH = 12 + (t % 3) * 6;
+            state.ctx.fillRect(tx, sy + def.height, 4, tentH);
+        }
+        // Glow effect
+        state.ctx.fillStyle = "rgba(255, 100, 100, 0.15)";
+        state.ctx.fillRect(sx - 4, sy - 4, def.width + 8, def.height + 8);
+    }
+
+    // Mob equipment overlay (non-pigman)
+    if (mob.equipment && mob.type !== "pigman") {
         if (mob.equipment.armor) {
             state.ctx.fillStyle = "rgba(180, 180, 200, 0.3)";
             state.ctx.fillRect(sx + 2, sy + 12, def.width - 4, 20);
@@ -1029,7 +1395,17 @@ export function drawProjectiles() {
     for (const p of state.projectiles) {
         const sx = p.x - state.camera.x + state.screenShake.x;
         const sy = p.y - state.camera.y + state.screenShake.y;
-        if (p.isRocket) {
+        if (p.isFireball) {
+            // Glowing orange fireball
+            state.ctx.fillStyle = "#ff2200";
+            state.ctx.fillRect(sx - 7, sy - 7, 14, 14);
+            state.ctx.fillStyle = "#ff6600";
+            state.ctx.fillRect(sx - 5, sy - 5, 10, 10);
+            state.ctx.fillStyle = "#ffcc00";
+            state.ctx.fillRect(sx - 3, sy - 3, 6, 6);
+            state.ctx.fillStyle = "rgba(255, 80, 0, 0.3)";
+            state.ctx.fillRect(sx - 10, sy - 10, 20, 20);
+        } else if (p.isRocket) {
             // Rocket projectile
             state.ctx.save();
             state.ctx.translate(sx, sy);

@@ -11,10 +11,10 @@ import { state } from './state.js';
 import { BLOCKS, ITEMS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, BLOCK_INFO, ITEM_INFO, MOB_DEFS, SAVE_KEY_PREFIX, SAVE_INDEX_KEY, isBlockId, isFood, getItemName, TORCH_LIGHT_RADIUS } from './constants.js';
 import { ARMOR_SLOT_TYPES, addToInventory, addFloatingText, getEquippedTool, getEquippedTier, damageEquippedTool, eatFood, countItem } from './inventory.js';
 import { isBlockSolid, findSurfaceY, generateWorld, generateNetherWorld, switchDimension, initChestData, removeChestData, checkLavaWaterInteraction } from './world.js';
-import { updatePlayer, updateCamera, updatePlateTimers } from './player.js';
-import { createMob, createBullet, createRocket, updateMobs, updateProjectiles, updateParticles, spawnMobs, spawnVillagers } from './mobs.js';
+import { updatePlayer, updateCamera, updatePlateTimers, hurtPlayer } from './player.js';
+import { createMob, createBullet, createRocket, createParticles, updateMobs, updateProjectiles, updateParticles, spawnMobs, spawnVillagers } from './mobs.js';
 import { playMineHit, playBlockBreak, playBlockPlace, playPickup, playCraft, updateMusic } from './audio.js';
-import { drawSky, drawBlock, drawAllMobs, drawProjectiles, drawParticles, drawPlayer } from './rendering.js';
+import { drawSky, drawBackgroundTrees, drawBlock, drawAllMobs, drawProjectiles, drawParticles, drawPlayer } from './rendering.js';
 import { drawFloatingTexts, drawHotbar, drawHealthBar, drawBlockHighlight, drawMiningProgress, drawCraftingMenu, drawChestMenu, drawTradingMenu, drawDeathScreen, drawHUD, drawTitleScreen, drawPauseMenu, drawGeneratingScreen, drawLoadingScreen, drawSavingScreen } from './ui.js';
 
 // --- LOCAL CONSTANTS ---
@@ -41,8 +41,14 @@ export function updateMining(dt) {
     const wmy = Math.floor((state.mouse.y + state.camera.y) / BLOCK_SIZE);
     if (wmx < 0 || wmx >= WORLD_WIDTH || wmy < 0 || wmy >= WORLD_HEIGHT) return;
 
-    const blockType = state.activeWorld[wmx][wmy];
-    if (blockType === BLOCKS.AIR || !BLOCK_INFO[blockType].breakable) return;
+    let blockType = state.activeWorld[wmx][wmy];
+    let isBgBlock = false;
+    if (blockType === BLOCKS.AIR && state.activeBgWorld && state.activeBgWorld[wmx] && state.activeBgWorld[wmx][wmy] !== BLOCKS.AIR) {
+        blockType = state.activeBgWorld[wmx][wmy];
+        isBgBlock = true;
+    }
+    if (blockType === BLOCKS.AIR || !BLOCK_INFO[blockType] || !BLOCK_INFO[blockType].breakable) return;
+    state.mining.isBgBlock = isBgBlock;
 
     // Distance check
     const pcx = state.player.x + state.player.width / 2, pcy = state.player.y + state.player.height / 2;
@@ -117,7 +123,13 @@ export function updateMining(dt) {
             }
         }
         if (tool) damageEquippedTool();
-        state.activeWorld[wmx][wmy] = BLOCKS.AIR;
+        state.placedBlocks.delete(`${wmx},${wmy}`);
+        if (state.mining.isBgBlock) {
+            state.activeBgWorld[wmx][wmy] = BLOCKS.AIR;
+        } else {
+            state.activeWorld[wmx][wmy] = BLOCKS.AIR;
+            if (WOOD_BLOCKS.has(blockType)) scheduleLeafDecay(wmx, wmy);
+        }
         playBlockBreak(); // Crunch!
         state.mining.active = false;
         state.mining.progress = 0;
@@ -150,6 +162,7 @@ export function placeBlock() {
     if (wmx >= pl && wmx <= pr && wmy >= pt && wmy <= pb) return;
 
     state.activeWorld[wmx][wmy] = slot.itemId;
+    if (TREE_BLOCKS.has(slot.itemId)) state.placedBlocks.add(`${wmx},${wmy}`);
     if (slot.itemId === BLOCKS.CHEST) initChestData(wmx, wmy);
     // Door: place 2 blocks tall
     if (slot.itemId === BLOCKS.DOOR_CLOSED) {
@@ -178,6 +191,54 @@ export function placeBlock() {
 
 export function interact() {
     if (state.gameOver || state.craftingOpen || state.sleeping || state.tradingOpen || state.chestOpen) return;
+
+    // Miniature Nether Portal: teleport to/from Nether
+    const heldSlot = state.inventory.slots[state.inventory.selectedSlot];
+    if (heldSlot.itemId === ITEMS.MINIATURE_NETHER_PORTAL && state.portalCooldown <= 0) {
+        teleportToOtherDimension();
+        return;
+    }
+
+    // Check for nearby wolf
+    for (const mob of state.mobs) {
+        if (mob.type !== "wolf") continue;
+        const wolfDef = MOB_DEFS.wolf;
+        const pcx = state.player.x + state.player.width / 2, pcy = state.player.y + state.player.height / 2;
+        const mcx = mob.x + wolfDef.width / 2, mcy = mob.y + wolfDef.height / 2;
+        const wolfDist = Math.sqrt((pcx - mcx) ** 2 + (pcy - mcy) ** 2);
+        if (wolfDist < BLOCK_SIZE * 4) {
+            if (!mob.tamed) {
+                const slot = state.inventory.slots[state.inventory.selectedSlot];
+                if (slot.itemId === ITEMS.BONE && slot.count > 0) {
+                    slot.count--;
+                    if (slot.count === 0) { slot.itemId = 0; slot.durability = 0; }
+                    if (Math.random() < 0.2) {
+                        mob.tamed = true;
+                        mob.sitting = false;
+                        addFloatingText(mob.x + wolfDef.width / 2, mob.y - 20, "Wolf tamed! <3", "#ff69b4");
+                        createParticles(mob.x + wolfDef.width / 2, mob.y + wolfDef.height / 2, 15, "#ff69b4", 4);
+                    } else {
+                        addFloatingText(mob.x + wolfDef.width / 2, mob.y - 15, "...", "#aaaaaa");
+                    }
+                    return;
+                }
+                addFloatingText(mob.x + wolfDef.width / 2, mob.y - 15, "Hold a bone to tame!", "#aaaaaa");
+                return;
+            } else {
+                const slot = state.inventory.slots[state.inventory.selectedSlot];
+                if (slot.itemId === ITEMS.ROTTEN_FLESH && slot.count > 0 && mob.health < wolfDef.maxHealth) {
+                    slot.count--;
+                    if (slot.count === 0) { slot.itemId = 0; slot.durability = 0; }
+                    mob.health = Math.min(wolfDef.maxHealth, mob.health + 4);
+                    addFloatingText(mob.x + wolfDef.width / 2, mob.y - 20, "+4 HP", "#4ade80");
+                    return;
+                }
+                mob.sitting = !mob.sitting;
+                addFloatingText(mob.x + wolfDef.width / 2, mob.y - 20, mob.sitting ? "Sit" : "Follow!", "#ffd700");
+                return;
+            }
+        }
+    }
 
     // Check if pointing at a door within reach
     const wmx_d = Math.floor((state.mouse.x + state.camera.x) / BLOCK_SIZE);
@@ -324,75 +385,6 @@ export function toggleDoor(x, y) {
 // NETHER PORTAL
 // ============================================================
 
-export function useFlintAndSteel() {
-    const wmx = Math.floor((state.mouse.x + state.camera.x) / BLOCK_SIZE);
-    const wmy = Math.floor((state.mouse.y + state.camera.y) / BLOCK_SIZE);
-    if (wmx < 0 || wmx >= WORLD_WIDTH || wmy < 0 || wmy >= WORLD_HEIGHT) return;
-
-    const pcx = state.player.x + state.player.width / 2, pcy = state.player.y + state.player.height / 2;
-    const bcx = wmx * BLOCK_SIZE + BLOCK_SIZE / 2, bcy = wmy * BLOCK_SIZE + BLOCK_SIZE / 2;
-    if (Math.sqrt((pcx - bcx) ** 2 + (pcy - bcy) ** 2) > BLOCK_SIZE * 5.5) return;
-
-    // Try to activate a portal near the clicked block
-    if (tryActivatePortal(wmx, wmy)) {
-        // Damage the flint and steel
-        const slot = state.inventory.slots[state.inventory.selectedSlot];
-        if (slot.durability !== undefined) {
-            slot.durability--;
-            if (slot.durability <= 0) {
-                slot.itemId = 0; slot.count = 0; slot.durability = 0;
-            }
-        }
-    } else {
-        addFloatingText(wmx * BLOCK_SIZE + 16, wmy * BLOCK_SIZE, "Need obsidian frame!", "#ef4444");
-    }
-}
-
-function tryActivatePortal(clickX, clickY) {
-    // Search nearby for a valid portal frame
-    for (let dx = -4; dx <= 1; dx++) {
-        for (let dy = -5; dy <= 1; dy++) {
-            const fx = clickX + dx;
-            const fy = clickY + dy;
-            if (isValidPortalFrame(fx, fy)) {
-                activatePortal(fx, fy);
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-function isValidPortalFrame(frameLeft, frameTop) {
-    // Portal frame: 4 wide x 5 tall obsidian ring
-    // Interior is 2x3 (columns 1-2, rows 1-3)
-    const w = state.activeWorld;
-    for (let x = frameLeft; x < frameLeft + 4; x++) {
-        for (let y = frameTop; y < frameTop + 5; y++) {
-            if (x < 0 || x >= WORLD_WIDTH || y < 0 || y >= WORLD_HEIGHT) return false;
-            const isEdge = (x === frameLeft || x === frameLeft + 3 || y === frameTop || y === frameTop + 4);
-            if (isEdge) {
-                if (w[x][y] !== BLOCKS.OBSIDIAN) return false;
-            } else {
-                // Interior must be air or already portal
-                if (w[x][y] !== BLOCKS.AIR && w[x][y] !== BLOCKS.NETHER_PORTAL) return false;
-            }
-        }
-    }
-    return true;
-}
-
-function activatePortal(frameLeft, frameTop) {
-    // Fill interior with portal blocks
-    for (let x = frameLeft + 1; x < frameLeft + 3; x++) {
-        for (let y = frameTop + 1; y < frameTop + 4; y++) {
-            state.activeWorld[x][y] = BLOCKS.NETHER_PORTAL;
-        }
-    }
-    addFloatingText(frameLeft * BLOCK_SIZE + 64, frameTop * BLOCK_SIZE, "Portal activated!", "#a855f7");
-    playBlockPlace();
-}
-
 export function teleportToOtherDimension() {
     if (state.inNether) {
         // Return to overworld
@@ -418,9 +410,6 @@ export function teleportToOtherDimension() {
         state.netherPortalY = surfY;
         state.player.x = spawnX * BLOCK_SIZE;
         state.player.y = (surfY - 2) * BLOCK_SIZE;
-
-        // Create return portal in Nether
-        createNetherReturnPortal(spawnX, surfY);
     }
 
     // Clear mobs on dimension change
@@ -429,34 +418,6 @@ export function teleportToOtherDimension() {
     state.player.velX = 0;
     state.player.velY = 0;
     addFloatingText(state.player.x, state.player.y - 30, state.inNether ? "Entered the Nether!" : "Returned to Overworld!", state.inNether ? "#ff4444" : "#4ade80");
-}
-
-function createNetherReturnPortal(x, surfaceY) {
-    // Build a small obsidian frame + portal at the spawn point
-    const fx = x - 1; // frame left
-    const fy = surfaceY - 5; // frame top
-
-    for (let bx = fx; bx < fx + 4; bx++) {
-        for (let by = fy; by < fy + 5; by++) {
-            if (bx < 0 || bx >= WORLD_WIDTH || by < 0 || by >= WORLD_HEIGHT) continue;
-            const isEdge = (bx === fx || bx === fx + 3 || by === fy || by === fy + 4);
-            if (isEdge) {
-                state.netherWorld[bx][by] = BLOCKS.OBSIDIAN;
-            } else {
-                state.netherWorld[bx][by] = BLOCKS.NETHER_PORTAL;
-            }
-        }
-    }
-    // Clear space around the portal
-    for (let bx = fx - 1; bx < fx + 5; bx++) {
-        for (let by = fy - 1; by < fy; by++) {
-            if (bx >= 0 && bx < WORLD_WIDTH && by >= 0 && by < WORLD_HEIGHT) {
-                if (state.netherWorld[bx][by] !== BLOCKS.OBSIDIAN && state.netherWorld[bx][by] !== BLOCKS.NETHER_PORTAL) {
-                    state.netherWorld[bx][by] = BLOCKS.AIR;
-                }
-            }
-        }
-    }
 }
 
 // ============================================================
@@ -527,6 +488,9 @@ export function drawGameFrame(timestamp) {
 
     // 1. Sky
     drawSky(state.cachedDayBrightness);
+
+    // 1.5. Background trees (parallax layer, before foreground blocks)
+    drawBackgroundTrees();
 
     // 2. Blocks (only visible ones)
     const sc = Math.max(0, Math.floor(camX / BLOCK_SIZE));
@@ -677,6 +641,15 @@ export function gameLoop(timestamp) {
 
                 if (state.portalCooldown > 0) state.portalCooldown -= dt;
 
+                // Player burn damage (from ghast fireballs)
+                if (state.player.burnTimer > 0) {
+                    state.player.burnTimer -= dt;
+                    if (Math.floor(state.player.burnTimer / 500) < Math.floor((state.player.burnTimer + dt) / 500)) {
+                        hurtPlayer(1, state.player.x);
+                        addFloatingText(state.player.x, state.player.y - 30, "Burning!", "#ff6600");
+                    }
+                }
+
                 updateSleep(dt);
                 if (!state.sleeping) {
                     updatePlayer(dt);
@@ -687,6 +660,7 @@ export function gameLoop(timestamp) {
                     updateMobs(dt, state.cachedDayBrightness);
                     updateProjectiles(dt);
                     updateParticles(dt);
+                    updateLeafDecay(dt);
                     spawnMobs(dt, state.cachedDayBrightness);
                 }
                 updateMusic(dt, state.cachedDayBrightness);
@@ -714,6 +688,53 @@ export function gameLoop(timestamp) {
 }
 
 // ============================================================
+// LEAF DECAY SYSTEM
+// ============================================================
+
+const WOOD_BLOCKS = new Set([BLOCKS.WOOD, BLOCKS.SPRUCE_WOOD, BLOCKS.ACACIA_WOOD, BLOCKS.NETHER_WOOD, BLOCKS.WARPED_WOOD]);
+const LEAF_BLOCKS = new Set([BLOCKS.LEAVES, BLOCKS.SPRUCE_LEAVES, BLOCKS.ACACIA_LEAVES, BLOCKS.NETHER_LEAVES, BLOCKS.WARPED_LEAVES]);
+const TREE_BLOCKS = new Set([BLOCKS.WOOD, BLOCKS.LEAVES, BLOCKS.SPRUCE_WOOD, BLOCKS.SPRUCE_LEAVES, BLOCKS.ACACIA_WOOD, BLOCKS.ACACIA_LEAVES, BLOCKS.NETHER_WOOD, BLOCKS.NETHER_LEAVES, BLOCKS.WARPED_WOOD, BLOCKS.WARPED_LEAVES]);
+
+function hasNearbyWood(bx, by) {
+    const range = 4;
+    for (let dx = -range; dx <= range; dx++) {
+        for (let dy = -range; dy <= range; dy++) {
+            const nx = bx + dx, ny = by + dy;
+            if (nx < 0 || nx >= WORLD_WIDTH || ny < 0 || ny >= WORLD_HEIGHT) continue;
+            if (WOOD_BLOCKS.has(state.activeWorld[nx][ny])) return true;
+        }
+    }
+    return false;
+}
+
+function scheduleLeafDecay(wx, wy) {
+    const range = 6;
+    for (let dx = -range; dx <= range; dx++) {
+        for (let dy = -range; dy <= range; dy++) {
+            const nx = wx + dx, ny = wy + dy;
+            if (nx < 0 || nx >= WORLD_WIDTH || ny < 0 || ny >= WORLD_HEIGHT) continue;
+            if (!LEAF_BLOCKS.has(state.activeWorld[nx][ny])) continue;
+            if (state.leafDecayQueue.some(function(e) { return e.x === nx && e.y === ny; })) continue;
+            state.leafDecayQueue.push({ x: nx, y: ny, timer: 500 + Math.random() * 3500 });
+        }
+    }
+}
+
+function updateLeafDecay(dt) {
+    for (let i = state.leafDecayQueue.length - 1; i >= 0; i--) {
+        const entry = state.leafDecayQueue[i];
+        entry.timer -= dt;
+        if (entry.timer <= 0) {
+            state.leafDecayQueue.splice(i, 1);
+            if (!LEAF_BLOCKS.has(state.activeWorld[entry.x][entry.y])) continue;
+            if (!hasNearbyWood(entry.x, entry.y)) {
+                state.activeWorld[entry.x][entry.y] = BLOCKS.AIR;
+            }
+        }
+    }
+}
+
+// ============================================================
 // RESET ALL GAME STATE
 // ============================================================
 
@@ -722,6 +743,10 @@ export function resetAllGameState() {
     state.world.length = 0;
     state.netherWorld.length = 0;
     state.biomeMap.length = 0;
+    state.netherBiomeMap.length = 0;
+    state.bgWorld.length = 0;
+    state.netherBgWorld.length = 0;
+    state.activeBgWorld = null;
     for (const key in state.chestData) delete state.chestData[key];
 
     // Player
@@ -737,10 +762,14 @@ export function resetAllGameState() {
         state.inventory.slots[i] = { itemId: 0, count: 0, durability: 0 };
     }
     state.inventory.selectedSlot = 0;
+    state.inventory.slots[0] = { itemId: ITEMS.PISTOL, count: 1, durability: ITEM_INFO[ITEMS.PISTOL].durability };
+    state.inventory.slots[1] = { itemId: ITEMS.BULLETS, count: 64, durability: 0 };
+    state.inventory.slots[2] = { itemId: ITEMS.MINIATURE_NETHER_PORTAL, count: 1, durability: 0 };
     for (const type of ARMOR_SLOT_TYPES) {
         state.inventory.armor[type] = { itemId: 0, count: 0, durability: 0 };
     }
     state.cursorItem.itemId = 0; state.cursorItem.count = 0; state.cursorItem.durability = 0;
+    state.offhand.itemId = 0; state.offhand.count = 0; state.offhand.durability = 0;
 
     // Mobs & entities
     state.mobs.length = 0;
@@ -776,6 +805,10 @@ export function resetAllGameState() {
 
     // Plate timers
     state.plateTimers.length = 0;
+
+    // Leaf decay
+    state.leafDecayQueue.length = 0;
+    state.placedBlocks.clear();
 
     // Music
     state.musicTimer = 0;
@@ -871,6 +904,9 @@ export function saveWorld() {
         world: rleEncode(state.world),
         netherWorld: state.netherWorld.length > 0 ? rleEncode(state.netherWorld) : null,
         biomeMap: state.biomeMap.slice(),
+        netherBiomeMap: state.netherBiomeMap.slice(),
+        bgWorld: state.bgWorld.length > 0 ? rleEncode(state.bgWorld) : null,
+        netherBgWorld: state.netherBgWorld.length > 0 ? rleEncode(state.netherBgWorld) : null,
         chestData: JSON.parse(JSON.stringify(state.chestData)),
         inventory: {
             slots: state.inventory.slots.map(function(s) { return { itemId: s.itemId, count: s.count, durability: s.durability }; }),
@@ -883,6 +919,8 @@ export function saveWorld() {
             selectedSlot: state.inventory.selectedSlot
         },
         cursorItem: { itemId: state.cursorItem.itemId, count: state.cursorItem.count, durability: state.cursorItem.durability },
+        offhand: { itemId: state.offhand.itemId, count: state.offhand.count, durability: state.offhand.durability },
+        placedBlocks: Array.from(state.placedBlocks),
         player: {
             x: state.player.x, y: state.player.y,
             health: state.player.health, facing: state.player.facing
@@ -894,7 +932,9 @@ export function saveWorld() {
         netherPortalX: state.netherPortalX,
         netherPortalY: state.netherPortalY,
         mobs: state.mobs.filter(function(m) { return !MOB_DEFS[m.type].hostile; }).map(function(m) {
-            return { type: m.type, x: m.x, y: m.y, health: m.health, facing: m.facing };
+            const md = { type: m.type, x: m.x, y: m.y, health: m.health, facing: m.facing };
+            if (m.type === "wolf") { md.tamed = m.tamed; md.sitting = m.sitting; }
+            return md;
         })
     };
 
@@ -929,6 +969,18 @@ export function loadWorld(worldName) {
 
             // BiomeMap
             for (let i = 0; i < data.biomeMap.length; i++) state.biomeMap[i] = data.biomeMap[i];
+            if (data.netherBiomeMap) {
+                for (let i = 0; i < data.netherBiomeMap.length; i++) state.netherBiomeMap[i] = data.netherBiomeMap[i];
+            }
+            if (data.bgWorld) {
+                const bgDecoded = rleDecode(data.bgWorld, WORLD_WIDTH, WORLD_HEIGHT);
+                for (let x = 0; x < WORLD_WIDTH; x++) state.bgWorld[x] = bgDecoded[x];
+                state.activeBgWorld = state.inNether ? state.netherBgWorld : state.bgWorld;
+            }
+            if (data.netherBgWorld) {
+                const nbgDecoded = rleDecode(data.netherBgWorld, WORLD_WIDTH, WORLD_HEIGHT);
+                for (let x = 0; x < WORLD_WIDTH; x++) state.netherBgWorld[x] = nbgDecoded[x];
+            }
 
             // Chests
             for (const key in data.chestData) state.chestData[key] = data.chestData[key];
@@ -944,6 +996,14 @@ export function loadWorld(worldName) {
             state.cursorItem.itemId = data.cursorItem.itemId;
             state.cursorItem.count = data.cursorItem.count;
             state.cursorItem.durability = data.cursorItem.durability;
+            if (data.offhand) {
+                state.offhand.itemId = data.offhand.itemId;
+                state.offhand.count = data.offhand.count;
+                state.offhand.durability = data.offhand.durability;
+            }
+            if (data.placedBlocks) {
+                for (const k of data.placedBlocks) state.placedBlocks.add(k);
+            }
 
             // Player
             state.player.x = data.player.x;
@@ -955,6 +1015,7 @@ export function loadWorld(worldName) {
             state.timeOfDay = data.timeOfDay;
             state.inNether = data.inNether;
             state.activeWorld = state.inNether ? state.netherWorld : state.world;
+            state.activeBgWorld = state.inNether ? state.netherBgWorld : state.bgWorld;
             state.overworldPortalX = data.overworldPortalX;
             state.overworldPortalY = data.overworldPortalY;
             state.netherPortalX = data.netherPortalX;
@@ -966,6 +1027,8 @@ export function loadWorld(worldName) {
                     const mob = createMob(mData.type, mData.x, mData.y);
                     mob.health = mData.health;
                     mob.facing = mData.facing;
+                    if (mData.tamed !== undefined) mob.tamed = mData.tamed;
+                    if (mData.sitting !== undefined) mob.sitting = mData.sitting;
                     state.mobs.push(mob);
                 }
             }

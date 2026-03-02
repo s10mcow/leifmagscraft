@@ -6,10 +6,10 @@
 // ============================================================
 
 import { state } from './state.js';
-import { BLOCKS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, GRAVITY, MAX_FALL_SPEED, PLAYER_REACH, SAFE_FALL_BLOCKS, MOB_DEFS, ITEM_INFO } from './constants.js';
+import { BLOCKS, ITEMS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, GRAVITY, MAX_FALL_SPEED, PLAYER_REACH, SAFE_FALL_BLOCKS, MOB_DEFS, ITEM_INFO } from './constants.js';
 import { isBlockSolid, findSurfaceY } from './world.js';
 import { addFloatingText, getEquippedTool, getEquippedTier, getArmorDefense, damageAllArmor, damageEquippedTool } from './inventory.js';
-import { playJump, playFootstep, playLand, playHurt, playMobHit, playBlockPlace, playSelect } from './audio.js';
+import { playJump, playFootstep, playLand, playHurt, playMobHit, playBlockPlace, playSelect, playToolBreak } from './audio.js';
 import { createParticles } from './mobs.js';
 
 // Lazy import for toggleDoor (lives in game.js) to avoid circular dependencies
@@ -30,19 +30,23 @@ export function updatePlayer(dt) {
     if (state.player.invincibleTimer > 0) state.player.invincibleTimer -= dt;
     if (state.player.attackCooldown > 0) state.player.attackCooldown -= dt;
 
+    // Crouching (Shift key)
+    state.player.crouching = !!state.keys["Shift"];
+
     // Movement (disabled during crafting)
     if (!state.craftingOpen && !state.chestOpen) {
+        const moveSpeed = state.player.crouching ? state.player.speed * 0.4 : state.player.speed;
         if (state.keys["ArrowLeft"] || state.keys["a"] || state.keys["A"]) {
-            state.player.velX = -state.player.speed;
+            state.player.velX = -moveSpeed;
             state.player.facing = -1;
         } else if (state.keys["ArrowRight"] || state.keys["d"] || state.keys["D"]) {
-            state.player.velX = state.player.speed;
+            state.player.velX = moveSpeed;
             state.player.facing = 1;
         } else {
             state.player.velX *= 0.7;
             if (Math.abs(state.player.velX) < 0.1) state.player.velX = 0;
         }
-        if ((state.keys["ArrowUp"] || state.keys["w"] || state.keys["W"] || state.keys[" "]) && state.player.onGround) {
+        if (!state.player.crouching && (state.keys["ArrowUp"] || state.keys["w"] || state.keys["W"] || state.keys[" "]) && state.player.onGround) {
             state.player.velY = state.player.jumpForce;
             state.player.onGround = false;
             playJump();
@@ -186,14 +190,22 @@ export function activatePressurePlate(px, py) {
         for (let dy = -range; dy <= range; dy++) {
             const bx = px + dx, by = py + dy;
             if (bx < 0 || bx >= WORLD_WIDTH || by < 0 || by >= WORLD_HEIGHT) continue;
-            if (state.activeWorld[bx][by] === BLOCKS.DOOR_CLOSED) {
+            const block = state.activeWorld[bx][by];
+            if (block === BLOCKS.DOOR_CLOSED) {
                 _toggleDoor(bx, by);
-                // Add auto-close timer (only if not already tracked)
                 const existing = state.plateTimers.find(t => t.x === bx && t.y === by);
                 if (!existing) {
                     state.plateTimers.push({ x: bx, y: by, timer: 3000 });
                 } else {
-                    existing.timer = 3000; // Reset timer
+                    existing.timer = 3000;
+                }
+            } else if (block === BLOCKS.DOOR_OPEN) {
+                // Door already open (opened from inside) — refresh the auto-close timer
+                const existing = state.plateTimers.find(t => t.x === bx && t.y === by);
+                if (!existing) {
+                    state.plateTimers.push({ x: bx, y: by, timer: 3000 });
+                } else {
+                    existing.timer = 3000;
                 }
             }
         }
@@ -233,6 +245,25 @@ export function respawnPlayer() {
 
 export function hurtPlayer(damage, knockFromX) {
     if (state.player.invincibleTimer > 0 || state.gameOver) return;
+
+    // Shield block: crouching + shield in offhand + attack from the facing side
+    if (state.player.crouching && state.offhand && state.offhand.itemId === ITEMS.SHIELD && state.offhand.durability > 0) {
+        const attackFromLeft = knockFromX < state.player.x + state.player.width / 2;
+        const facingLeft = state.player.facing === -1;
+        if (attackFromLeft === facingLeft) {
+            state.offhand.durability--;
+            if (state.offhand.durability <= 0) {
+                state.offhand.itemId = 0; state.offhand.count = 0; state.offhand.durability = 0;
+                addFloatingText(state.player.x, state.player.y - 30, "Shield broke!", "#ef4444");
+                playToolBreak();
+            } else {
+                addFloatingText(state.player.x + 20, state.player.y - 10, "Blocked!", "#4ade80");
+            }
+            state.screenShake.intensity = 3;
+            return;
+        }
+    }
+
     const armorDef = getArmorDefense();
     const actualDamage = Math.max(1, damage - armorDef);
     state.player.health = Math.max(0, state.player.health - actualDamage);
@@ -264,6 +295,16 @@ export function attackMob(mob) {
     mob.hurtTimer = 200;
     state.player.attackCooldown = 400;
     playMobHit();
+
+    // Wolf pack provocation: hitting any wolf causes nearby wild wolves to attack
+    if (mob.type === "wolf" && !mob.tamed) {
+        mob.provoked = true;
+        for (const other of state.mobs) {
+            if (other === mob || other.type !== "wolf" || other.tamed) continue;
+            const dx = other.x - mob.x, dy = other.y - mob.y;
+            if (Math.sqrt(dx * dx + dy * dy) < 10 * BLOCK_SIZE) other.provoked = true;
+        }
+    }
 
     const dir = mob.x > state.player.x ? 1 : -1;
     mob.velX = dir * (def.knockback || 4);

@@ -321,6 +321,35 @@ export function damageAllArmor() {
     }
 }
 
+// Click the offhand slot: pick up or place any item
+export function clickOffhandSlot() {
+    const slot = state.offhand;
+    if (state.cursorItem.itemId === 0) {
+        if (slot.itemId === 0) return;
+        state.cursorItem.itemId = slot.itemId;
+        state.cursorItem.count = slot.count;
+        state.cursorItem.durability = slot.durability;
+        slot.itemId = 0; slot.count = 0; slot.durability = 0;
+        playSelect();
+    } else {
+        if (slot.itemId === 0) {
+            slot.itemId = state.cursorItem.itemId;
+            slot.count = 1;
+            slot.durability = state.cursorItem.durability || (ITEM_INFO[state.cursorItem.itemId] ? ITEM_INFO[state.cursorItem.itemId].durability || 0 : 0);
+            state.cursorItem.count--;
+            if (state.cursorItem.count <= 0) { state.cursorItem.itemId = 0; state.cursorItem.count = 0; state.cursorItem.durability = 0; }
+            playBlockPlace();
+        } else {
+            const tmpId = slot.itemId, tmpCount = slot.count, tmpDur = slot.durability;
+            slot.itemId = state.cursorItem.itemId;
+            slot.count = 1;
+            slot.durability = state.cursorItem.durability || 0;
+            state.cursorItem.itemId = tmpId; state.cursorItem.count = tmpCount; state.cursorItem.durability = tmpDur;
+            playSelect();
+        }
+    }
+}
+
 // Get the color of armor equipped in a specific slot (for drawing on player)
 export function getArmorColor(slotType) {
     const slot = state.inventory.armor[slotType];

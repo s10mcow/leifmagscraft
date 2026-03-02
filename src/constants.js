@@ -12,6 +12,8 @@ export const BLOCKS = {
   DOOR_CLOSED: 27, DOOR_OPEN: 28, GRAVEL: 29, LAVA: 30, OBSIDIAN: 31,
   NETHER_PORTAL: 32, NETHERRACK: 33, SOUL_SAND: 34, GLOWSTONE: 35,
   NETHER_BRICK: 36, COPPER: 37, PRESSURE_PLATE: 38,
+  NETHER_WOOD: 39, NETHER_LEAVES: 40,
+  WARPED_GRASS: 41, WARPED_WOOD: 42, WARPED_LEAVES: 43,
 };
 
 // --- ITEM IDs (100+) ---
@@ -36,11 +38,15 @@ export const ITEMS = {
   ENDER_PEARL: 141, FEATHER: 142, RAW_CHICKEN: 143,
   ROCKET_LAUNCHER: 144, ROCKET: 145,
   HUMAN_MEAT: 146,
+  MINIATURE_NETHER_PORTAL: 147,
+  SHIELD: 148,
+  NETHERITE_INGOT: 149,
+  FLOWER: 150,
 };
 
 // --- WORLD SETTINGS ---
 export const BLOCK_SIZE = 32;
-export const WORLD_WIDTH = 800;
+export const WORLD_WIDTH = 1600;
 export const WORLD_HEIGHT = 100;
 export const SURFACE_LEVEL = 35;
 export const SEA_LEVEL = 42;
@@ -74,12 +80,13 @@ export const MAX_SAVES = 10;
 
 // --- BIOME DEFINITIONS ---
 export const BIOMES = { FOREST: 0, DESERT: 1, SAVANNAH: 2, TUNDRA: 3 };
+export const NETHER_BIOMES = { CRIMSON: 0, WARPED: 1, WASTES: 2 };
 
 export const BIOME_INFO = {
-  [BIOMES.FOREST]: { name: "Forest", surfaceBlock: BLOCKS.GRASS, subSurfaceBlock: BLOCKS.DIRT, treeChance: 0.06, treeType: "oak", heightAmplitude: 1.0, heightOffset: 0 },
-  [BIOMES.DESERT]: { name: "Desert", surfaceBlock: BLOCKS.SAND, subSurfaceBlock: BLOCKS.SAND, treeChance: 0.015, treeType: "cactus", heightAmplitude: 0.4, heightOffset: 2 },
-  [BIOMES.SAVANNAH]: { name: "Savannah", surfaceBlock: BLOCKS.DRY_GRASS, subSurfaceBlock: BLOCKS.DIRT, treeChance: 0.025, treeType: "acacia", heightAmplitude: 0.6, heightOffset: 0 },
-  [BIOMES.TUNDRA]: { name: "Tundra", surfaceBlock: BLOCKS.SNOW, subSurfaceBlock: BLOCKS.DIRT, treeChance: 0.03, treeType: "spruce", heightAmplitude: 0.8, heightOffset: -2 },
+  [BIOMES.FOREST]: { name: "Forest", surfaceBlock: BLOCKS.GRASS, subSurfaceBlock: BLOCKS.DIRT, treeChance: 0.10, treeType: "oak", heightAmplitude: 1.0, heightOffset: 0 },
+  [BIOMES.DESERT]: { name: "Desert", surfaceBlock: BLOCKS.SAND, subSurfaceBlock: BLOCKS.SAND, treeChance: 0.025, treeType: "cactus", heightAmplitude: 0.4, heightOffset: 2 },
+  [BIOMES.SAVANNAH]: { name: "Savannah", surfaceBlock: BLOCKS.DRY_GRASS, subSurfaceBlock: BLOCKS.DIRT, treeChance: 0.04, treeType: "acacia", heightAmplitude: 0.6, heightOffset: 0 },
+  [BIOMES.TUNDRA]: { name: "Tundra", surfaceBlock: BLOCKS.SNOW, subSurfaceBlock: BLOCKS.DIRT, treeChance: 0.05, treeType: "spruce", heightAmplitude: 0.8, heightOffset: -2 },
 };
 
 // --- HELPER FUNCTIONS ---
@@ -160,6 +167,11 @@ export const BLOCK_INFO = {
   [BLOCKS.NETHER_BRICK]: { name: "Nether Brick", color: "#3a1515", breakable: true, mineTime: 750, toolType: "pickaxe", minTier: 1, drops: BLOCKS.NETHER_BRICK },
   [BLOCKS.COPPER]: { name: "Copper Ore", color: "#808080", spots: "#e07040", breakable: true, mineTime: 600, toolType: "pickaxe", minTier: 1, drops: BLOCKS.COPPER },
   [BLOCKS.PRESSURE_PLATE]: { name: "Pressure Plate", color: "#8a8a7a", breakable: true, mineTime: 200, toolType: null, minTier: 0, drops: BLOCKS.PRESSURE_PLATE },
+  [BLOCKS.NETHER_WOOD]: { name: "Nether Wood", color: "#6b1010", breakable: true, mineTime: 400, toolType: "axe", minTier: 0, drops: BLOCKS.NETHER_WOOD },
+  [BLOCKS.NETHER_LEAVES]: { name: "Nether Leaves", color: "#aa1a00", breakable: true, mineTime: 100, toolType: null, minTier: 0, drops: null },
+  [BLOCKS.WARPED_GRASS]: { name: "Warped Grass", color: "#1e1a3a", topColor: "#1a8abf", breakable: true, mineTime: 300, toolType: "shovel", minTier: 0, drops: BLOCKS.NETHERRACK },
+  [BLOCKS.WARPED_WOOD]: { name: "Warped Wood", color: "#4a1060", breakable: true, mineTime: 400, toolType: "axe", minTier: 0, drops: BLOCKS.WARPED_WOOD },
+  [BLOCKS.WARPED_LEAVES]: { name: "Warped Leaves", color: "#0e5070", breakable: true, mineTime: 100, toolType: null, minTier: 0, drops: null },
 };
 
 // --- ITEM PROPERTIES ---
@@ -211,11 +223,15 @@ export const ITEM_INFO = {
   [ITEMS.RAW_CHICKEN]: { name: "Raw Chicken", stackable: true, maxStack: 64, food: true, healAmount: 3 },
   [ITEMS.ROCKET_LAUNCHER]: { name: "Rocket Launcher", stackable: false, toolType: "gun", tier: 3, speed: 1, durability: 100, damage: 12, color: "#556b2f", fireRate: 1500, ammoType: "rocket" },
   [ITEMS.ROCKET]: { name: "Rocket", stackable: true, maxStack: 16 },
+  [ITEMS.MINIATURE_NETHER_PORTAL]: { name: "Miniature Nether Portal", stackable: false, color: "#8800cc" },
+  [ITEMS.SHIELD]: { name: "Shield", stackable: false, durability: 336, color: "#8b6c42" },
+  [ITEMS.NETHERITE_INGOT]: { name: "Netherite Ingot", stackable: true, maxStack: 64, color: "#444455" },
+  [ITEMS.FLOWER]: { name: "Flower", stackable: true, maxStack: 64, color: "#ff6688" },
 };
 
 // --- MOB DEFINITIONS ---
 export const MOB_DEFS = {
-  zombie: { name: "Zombie", width: 24, height: 46, maxHealth: 20, speed: 0.5, damage: 3, hostile: true, detectRange: 16, attackRange: 32, knockback: 5, drops: [{ id: ITEMS.ROTTEN_FLESH, min: 0, max: 2 }] },
+  zombie: { name: "Zombie", width: 24, height: 46, maxHealth: 20, speed: 0.5, damage: 3, hostile: true, detectRange: 16, attackRange: 32, knockback: 5, drops: [{ id: ITEMS.ROTTEN_FLESH, min: 1, max: 3 }] },
   skeleton: { name: "Skeleton", width: 22, height: 46, maxHealth: 20, speed: 1.3, damage: 3, hostile: true, detectRange: 16, attackRange: 450, shootInterval: 2000, knockback: 4, drops: [{ id: ITEMS.BONE, min: 0, max: 2 }] },
   creeper: { name: "Creeper", width: 20, height: 42, maxHealth: 20, speed: 1.0, damage: 12, hostile: true, detectRange: 16, fuseRange: 96, fuseTime: 1500, explosionRadius: 3, knockback: 8, drops: [{ id: ITEMS.GUNPOWDER, min: 0, max: 2 }] },
   pig: { name: "Pig", width: 30, height: 22, maxHealth: 10, speed: 0.8, damage: 0, hostile: false, knockback: 3, drops: [{ id: ITEMS.RAW_PORKCHOP, min: 1, max: 3 }] },
@@ -223,9 +239,13 @@ export const MOB_DEFS = {
   sheep: { name: "Sheep", width: 28, height: 20, maxHealth: 8, speed: 0.9, damage: 0, hostile: false, knockback: 3, drops: [{ id: ITEMS.WOOL, min: 1, max: 3 }, { id: ITEMS.MUTTON, min: 1, max: 2 }] },
   villager: { name: "Villager", width: 24, height: 46, maxHealth: 20, speed: 0.4, damage: 0, hostile: false, knockback: 2, drops: [{ id: ITEMS.HUMAN_MEAT, min: 1, max: 3 }] },
   husk: { name: "Husk", width: 24, height: 46, maxHealth: 22, speed: 0.8, damage: 4, hostile: true, detectRange: 16, attackRange: 32, knockback: 5, drops: [{ id: ITEMS.ROTTEN_FLESH, min: 0, max: 2 }] },
-  enderman: { name: "Enderman", width: 20, height: 56, maxHealth: 40, speed: 1.5, damage: 7, hostile: true, detectRange: 12, attackRange: 40, knockback: 6, teleportCooldown: 3000, drops: [{ id: ITEMS.ENDER_PEARL, min: 0, max: 1 }] },
+  enderman: { name: "Enderman", width: 20, height: 56, maxHealth: 40, speed: 1.5, damage: 7, hostile: true, detectRange: 12, attackRange: 40, knockback: 6, teleportCooldown: 3000, drops: [{ id: ITEMS.ENDER_PEARL, min: 1, max: 1 }] },
   spider: { name: "Spider", width: 32, height: 18, maxHealth: 16, speed: 1.2, damage: 3, hostile: true, detectRange: 12, attackRange: 32, knockback: 4, drops: [{ id: ITEMS.FEATHER, min: 0, max: 2 }] },
   chicken: { name: "Chicken", width: 16, height: 16, maxHealth: 4, speed: 0.7, damage: 0, hostile: false, knockback: 5, drops: [{ id: ITEMS.FEATHER, min: 1, max: 2 }, { id: ITEMS.RAW_CHICKEN, min: 1, max: 1 }] },
+  wolf: { name: "Wolf", width: 28, height: 22, maxHealth: 20, speed: 2.2, damage: 4, hostile: false, knockback: 4, drops: [] },
+  pigman: { name: "Pigman", width: 24, height: 46, maxHealth: 20, speed: 0.9, damage: 5, hostile: true, detectRange: 16, attackRange: 350, shootInterval: 2500, knockback: 5, drops: [{ id: BLOCKS.GOLD, min: 0, max: 2 }] },
+  ghast: { name: "Ghast", width: 56, height: 56, maxHealth: 30, speed: 1.5, damage: 8, hostile: true, detectRange: 20, attackRange: 500, shootInterval: 3000, knockback: 0, drops: [{ id: BLOCKS.GLOWSTONE, min: 1, max: 2 }] },
+  iron_golem: { name: "Iron Golem", width: 32, height: 54, maxHealth: 100, speed: 0.55, damage: 10, hostile: false, knockback: 10, detectRange: 16, attackRange: 55, drops: [{ id: BLOCKS.IRON, min: 1, max: 5 }, { id: ITEMS.FLOWER, min: 1, max: 1, chance: 0.1 }] },
 };
 
 // --- CRAFTING RECIPES ---
@@ -270,6 +290,8 @@ export const RECIPES = [
   { result: ITEMS.BULLETS, resultCount: 24, ingredients: [{ id: BLOCKS.IRON, count: 1 }, { id: BLOCKS.COPPER, count: 1 }, { id: ITEMS.GUNPOWDER, count: 1 }] },
   { result: ITEMS.ROCKET_LAUNCHER, resultCount: 1, ingredients: [{ id: BLOCKS.IRON, count: 2 }, { id: BLOCKS.COPPER, count: 2 }, { id: ITEMS.GUNPOWDER, count: 2 }] },
   { result: ITEMS.ROCKET, resultCount: 4, ingredients: [{ id: BLOCKS.IRON, count: 1 }, { id: ITEMS.GUNPOWDER, count: 1 }] },
+  { result: ITEMS.MINIATURE_NETHER_PORTAL, resultCount: 1, ingredients: [{ id: BLOCKS.OBSIDIAN, count: 4 }, { id: ITEMS.FLINT_AND_STEEL, count: 1 }] },
+  { result: ITEMS.SHIELD, resultCount: 1, ingredients: [{ id: BLOCKS.PLANKS, count: 6 }, { id: BLOCKS.IRON, count: 1 }] },
 ];
 
 // --- VILLAGER TRADES ---
@@ -283,6 +305,35 @@ export const TRADES = [
   { cost: 5, result: BLOCKS.DIAMOND, resultCount: 1 },
   { cost: 6, result: ITEMS.IRON_CHESTPLATE, resultCount: 1 },
 ];
+
+// --- VILLAGER PROFESSION TRADE SETS ---
+export const TRADE_SETS = {
+    blacksmith: [
+        { cost: 2, result: ITEMS.IRON_PICKAXE, resultCount: 1 },
+        { cost: 3, result: ITEMS.IRON_SWORD, resultCount: 1 },
+        { cost: 4, result: ITEMS.IRON_HELMET, resultCount: 1 },
+        { cost: 5, result: ITEMS.IRON_CHESTPLATE, resultCount: 1 },
+        { cost: 5, result: ITEMS.IRON_LEGGINGS, resultCount: 1 },
+        { cost: 6, result: BLOCKS.DIAMOND, resultCount: 1 },
+    ],
+    merchant: [
+        { cost: 1, result: BLOCKS.TORCH, resultCount: 6 },
+        { cost: 1, result: BLOCKS.PLANKS, resultCount: 12 },
+        { cost: 2, result: ITEMS.IRON_AXE, resultCount: 1 },
+        { cost: 3, result: ITEMS.STONE_PICKAXE, resultCount: 1 },
+        { cost: 4, result: ITEMS.GOLD_PICKAXE, resultCount: 1 },
+        { cost: 5, result: ITEMS.SHIELD, resultCount: 1 },
+    ],
+    farmer: [
+        { cost: 1, result: ITEMS.STEAK, resultCount: 4 },
+        { cost: 1, result: ITEMS.MUTTON, resultCount: 4 },
+        { cost: 2, result: ITEMS.BONE, resultCount: 6 },
+        { cost: 3, result: ITEMS.GOLD_SWORD, resultCount: 1 },
+        { cost: 4, result: BLOCKS.GOLD, resultCount: 8 },
+        { cost: 2, result: ITEMS.RAW_PORKCHOP, resultCount: 6 },
+    ],
+};
+export const PROFESSION_LIST = ["blacksmith", "merchant", "farmer"];
 
 // --- STRUCTURE LOOT TABLES ---
 export const LOOT_TABLES = {
@@ -308,5 +359,11 @@ export const LOOT_TABLES = {
     { id: BLOCKS.EMERALD, min: 1, max: 3, chance: 0.6 },
     { id: ITEMS.STONE_SWORD, min: 1, max: 1, chance: 0.4 },
     { id: ITEMS.IRON_AXE, min: 1, max: 1, chance: 0.2 },
+  ],
+  nether_fortress: [
+    { id: BLOCKS.DIAMOND, min: 2, max: 5, chance: 0.7 },
+    { id: BLOCKS.IRON, min: 4, max: 10, chance: 0.9 },
+    { id: ITEMS.NETHERITE_INGOT, min: 1, max: 2, chance: 0.5 },
+    { id: BLOCKS.GOLD, min: 3, max: 6, chance: 0.8 },
   ],
 };
