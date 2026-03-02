@@ -2,8 +2,6 @@
 export { rleEncode, rleDecode } from './compression.js';
 export { drawGameFrame } from './frame-renderer.js';
 export {
-    setInputTeleport,
-    setInputToggleDoor,
     updateMining,
     placeBlock,
     interact,

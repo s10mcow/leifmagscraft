@@ -12,16 +12,7 @@ import { addToInventory, addFloatingText, getEquippedTool, getEquippedTier, dama
 import { isBlockSolid, initChestData, removeChestData, checkLavaWaterInteraction } from '../world.js';
 import { playMineHit, playBlockBreak, playBlockPlace, playPickup } from '../audio.js';
 import { createBullet, createRocket, createParticles } from '../mobs.js';
-import { scheduleLeafDecay, WOOD_BLOCKS, TREE_BLOCKS } from './systems.js';
-
-// teleportToOtherDimension is set via a lazy reference from systems.js to break
-// the circular dependency with player.js's setTeleportToOtherDimension pattern.
-// The actual function comes from systems.js and is wired at runtime via main.js.
-let _teleportToOtherDimension = null;
-let _toggleDoor = null;
-
-export function setInputTeleport(fn) { _teleportToOtherDimension = fn; }
-export function setInputToggleDoor(fn) { _toggleDoor = fn; }
+import { scheduleLeafDecay, WOOD_BLOCKS, TREE_BLOCKS, teleportToOtherDimension } from './systems.js';
 
 // ============================================================
 // MINING LOGIC
@@ -197,7 +188,7 @@ export function interact() {
     // Miniature Nether Portal: teleport to/from Nether
     const heldSlot = state.inventory.slots[state.inventory.selectedSlot];
     if (heldSlot.itemId === ITEMS.MINIATURE_NETHER_PORTAL && state.portalCooldown <= 0) {
-        if (_teleportToOtherDimension) _teleportToOtherDimension();
+        teleportToOtherDimension();
         return;
     }
 
@@ -251,7 +242,7 @@ export function interact() {
             const pcx = state.player.x + state.player.width / 2, pcy = state.player.y + state.player.height / 2;
             const bcx = wmx_d * BLOCK_SIZE + BLOCK_SIZE / 2, bcy = wmy_d * BLOCK_SIZE + BLOCK_SIZE / 2;
             if (Math.sqrt((pcx - bcx) ** 2 + (pcy - bcy) ** 2) < BLOCK_SIZE * 5) {
-                if (_toggleDoor) _toggleDoor(wmx_d, wmy_d);
+                toggleDoor(wmx_d, wmy_d);
                 return;
             }
         }
