@@ -59,19 +59,26 @@ export function drawInventorySlot(x, y, size, slot, selected, num) {
     state.ctx.lineWidth = 1;
 }
 
-// --- HOTBAR ---
-export function drawHotbar() {
-    const s = 48, p = 4;
+// Returns responsive hotbar geometry used by both drawing and touch detection
+export function getHotbarLayout() {
+    const s = Math.min(48, Math.floor((state.canvas.width - 16) / HOTBAR_SIZE) - 4);
+    const p = 4;
     const total = HOTBAR_SIZE * (s + p) - p;
     const sx = (state.canvas.width - total) / 2;
     const sy = state.canvas.height - s - 12;
+    return { s, p, total, sx, sy };
+}
+
+// --- HOTBAR ---
+export function drawHotbar() {
+    const { s, p, total, sx, sy } = getHotbarLayout();
 
     for (let i = 0; i < HOTBAR_SIZE; i++) {
         drawInventorySlot(sx + i * (s + p), sy, s, state.inventory.slots[i], i === state.inventory.selectedSlot, i + 1);
     }
 
-    // Offhand slot (to the right of the hotbar)
-    const offX = sx + total + 16, offY = sy;
+    // Offhand slot — only draw if it fits (hide on very narrow screens)
+    const offX = sx + total + 8, offY = sy;
     state.ctx.fillStyle = "#9ca3af"; state.ctx.font = "9px 'Courier New', monospace"; state.ctx.textAlign = "center";
     state.ctx.fillText("OFF", offX + s / 2, offY - 4);
     drawInventorySlot(offX, offY, s, state.offhand, false);

@@ -12,6 +12,7 @@ import './mobs.js';
 import './rendering.js';
 import './ui.js';
 import { setupInput, registerFunctions } from './input.js';
+import { setupVirtualControls } from './virtualControls.js';
 import {
     startGame, startNewWorld, loadWorld, deleteSave, saveAndQuit,
     interact, executeTrade, placeBlock, toggleDoor, teleportToOtherDimension,
@@ -54,6 +55,9 @@ window.addEventListener('orientationchange', () => {
 
 // Setup input listeners
 setupInput();
+
+// Mobile virtual controls (no-op on desktop/mouse devices)
+setupVirtualControls();
 
 // Start the game
 startGame();
