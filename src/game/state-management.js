@@ -43,9 +43,10 @@ export function resetAllGameState() {
         state.inventory.slots[i] = { itemId: 0, count: 0, durability: 0 };
     }
     state.inventory.selectedSlot = 0;
-    state.inventory.slots[0] = { itemId: ITEMS.PISTOL, count: 1, durability: ITEM_INFO[ITEMS.PISTOL].durability };
-    state.inventory.slots[1] = { itemId: ITEMS.BULLETS, count: 64, durability: 0 };
-    state.inventory.slots[2] = { itemId: ITEMS.MINIATURE_NETHER_PORTAL, count: 1, durability: 0 };
+    state.inventory.slots[0] = { itemId: ITEMS.ROCKET_LAUNCHER, count: 1, durability: ITEM_INFO[ITEMS.ROCKET_LAUNCHER].durability };
+    state.inventory.slots[1] = { itemId: ITEMS.ROCKET, count: 64, durability: 0 };
+    state.inventory.slots[2] = { itemId: ITEMS.ROCKET, count: 64, durability: 0 };
+    state.inventory.slots[3] = { itemId: ITEMS.MINIATURE_NETHER_PORTAL, count: 1, durability: 0 };
     for (const type of ARMOR_SLOT_TYPES) {
         state.inventory.armor[type] = { itemId: 0, count: 0, durability: 0 };
     }
