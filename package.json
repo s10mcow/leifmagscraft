@@ -1,0 +1,25 @@
+{
+  "name": "leifmaggie",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/s10mcow/leifmagscraft.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/s10mcow/leifmagscraft/issues"
+  },
+  "homepage": "https://github.com/s10mcow/leifmagscraft#readme",
+  "devDependencies": {
+    "vite": "^7.3.1"
+  }
+}

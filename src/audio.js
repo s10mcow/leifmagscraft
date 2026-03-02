@@ -1,10 +1,12 @@
 // ============================================================
-// AUDIO.JS - Sound effects using Web Audio API
+// AUDIO.JS - Sound effects using Web Audio API (ES Module)
 // ============================================================
 // Instead of loading sound files, we CREATE sounds using math!
 // The Web Audio API lets us generate tones, noise, and effects
 // right in the browser. This gives us retro 8-bit style sounds.
 // ============================================================
+
+import { state } from './state.js';
 
 // The AudioContext is the "sound engine" of the browser.
 // Browsers require a user click/keypress before allowing audio,
@@ -103,7 +105,7 @@ function playNoise(duration, volume = 0.3, filterFreq = 4000) {
 // ============================================================
 
 // --- MINING HIT (plays repeatedly while mining) ---
-function playMineHit() {
+export function playMineHit() {
     if (!canPlaySound("mineHit", 150)) return;
     // Short crunchy tap
     playNoise(0.05, 0.2, 2000 + Math.random() * 1000);
@@ -111,7 +113,7 @@ function playMineHit() {
 }
 
 // --- BLOCK BREAK (when a block is fully mined) ---
-function playBlockBreak() {
+export function playBlockBreak() {
     if (!canPlaySound("blockBreak", 100)) return;
     // Crunchy shatter - multiple quick noise bursts
     playNoise(0.08, 0.3, 3000);
@@ -121,7 +123,7 @@ function playBlockBreak() {
 }
 
 // --- PLACE BLOCK ---
-function playBlockPlace() {
+export function playBlockPlace() {
     if (!canPlaySound("blockPlace", 80)) return;
     // Solid thud
     playTone(180, 0.1, "sine", 0.25);
@@ -129,21 +131,21 @@ function playBlockPlace() {
 }
 
 // --- FOOTSTEP ---
-function playFootstep() {
+export function playFootstep() {
     if (!canPlaySound("footstep", 250)) return;
     // Soft quick tap
     playNoise(0.03, 0.08, 800 + Math.random() * 400);
 }
 
 // --- JUMP ---
-function playJump() {
+export function playJump() {
     if (!canPlaySound("jump", 200)) return;
     // Quick upward swoosh
     playSlide(150, 400, 0.15, "sine", 0.2);
 }
 
 // --- LAND (after falling) ---
-function playLand() {
+export function playLand() {
     if (!canPlaySound("land", 150)) return;
     // Thump
     playTone(100, 0.1, "sine", 0.25);
@@ -151,7 +153,7 @@ function playLand() {
 }
 
 // --- ITEM PICKUP ---
-function playPickup() {
+export function playPickup() {
     if (!canPlaySound("pickup", 50)) return;
     // Happy ascending two-note ding
     playTone(600, 0.08, "sine", 0.2);
@@ -159,7 +161,7 @@ function playPickup() {
 }
 
 // --- CRAFTING COMPLETE ---
-function playCraft() {
+export function playCraft() {
     if (!canPlaySound("craft", 200)) return;
     // Satisfying metallic clink + ascending notes
     playTone(500, 0.06, "triangle", 0.2);
@@ -168,7 +170,7 @@ function playCraft() {
 }
 
 // --- EAT FOOD ---
-function playEat() {
+export function playEat() {
     if (!canPlaySound("eat", 150)) return;
     // Crunchy munch sounds
     playNoise(0.04, 0.15, 2500);
@@ -177,7 +179,7 @@ function playEat() {
 }
 
 // --- HURT (player takes damage) ---
-function playHurt() {
+export function playHurt() {
     if (!canPlaySound("hurt", 300)) return;
     // Oof - low hit sound
     playSlide(400, 100, 0.2, "sawtooth", 0.25);
@@ -185,7 +187,7 @@ function playHurt() {
 }
 
 // --- MOB HIT (when you hit a mob) ---
-function playMobHit() {
+export function playMobHit() {
     if (!canPlaySound("mobHit", 100)) return;
     // Punchy hit
     playTone(200, 0.08, "square", 0.2);
@@ -193,7 +195,7 @@ function playMobHit() {
 }
 
 // --- TOOL BREAK ---
-function playToolBreak() {
+export function playToolBreak() {
     if (!canPlaySound("toolBreak", 200)) return;
     // Sad descending break sound
     playSlide(800, 200, 0.3, "square", 0.2);
@@ -201,7 +203,7 @@ function playToolBreak() {
 }
 
 // --- EXPLOSION (creeper) ---
-function playExplosion() {
+export function playExplosion() {
     if (!canPlaySound("explosion", 200)) return;
     // Big boom!
     playNoise(0.4, 0.5, 1000);
@@ -211,14 +213,14 @@ function playExplosion() {
 }
 
 // --- ARROW SHOOT ---
-function playArrowShoot() {
+export function playArrowShoot() {
     if (!canPlaySound("arrowShoot", 300)) return;
     // Twang!
     playSlide(800, 200, 0.15, "sawtooth", 0.15);
 }
 
 // --- SELECT SLOT ---
-function playSelect() {
+export function playSelect() {
     if (!canPlaySound("select", 50)) return;
     // Quick subtle click
     playTone(800, 0.03, "sine", 0.1);
@@ -231,10 +233,6 @@ function playSelect() {
 // Press M to toggle music on/off.
 // ============================================================
 
-let musicEnabled = true;
-let musicTimer = 0;
-let musicNoteIndex = 0;
-let musicIsNight = false;
 const MUSIC_VOLUME = 0.12;
 const NOTE_INTERVAL = 400; // ms between notes
 
@@ -301,25 +299,25 @@ function playMusicNote(freq, duration, type = "triangle", vol = MUSIC_VOLUME) {
 }
 
 // Called from the game loop to advance the music
-function updateMusic(dt, dayBrightness) {
-    if (!musicEnabled || !audioReady) return;
+export function updateMusic(dt, dayBrightness) {
+    if (!state.musicEnabled || !audioReady) return;
 
-    musicTimer += dt;
-    if (musicTimer < NOTE_INTERVAL) return;
-    musicTimer -= NOTE_INTERVAL;
+    state.musicTimer += dt;
+    if (state.musicTimer < NOTE_INTERVAL) return;
+    state.musicTimer -= NOTE_INTERVAL;
 
     // Pick day or night melody based on brightness
     const isNight = dayBrightness < 0.4;
-    if (isNight !== musicIsNight) {
-        musicIsNight = isNight;
-        musicNoteIndex = 0; // Reset when mood changes
+    if (isNight !== state.musicIsNight) {
+        state.musicIsNight = isNight;
+        state.musicNoteIndex = 0; // Reset when mood changes
     }
 
     const melody = isNight ? NIGHT_MELODY : DAY_MELODY;
     const bass = isNight ? NIGHT_BASS : DAY_BASS;
 
     // Play melody note
-    const note = melody[musicNoteIndex % melody.length];
+    const note = melody[state.musicNoteIndex % melody.length];
     if (note !== NOTE.REST) {
         playMusicNote(note, 0.5, "triangle", MUSIC_VOLUME);
         // Add a quiet octave-up shimmer for richness
@@ -327,12 +325,12 @@ function updateMusic(dt, dayBrightness) {
     }
 
     // Play bass note every 4th beat
-    if (musicNoteIndex % 4 === 0) {
-        const bassNote = bass[Math.floor(musicNoteIndex / 4) % bass.length];
+    if (state.musicNoteIndex % 4 === 0) {
+        const bassNote = bass[Math.floor(state.musicNoteIndex / 4) % bass.length];
         if (bassNote !== NOTE.REST) {
             playMusicNote(bassNote * 0.5, 0.8, "sine", MUSIC_VOLUME * 0.6);
         }
     }
 
-    musicNoteIndex++;
+    state.musicNoteIndex++;
 }

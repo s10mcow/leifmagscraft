@@ -1,33 +1,22 @@
 // ============================================================
-// WORLD.JS - World generation, biomes, and terrain
+// WORLD.JS - World generation, biomes, and terrain (ES Module)
 // ============================================================
 // Creates the world with 4 biomes: Forest, Desert, Savannah,
 // Tundra. Each has unique surface blocks, trees, and feel.
 // ============================================================
 
-const world = [];
-const biomeMap = []; // stores biome ID per column
-const chestData = {}; // key: "x,y" -> array of 9 slot objects
+import { state } from './state.js';
+import { BLOCKS, WORLD_WIDTH, WORLD_HEIGHT, SURFACE_LEVEL, SEA_LEVEL, BIOMES, BIOME_INFO, BLOCK_INFO, ITEM_INFO, LOOT_TABLES, BLOCK_SIZE } from './constants.js';
+import { createParticles } from './mobs.js';
 
-// Nether dimension
-const netherWorld = [];
-let inNether = false;
-let activeWorld = world; // points to current dimension's world array
-
-// Saved portal positions for dimension travel
-let overworldPortalX = 0;
-let overworldPortalY = 0;
-let netherPortalX = 0;
-let netherPortalY = 0;
-
-function switchDimension(toNether) {
-    inNether = toNether;
-    activeWorld = toNether ? netherWorld : world;
+export function switchDimension(toNether) {
+    state.inNether = toNether;
+    state.activeWorld = toNether ? state.netherWorld : state.world;
 }
 
-function initChestData(x, y, lootTableName) {
+export function initChestData(x, y, lootTableName) {
     const key = `${x},${y}`;
-    chestData[key] = Array(9).fill(null).map(() => ({ itemId: 0, count: 0, durability: 0 }));
+    state.chestData[key] = Array(9).fill(null).map(() => ({ itemId: 0, count: 0, durability: 0 }));
     if (lootTableName && LOOT_TABLES[lootTableName]) {
         const table = LOOT_TABLES[lootTableName];
         let slotIdx = 0;
@@ -35,7 +24,7 @@ function initChestData(x, y, lootTableName) {
             if (slotIdx >= 9) break;
             if (Math.random() < entry.chance) {
                 const count = entry.min + Math.floor(Math.random() * (entry.max - entry.min + 1));
-                chestData[key][slotIdx] = {
+                state.chestData[key][slotIdx] = {
                     itemId: entry.id,
                     count: count,
                     durability: (ITEM_INFO[entry.id] && ITEM_INFO[entry.id].durability) ? ITEM_INFO[entry.id].durability : 0
@@ -46,8 +35,8 @@ function initChestData(x, y, lootTableName) {
     }
 }
 
-function removeChestData(x, y) {
-    delete chestData[`${x},${y}`];
+export function removeChestData(x, y) {
+    delete state.chestData[`${x},${y}`];
 }
 
 // Noise function - makes smooth natural-looking hills
@@ -58,9 +47,9 @@ function simpleNoise(x, seed) {
 }
 
 // Check if a block at (x,y) is solid (not air/water/torch/lava/open door/portal)
-function isBlockSolid(x, y) {
+export function isBlockSolid(x, y) {
     if (x < 0 || x >= WORLD_WIDTH || y < 0 || y >= WORLD_HEIGHT) return true;
-    const block = activeWorld[x][y];
+    const block = state.activeWorld[x][y];
     return block !== BLOCKS.AIR && block !== BLOCKS.WATER && block !== BLOCKS.TORCH &&
            block !== BLOCKS.LAVA && block !== BLOCKS.DOOR_OPEN && block !== BLOCKS.NETHER_PORTAL &&
            block !== BLOCKS.PRESSURE_PLATE;
@@ -106,7 +95,7 @@ function assignBiomes(seed) {
     for (let col = 0; col < WORLD_WIDTH; col++) {
         for (const seg of segments) {
             if (col >= seg.start && col < seg.end) {
-                biomeMap[col] = seg.biome;
+                state.biomeMap[col] = seg.biome;
                 break;
             }
         }
@@ -120,15 +109,15 @@ function assignBiomes(seed) {
 function generateOakTree(x, surfaceY) {
     const h = 4 + Math.floor(Math.random() * 3); // 4-6 tall
     for (let i = 1; i <= h; i++) {
-        if (surfaceY - i >= 0) world[x][surfaceY - i] = BLOCKS.WOOD;
+        if (surfaceY - i >= 0) state.world[x][surfaceY - i] = BLOCKS.WOOD;
     }
     for (let lx = -2; lx <= 2; lx++) {
         for (let ly = -3; ly <= -1; ly++) {
             const wx = x + lx, wy = surfaceY - h + ly;
             if (wx >= 0 && wx < WORLD_WIDTH && wy >= 0) {
-                if (world[wx][wy] === BLOCKS.AIR) {
+                if (state.world[wx][wy] === BLOCKS.AIR) {
                     if (Math.abs(lx) === 2 && Math.abs(ly) === 1 && Math.random() < 0.4) continue;
-                    world[wx][wy] = BLOCKS.LEAVES;
+                    state.world[wx][wy] = BLOCKS.LEAVES;
                 }
             }
         }
@@ -138,7 +127,7 @@ function generateOakTree(x, surfaceY) {
 function generateCactus(x, surfaceY) {
     const h = 2 + Math.floor(Math.random() * 3); // 2-4 tall
     for (let i = 1; i <= h; i++) {
-        if (surfaceY - i >= 0) world[x][surfaceY - i] = BLOCKS.CACTUS;
+        if (surfaceY - i >= 0) state.world[x][surfaceY - i] = BLOCKS.CACTUS;
     }
 }
 
@@ -149,7 +138,7 @@ function generateAcacia(x, surfaceY) {
     for (let i = 1; i <= h; i++) {
         const tx = (i > h - 2) ? x + lean : x;
         if (tx >= 0 && tx < WORLD_WIDTH && surfaceY - i >= 0) {
-            world[tx][surfaceY - i] = BLOCKS.ACACIA_WOOD;
+            state.world[tx][surfaceY - i] = BLOCKS.ACACIA_WOOD;
         }
     }
     // Flat-top canopy
@@ -159,8 +148,8 @@ function generateAcacia(x, surfaceY) {
         for (let ly = -2; ly <= -1; ly++) {
             const wx = topX + lx, wy = topY + ly;
             if (wx >= 0 && wx < WORLD_WIDTH && wy >= 0) {
-                if (world[wx][wy] === BLOCKS.AIR) {
-                    world[wx][wy] = BLOCKS.ACACIA_LEAVES;
+                if (state.world[wx][wy] === BLOCKS.AIR) {
+                    state.world[wx][wy] = BLOCKS.ACACIA_LEAVES;
                 }
             }
         }
@@ -171,7 +160,7 @@ function generateSpruce(x, surfaceY) {
     const h = 6 + Math.floor(Math.random() * 3); // 6-8 tall
     // Trunk
     for (let i = 1; i <= h; i++) {
-        if (surfaceY - i >= 0) world[x][surfaceY - i] = BLOCKS.SPRUCE_WOOD;
+        if (surfaceY - i >= 0) state.world[x][surfaceY - i] = BLOCKS.SPRUCE_WOOD;
     }
     // Triangular canopy (narrow top, wide bottom)
     const topY = surfaceY - h;
@@ -186,8 +175,8 @@ function generateSpruce(x, surfaceY) {
         for (let lx = -layer.width; lx <= layer.width; lx++) {
             const wx = x + lx, wy = topY + layer.dy;
             if (wx >= 0 && wx < WORLD_WIDTH && wy >= 0) {
-                if (world[wx][wy] === BLOCKS.AIR) {
-                    world[wx][wy] = BLOCKS.SPRUCE_LEAVES;
+                if (state.world[wx][wy] === BLOCKS.AIR) {
+                    state.world[wx][wy] = BLOCKS.SPRUCE_LEAVES;
                 }
             }
         }
@@ -198,7 +187,7 @@ function generateSpruce(x, surfaceY) {
 // WORLD GENERATION
 // ============================================================
 
-function generateWorld() {
+export function generateWorld() {
     const seed = Math.random() * 1000;
 
     // Assign biomes first
@@ -206,15 +195,15 @@ function generateWorld() {
 
     // Fill with air
     for (let x = 0; x < WORLD_WIDTH; x++) {
-        world[x] = [];
+        state.world[x] = [];
         for (let y = 0; y < WORLD_HEIGHT; y++) {
-            world[x][y] = BLOCKS.AIR;
+            state.world[x][y] = BLOCKS.AIR;
         }
     }
 
     // Generate terrain (biome-aware) - NO ores yet, those come after caves
     for (let x = 0; x < WORLD_WIDTH; x++) {
-        const biome = biomeMap[x];
+        const biome = state.biomeMap[x];
         const bi = BIOME_INFO[biome];
 
         const surfaceY = Math.floor(
@@ -224,29 +213,29 @@ function generateWorld() {
 
         for (let y = 0; y < WORLD_HEIGHT; y++) {
             if (y === WORLD_HEIGHT - 1) {
-                world[x][y] = BLOCKS.BEDROCK;
+                state.world[x][y] = BLOCKS.BEDROCK;
             } else if (y === surfaceY) {
                 if (surfaceY >= SEA_LEVEL - 1 && biome !== BIOMES.TUNDRA) {
-                    world[x][y] = BLOCKS.SAND;
+                    state.world[x][y] = BLOCKS.SAND;
                 } else {
-                    world[x][y] = bi.surfaceBlock;
+                    state.world[x][y] = bi.surfaceBlock;
                 }
             } else if (y > surfaceY && y < surfaceY + 4) {
                 if (surfaceY >= SEA_LEVEL - 1 && biome !== BIOMES.TUNDRA) {
-                    world[x][y] = BLOCKS.SAND;
+                    state.world[x][y] = BLOCKS.SAND;
                 } else {
-                    world[x][y] = bi.subSurfaceBlock;
+                    state.world[x][y] = bi.subSurfaceBlock;
                 }
             } else if (y >= surfaceY + 4 && y < WORLD_HEIGHT - 1) {
-                world[x][y] = BLOCKS.STONE;
+                state.world[x][y] = BLOCKS.STONE;
             }
 
             // Water / Ice fills low spots
-            if (y >= surfaceY && y < SEA_LEVEL && world[x][y] === BLOCKS.AIR) {
+            if (y >= surfaceY && y < SEA_LEVEL && state.world[x][y] === BLOCKS.AIR) {
                 if (biome === BIOMES.TUNDRA && y <= surfaceY + 1) {
-                    world[x][y] = BLOCKS.ICE;
+                    state.world[x][y] = BLOCKS.ICE;
                 } else {
-                    world[x][y] = BLOCKS.WATER;
+                    state.world[x][y] = BLOCKS.WATER;
                 }
             }
         }
@@ -260,13 +249,13 @@ function generateWorld() {
 
     // Trees (biome-aware)
     for (let x = 3; x < WORLD_WIDTH - 3; x++) {
-        const biome = biomeMap[x];
+        const biome = state.biomeMap[x];
         const bi = BIOME_INFO[biome];
 
         // Find surface - check for the biome's surface block type
         let surfaceY = -1;
         for (let y = 0; y < WORLD_HEIGHT; y++) {
-            const b = world[x][y];
+            const b = state.world[x][y];
             if (b === BLOCKS.GRASS || b === BLOCKS.SAND || b === BLOCKS.SNOW || b === BLOCKS.DRY_GRASS) {
                 surfaceY = y;
                 break;
@@ -274,7 +263,7 @@ function generateWorld() {
         }
         // Don't grow trees on sand (beach) unless it's a desert
         if (surfaceY <= 0) continue;
-        if (world[x][surfaceY] === BLOCKS.SAND && biome !== BIOMES.DESERT) continue;
+        if (state.world[x][surfaceY] === BLOCKS.SAND && biome !== BIOMES.DESERT) continue;
 
         if (Math.random() < bi.treeChance) {
             if (bi.treeType === "oak") generateOakTree(x, surfaceY);
@@ -296,8 +285,6 @@ function generateWorld() {
 // VILLAGE GENERATION
 // ============================================================
 
-const villageLocations = []; // stores {x, surfaceY} for spawning villagers later
-
 function generateVillages(seed) {
     const villageCount = 3 + Math.floor(Math.random() * 3); // 3-5 villages
     const attempts = [];
@@ -314,7 +301,7 @@ function generateVillages(seed) {
         let bestY = -1;
         for (let x = targetX - 50; x < targetX + 50; x++) {
             if (x < 10 || x >= WORLD_WIDTH - 30) continue;
-            const biome = biomeMap[x];
+            const biome = state.biomeMap[x];
             if (biome !== BIOMES.FOREST && biome !== BIOMES.SAVANNAH) continue;
 
             const sy = findSurfaceY(x);
@@ -335,7 +322,7 @@ function generateVillages(seed) {
         // Build 2-3 small houses
         const houseCount = 2 + Math.floor(Math.random() * 2);
         let cx = bestX;
-        const wallBlock = biomeMap[bestX] === BIOMES.SAVANNAH ? BLOCKS.COBBLESTONE : BLOCKS.PLANKS;
+        const wallBlock = state.biomeMap[bestX] === BIOMES.SAVANNAH ? BLOCKS.COBBLESTONE : BLOCKS.PLANKS;
 
         for (let h = 0; h < houseCount; h++) {
             const houseW = 5 + Math.floor(Math.random() * 3); // 5-7 wide
@@ -344,7 +331,7 @@ function generateVillages(seed) {
             if (cx + houseW + 2 >= WORLD_WIDTH) break;
 
             generateHouse(cx, sy, houseW, houseH, wallBlock);
-            villageLocations.push({ x: (cx + houseW / 2) * BLOCK_SIZE, y: (sy - 2) * BLOCK_SIZE });
+            state.villageLocations.push({ x: (cx + houseW / 2) * BLOCK_SIZE, y: (sy - 2) * BLOCK_SIZE });
 
             cx += houseW + 3; // gap between houses
         }
@@ -373,35 +360,35 @@ function generateHouse(x, surfaceY, w, h, wallBlock) {
             if (by === roofY) {
                 // Roof - varies by style
                 if (style === 2) {
-                    world[bx][by] = BLOCKS.COBBLESTONE;
+                    state.world[bx][by] = BLOCKS.COBBLESTONE;
                 } else {
-                    world[bx][by] = BLOCKS.PLANKS;
+                    state.world[bx][by] = BLOCKS.PLANKS;
                 }
                 // Overhang: extend roof 1 block past walls
-                if (isLeftWall && bx - 1 >= 0 && by >= 0 && by < WORLD_HEIGHT) world[bx - 1][by] = BLOCKS.PLANKS;
-                if (isRightWall && bx + 1 < WORLD_WIDTH && by >= 0 && by < WORLD_HEIGHT) world[bx + 1][by] = style === 2 ? BLOCKS.COBBLESTONE : BLOCKS.PLANKS;
+                if (isLeftWall && bx - 1 >= 0 && by >= 0 && by < WORLD_HEIGHT) state.world[bx - 1][by] = BLOCKS.PLANKS;
+                if (isRightWall && bx + 1 < WORLD_WIDTH && by >= 0 && by < WORLD_HEIGHT) state.world[bx + 1][by] = style === 2 ? BLOCKS.COBBLESTONE : BLOCKS.PLANKS;
             } else if (by === floorY) {
                 // Floor
-                world[bx][by] = BLOCKS.COBBLESTONE;
+                state.world[bx][by] = BLOCKS.COBBLESTONE;
             } else if (isWall) {
                 // Door in the wall (2 blocks tall at ground level)
                 if (isDoorWall && (by === floorY - 1 || by === floorY - 2)) {
-                    world[bx][by] = BLOCKS.DOOR_CLOSED;
+                    state.world[bx][by] = BLOCKS.DOOR_CLOSED;
                 }
                 // Window hole in the opposite wall (style 1+2)
                 else if (!isDoorWall && style >= 1 && by === floorY - 2 && h >= 4) {
-                    world[bx][by] = BLOCKS.AIR; // window
+                    state.world[bx][by] = BLOCKS.AIR; // window
                 }
                 // Cobble base (style 2): bottom row of walls is cobblestone
                 else if (style === 2 && by === floorY - 1) {
-                    world[bx][by] = BLOCKS.COBBLESTONE;
+                    state.world[bx][by] = BLOCKS.COBBLESTONE;
                 }
                 else {
-                    world[bx][by] = wallBlock;
+                    state.world[bx][by] = wallBlock;
                 }
             } else {
                 // Interior air
-                world[bx][by] = BLOCKS.AIR;
+                state.world[bx][by] = BLOCKS.AIR;
             }
         }
     }
@@ -410,36 +397,36 @@ function generateHouse(x, surfaceY, w, h, wallBlock) {
     const torchX = doorSide === "left" ? x + w - 2 : x + 1;
     const torchY = roofY + 1;
     if (torchX > x && torchX < x + w - 1 && torchY > roofY && torchY < floorY) {
-        world[torchX][torchY] = BLOCKS.TORCH;
+        state.world[torchX][torchY] = BLOCKS.TORCH;
     }
 
     // Style 1: add a second torch
     if (style >= 1 && w >= 6) {
         const torch2X = doorSide === "left" ? x + 2 : x + w - 3;
         if (torch2X > x && torch2X < x + w - 1 && torchY > roofY && torchY < floorY) {
-            world[torch2X][torchY] = BLOCKS.TORCH;
+            state.world[torch2X][torchY] = BLOCKS.TORCH;
         }
     }
 
     // Place a pressure plate just outside the door
     const outsideX = doorSide === "left" ? x - 1 : x + w;
     if (outsideX >= 0 && outsideX < WORLD_WIDTH && floorY - 1 >= 0 && floorY - 1 < WORLD_HEIGHT) {
-        world[outsideX][floorY - 1] = BLOCKS.PRESSURE_PLATE;
+        state.world[outsideX][floorY - 1] = BLOCKS.PRESSURE_PLATE;
     }
 
     // Clear space outside the door (2 blocks of air so player can enter)
     for (let dy = -2; dy <= -1; dy++) {
         if (outsideX >= 0 && outsideX < WORLD_WIDTH && floorY + dy >= 0 && floorY + dy < WORLD_HEIGHT) {
-            if (world[outsideX][floorY + dy] !== BLOCKS.PRESSURE_PLATE) {
-                world[outsideX][floorY + dy] = BLOCKS.AIR;
+            if (state.world[outsideX][floorY + dy] !== BLOCKS.PRESSURE_PLATE) {
+                state.world[outsideX][floorY + dy] = BLOCKS.AIR;
             }
         }
     }
 }
 
 // Find the surface Y at a given X (first solid block from top)
-function findSurfaceY(x) {
-    const startY = inNether ? 3 : 0; // Skip Nether bedrock ceiling
+export function findSurfaceY(x) {
+    const startY = state.inNether ? 3 : 0; // Skip Nether bedrock ceiling
     for (let y = startY; y < WORLD_HEIGHT; y++) {
         if (isBlockSolid(x, y)) return y;
     }
@@ -450,16 +437,14 @@ function findSurfaceY(x) {
 // STRUCTURE GENERATION
 // ============================================================
 
-const structureLocations = []; // stores {x, type} to avoid overlap
-
 function isAreaClear(x, width) {
     const spawnX = Math.floor(WORLD_WIDTH / 2);
     if (Math.abs(x - spawnX) < 30) return false;
-    for (const vl of villageLocations) {
+    for (const vl of state.villageLocations) {
         const vlBlockX = Math.floor(vl.x / BLOCK_SIZE);
         if (Math.abs(x - vlBlockX) < 20) return false;
     }
-    for (const sl of structureLocations) {
+    for (const sl of state.structureLocations) {
         if (Math.abs(x - sl.x) < 20) return false;
     }
     if (x < 5 || x + width >= WORLD_WIDTH - 5) return false;
@@ -469,13 +454,13 @@ function isAreaClear(x, width) {
 function generateDesertTemple(x, surfaceY) {
     // Pyramid top (3 stepped sand layers)
     for (let dx = 4; dx <= 6; dx++) {
-        if (x + dx < WORLD_WIDTH) world[x + dx][surfaceY - 7] = BLOCKS.SAND;
+        if (x + dx < WORLD_WIDTH) state.world[x + dx][surfaceY - 7] = BLOCKS.SAND;
     }
     for (let dx = 3; dx <= 7; dx++) {
-        if (x + dx < WORLD_WIDTH) world[x + dx][surfaceY - 6] = BLOCKS.SAND;
+        if (x + dx < WORLD_WIDTH) state.world[x + dx][surfaceY - 6] = BLOCKS.SAND;
     }
     for (let dx = 2; dx <= 8; dx++) {
-        if (x + dx < WORLD_WIDTH) world[x + dx][surfaceY - 5] = BLOCKS.SAND;
+        if (x + dx < WORLD_WIDTH) state.world[x + dx][surfaceY - 5] = BLOCKS.SAND;
     }
 
     // Main body: rows -4 to 0
@@ -484,26 +469,26 @@ function generateDesertTemple(x, surfaceY) {
             const bx = x + dx, by = surfaceY + dy;
             if (bx >= WORLD_WIDTH || by < 0 || by >= WORLD_HEIGHT) continue;
             if (dx === 1 || dx === 9) {
-                world[bx][by] = BLOCKS.SAND;
+                state.world[bx][by] = BLOCKS.SAND;
             } else if (dx === 2 || dx === 8) {
-                world[bx][by] = BLOCKS.COBBLESTONE;
+                state.world[bx][by] = BLOCKS.COBBLESTONE;
             } else if (dy === -4 || dy === 0) {
-                world[bx][by] = BLOCKS.COBBLESTONE;
+                state.world[bx][by] = BLOCKS.COBBLESTONE;
             } else {
-                world[bx][by] = BLOCKS.AIR;
+                state.world[bx][by] = BLOCKS.AIR;
             }
         }
     }
 
     // Door
     if (x + 5 < WORLD_WIDTH) {
-        world[x + 5][surfaceY - 1] = BLOCKS.DOOR_CLOSED;
-        world[x + 5][surfaceY - 2] = BLOCKS.DOOR_CLOSED;
+        state.world[x + 5][surfaceY - 1] = BLOCKS.DOOR_CLOSED;
+        state.world[x + 5][surfaceY - 2] = BLOCKS.DOOR_CLOSED;
     }
 
     // Torches inside
-    if (x + 4 < WORLD_WIDTH) world[x + 4][surfaceY - 3] = BLOCKS.TORCH;
-    if (x + 6 < WORLD_WIDTH) world[x + 6][surfaceY - 3] = BLOCKS.TORCH;
+    if (x + 4 < WORLD_WIDTH) state.world[x + 4][surfaceY - 3] = BLOCKS.TORCH;
+    if (x + 6 < WORLD_WIDTH) state.world[x + 6][surfaceY - 3] = BLOCKS.TORCH;
 
     // Underground chest room (rows +1 to +3)
     for (let dy = 1; dy <= 3; dy++) {
@@ -511,9 +496,9 @@ function generateDesertTemple(x, surfaceY) {
             const bx = x + dx, by = surfaceY + dy;
             if (bx >= WORLD_WIDTH || by >= WORLD_HEIGHT) continue;
             if (dy === 3 || dx === 2 || dx === 8) {
-                world[bx][by] = BLOCKS.COBBLESTONE;
+                state.world[bx][by] = BLOCKS.COBBLESTONE;
             } else {
-                world[bx][by] = BLOCKS.AIR;
+                state.world[bx][by] = BLOCKS.AIR;
             }
         }
     }
@@ -522,15 +507,15 @@ function generateDesertTemple(x, surfaceY) {
     const c1x = x + 4, c1y = surfaceY + 2;
     const c2x = x + 6, c2y = surfaceY + 2;
     if (c1x < WORLD_WIDTH && c1y < WORLD_HEIGHT) {
-        world[c1x][c1y] = BLOCKS.CHEST;
+        state.world[c1x][c1y] = BLOCKS.CHEST;
         initChestData(c1x, c1y, "desert_temple");
     }
     if (c2x < WORLD_WIDTH && c2y < WORLD_HEIGHT) {
-        world[c2x][c2y] = BLOCKS.CHEST;
+        state.world[c2x][c2y] = BLOCKS.CHEST;
         initChestData(c2x, c2y, "desert_temple");
     }
 
-    structureLocations.push({ x: x, type: "desert_temple" });
+    state.structureLocations.push({ x: x, type: "desert_temple" });
 }
 
 function generateForestCabin(x, surfaceY) {
@@ -542,32 +527,32 @@ function generateForestCabin(x, surfaceY) {
             const bx = x + dx, by = surfaceY + dy;
             if (bx >= WORLD_WIDTH || by < 0 || by >= WORLD_HEIGHT) continue;
             if (dy === -h || dy === 0) {
-                world[bx][by] = BLOCKS.PLANKS;
+                state.world[bx][by] = BLOCKS.PLANKS;
             } else if (dx === 0 || dx === w - 1) {
-                world[bx][by] = BLOCKS.WOOD;
+                state.world[bx][by] = BLOCKS.WOOD;
             } else {
-                world[bx][by] = BLOCKS.AIR;
+                state.world[bx][by] = BLOCKS.AIR;
             }
         }
     }
 
     // Door
     if (x + doorDx < WORLD_WIDTH) {
-        world[x + doorDx][surfaceY - 1] = BLOCKS.DOOR_CLOSED;
-        world[x + doorDx][surfaceY - 2] = BLOCKS.DOOR_CLOSED;
+        state.world[x + doorDx][surfaceY - 1] = BLOCKS.DOOR_CLOSED;
+        state.world[x + doorDx][surfaceY - 2] = BLOCKS.DOOR_CLOSED;
     }
 
     // Torch
-    if (x + 2 < WORLD_WIDTH) world[x + 2][surfaceY - 4] = BLOCKS.TORCH;
+    if (x + 2 < WORLD_WIDTH) state.world[x + 2][surfaceY - 4] = BLOCKS.TORCH;
 
     // Chest
     const cx = x + 5, cy = surfaceY - 1;
     if (cx < WORLD_WIDTH && cy >= 0) {
-        world[cx][cy] = BLOCKS.CHEST;
+        state.world[cx][cy] = BLOCKS.CHEST;
         initChestData(cx, cy, "forest_cabin");
     }
 
-    structureLocations.push({ x: x, type: "forest_cabin" });
+    state.structureLocations.push({ x: x, type: "forest_cabin" });
 }
 
 function generateSavannahRuins(x, surfaceY) {
@@ -577,7 +562,7 @@ function generateSavannahRuins(x, surfaceY) {
     for (let dx = 1; dx <= 7; dx++) {
         const bx = x + dx;
         if (bx < WORLD_WIDTH && surfaceY < WORLD_HEIGHT) {
-            world[bx][surfaceY] = BLOCKS.COBBLESTONE;
+            state.world[bx][surfaceY] = BLOCKS.COBBLESTONE;
         }
     }
 
@@ -588,33 +573,33 @@ function generateSavannahRuins(x, surfaceY) {
             if (bx >= WORLD_WIDTH || by < 0 || by >= WORLD_HEIGHT) continue;
             if (dx === 1 || dx === 7) {
                 if (Math.random() < 0.7) {
-                    world[bx][by] = BLOCKS.COBBLESTONE;
+                    state.world[bx][by] = BLOCKS.COBBLESTONE;
                 }
             } else {
-                world[bx][by] = BLOCKS.AIR;
+                state.world[bx][by] = BLOCKS.AIR;
             }
         }
     }
 
     // Ensure bottom wall blocks are intact
-    if (x + 1 < WORLD_WIDTH) world[x + 1][surfaceY - 1] = BLOCKS.COBBLESTONE;
-    if (x + 7 < WORLD_WIDTH) world[x + 7][surfaceY - 1] = BLOCKS.COBBLESTONE;
+    if (x + 1 < WORLD_WIDTH) state.world[x + 1][surfaceY - 1] = BLOCKS.COBBLESTONE;
+    if (x + 7 < WORLD_WIDTH) state.world[x + 7][surfaceY - 1] = BLOCKS.COBBLESTONE;
 
     // Chest
     const cx = x + 4, cy = surfaceY - 1;
     if (cx < WORLD_WIDTH && cy >= 0) {
-        world[cx][cy] = BLOCKS.CHEST;
+        state.world[cx][cy] = BLOCKS.CHEST;
         initChestData(cx, cy, "savannah_ruins");
     }
 
-    structureLocations.push({ x: x, type: "savannah_ruins" });
+    state.structureLocations.push({ x: x, type: "savannah_ruins" });
 }
 
 function generateStructures(seed) {
     // Desert Temples
     let desertCount = 0;
     for (let x = 20; x < WORLD_WIDTH - 20 && desertCount < 3; x += 50) {
-        if (biomeMap[x] !== BIOMES.DESERT) continue;
+        if (state.biomeMap[x] !== BIOMES.DESERT) continue;
         const sy = findSurfaceY(x);
         if (sy <= 8 || sy >= SEA_LEVEL - 2) continue;
         let flat = true;
@@ -631,7 +616,7 @@ function generateStructures(seed) {
     // Forest Cabins
     let cabinCount = 0;
     for (let x = 30; x < WORLD_WIDTH - 20 && cabinCount < 3; x += 45) {
-        if (biomeMap[x] !== BIOMES.FOREST) continue;
+        if (state.biomeMap[x] !== BIOMES.FOREST) continue;
         const sy = findSurfaceY(x);
         if (sy <= 5 || sy >= SEA_LEVEL - 2) continue;
         let flat = true;
@@ -648,7 +633,7 @@ function generateStructures(seed) {
     // Savannah Ruins
     let ruinsCount = 0;
     for (let x = 25; x < WORLD_WIDTH - 20 && ruinsCount < 3; x += 45) {
-        if (biomeMap[x] !== BIOMES.SAVANNAH) continue;
+        if (state.biomeMap[x] !== BIOMES.SAVANNAH) continue;
         const sy = findSurfaceY(x);
         if (sy <= 5 || sy >= SEA_LEVEL - 2) continue;
         let flat = true;
@@ -694,8 +679,8 @@ function generateCaves(seed) {
                         const by = Math.floor(cy) + dy;
                         if (bx >= 1 && bx < WORLD_WIDTH - 1 &&
                             by > SURFACE_LEVEL + 3 && by < WORLD_HEIGHT - 1) {
-                            if (world[bx][by] === BLOCKS.STONE || world[bx][by] === BLOCKS.DIRT) {
-                                world[bx][by] = BLOCKS.AIR;
+                            if (state.world[bx][by] === BLOCKS.STONE || state.world[bx][by] === BLOCKS.DIRT) {
+                                state.world[bx][by] = BLOCKS.AIR;
                             }
                         }
                     }
@@ -708,8 +693,8 @@ function generateCaves(seed) {
                 const gy = Math.floor(cy) + width;
                 if (gx >= 0 && gx < WORLD_WIDTH && gy >= 0 && gy < WORLD_HEIGHT - 1) {
                     for (let fy = gy; fy < WORLD_HEIGHT - 1; fy++) {
-                        if (world[gx][fy] === BLOCKS.STONE) {
-                            world[gx][fy] = BLOCKS.GRAVEL;
+                        if (state.world[gx][fy] === BLOCKS.STONE) {
+                            state.world[gx][fy] = BLOCKS.GRAVEL;
                             break;
                         }
                     }
@@ -724,8 +709,8 @@ function generateCaves(seed) {
                         const bx = Math.floor(cx) + lx;
                         const by = Math.floor(cy) + width + ly;
                         if (bx >= 0 && bx < WORLD_WIDTH && by >= 0 && by < WORLD_HEIGHT - 1) {
-                            if (world[bx][by] === BLOCKS.AIR || world[bx][by] === BLOCKS.STONE) {
-                                world[bx][by] = BLOCKS.LAVA;
+                            if (state.world[bx][by] === BLOCKS.AIR || state.world[bx][by] === BLOCKS.STONE) {
+                                state.world[bx][by] = BLOCKS.LAVA;
                             }
                         }
                     }
@@ -746,8 +731,8 @@ function generateCaves(seed) {
     // Convert lava adjacent to water into obsidian
     for (let x = 0; x < WORLD_WIDTH; x++) {
         for (let y = 0; y < WORLD_HEIGHT; y++) {
-            if (world[x][y] === BLOCKS.LAVA) {
-                checkLavaWaterWorld(x, y, world);
+            if (state.world[x][y] === BLOCKS.LAVA) {
+                checkLavaWaterWorld(x, y, state.world);
             }
         }
     }
@@ -766,14 +751,14 @@ function checkLavaWaterWorld(x, y, w) {
 }
 
 // Check lava-water interaction on the active world (used at runtime)
-function checkLavaWaterInteraction(x, y) {
+export function checkLavaWaterInteraction(x, y) {
     if (x < 0 || x >= WORLD_WIDTH || y < 0 || y >= WORLD_HEIGHT) return;
-    if (activeWorld[x][y] !== BLOCKS.LAVA) return;
+    if (state.activeWorld[x][y] !== BLOCKS.LAVA) return;
     const neighbors = [[x-1,y],[x+1,y],[x,y-1],[x,y+1]];
     for (const [nx, ny] of neighbors) {
         if (nx >= 0 && nx < WORLD_WIDTH && ny >= 0 && ny < WORLD_HEIGHT) {
-            if (activeWorld[nx][ny] === BLOCKS.WATER) {
-                activeWorld[x][y] = BLOCKS.OBSIDIAN;
+            if (state.activeWorld[nx][ny] === BLOCKS.WATER) {
+                state.activeWorld[x][y] = BLOCKS.OBSIDIAN;
                 createParticles(x * BLOCK_SIZE + 16, y * BLOCK_SIZE + 16, 8, "#888888", 3);
                 return;
             }
@@ -790,7 +775,7 @@ function placeOres(seed) {
         // Find real surface for depth calc
         let surfY = 0;
         for (let y = 0; y < WORLD_HEIGHT; y++) {
-            const b = world[x][y];
+            const b = state.world[x][y];
             if (b !== BLOCKS.AIR && b !== BLOCKS.WATER && b !== BLOCKS.ICE &&
                 b !== BLOCKS.TORCH && b !== BLOCKS.LAVA) {
                 surfY = y;
@@ -799,7 +784,7 @@ function placeOres(seed) {
         }
 
         for (let y = surfY + 1; y < WORLD_HEIGHT - 1; y++) {
-            if (world[x][y] !== BLOCKS.STONE) continue;
+            if (state.world[x][y] !== BLOCKS.STONE) continue;
             const depth = y - surfY;
 
             // Extra ores near caves (adjacent to air)
@@ -807,18 +792,18 @@ function placeOres(seed) {
             for (const [dx, dy] of [[-1,0],[1,0],[0,-1],[0,1]]) {
                 const nx = x + dx, ny = y + dy;
                 if (nx >= 0 && nx < WORLD_WIDTH && ny >= 0 && ny < WORLD_HEIGHT) {
-                    if (world[nx][ny] === BLOCKS.AIR && depth > 3) { nearCave = true; break; }
+                    if (state.world[nx][ny] === BLOCKS.AIR && depth > 3) { nearCave = true; break; }
                 }
             }
             const mult = nearCave ? 2 : 1;
             const rand = Math.random();
 
-            if (depth > 5 && rand < 0.01 * mult) world[x][y] = BLOCKS.COAL;
-            else if (depth > 5 && Math.random() < 0.01 * mult) world[x][y] = BLOCKS.COPPER;
-            else if (depth > 10 && rand < 0.018 * mult) world[x][y] = BLOCKS.IRON;
-            else if (depth > 10 && Math.random() < 0.005 * mult) world[x][y] = BLOCKS.EMERALD;
-            else if (depth > 25 && rand < 0.01 * mult) world[x][y] = BLOCKS.GOLD;
-            else if (depth > 40 && rand < 0.02 * mult) world[x][y] = BLOCKS.DIAMOND;
+            if (depth > 5 && rand < 0.01 * mult) state.world[x][y] = BLOCKS.COAL;
+            else if (depth > 5 && Math.random() < 0.01 * mult) state.world[x][y] = BLOCKS.COPPER;
+            else if (depth > 10 && rand < 0.018 * mult) state.world[x][y] = BLOCKS.IRON;
+            else if (depth > 10 && Math.random() < 0.005 * mult) state.world[x][y] = BLOCKS.EMERALD;
+            else if (depth > 25 && rand < 0.01 * mult) state.world[x][y] = BLOCKS.GOLD;
+            else if (depth > 40 && rand < 0.02 * mult) state.world[x][y] = BLOCKS.DIAMOND;
         }
     }
 }
@@ -827,21 +812,21 @@ function placeOres(seed) {
 // NETHER WORLD GENERATION
 // ============================================================
 
-function generateNetherWorld() {
+export function generateNetherWorld() {
     const seed = Math.random() * 1000;
 
     for (let x = 0; x < WORLD_WIDTH; x++) {
-        netherWorld[x] = [];
+        state.netherWorld[x] = [];
         for (let y = 0; y < WORLD_HEIGHT; y++) {
-            netherWorld[x][y] = BLOCKS.NETHERRACK;
+            state.netherWorld[x][y] = BLOCKS.NETHERRACK;
         }
     }
 
     // Bedrock ceiling and floor
     for (let x = 0; x < WORLD_WIDTH; x++) {
-        netherWorld[x][0] = BLOCKS.BEDROCK;
-        netherWorld[x][1] = BLOCKS.BEDROCK;
-        netherWorld[x][WORLD_HEIGHT - 1] = BLOCKS.BEDROCK;
+        state.netherWorld[x][0] = BLOCKS.BEDROCK;
+        state.netherWorld[x][1] = BLOCKS.BEDROCK;
+        state.netherWorld[x][WORLD_HEIGHT - 1] = BLOCKS.BEDROCK;
     }
 
     // Carve open central cavern
@@ -854,7 +839,7 @@ function generateNetherWorld() {
 
         for (let y = netherCeilingY + ceilVar; y < netherFloorY + floorVar; y++) {
             if (y >= 2 && y < WORLD_HEIGHT - 1) {
-                netherWorld[x][y] = BLOCKS.AIR;
+                state.netherWorld[x][y] = BLOCKS.AIR;
             }
         }
     }
@@ -863,8 +848,8 @@ function generateNetherWorld() {
     for (let x = 0; x < WORLD_WIDTH; x++) {
         const floorLevel = netherFloorY + Math.floor(simpleNoise(x, seed + 300) * 0.5);
         for (let y = floorLevel; y < WORLD_HEIGHT - 1; y++) {
-            if (netherWorld[x][y] === BLOCKS.AIR) {
-                netherWorld[x][y] = BLOCKS.NETHERRACK;
+            if (state.netherWorld[x][y] === BLOCKS.AIR) {
+                state.netherWorld[x][y] = BLOCKS.NETHERRACK;
             }
         }
     }
@@ -885,8 +870,8 @@ function generateNetherWorld() {
                         const bx = Math.floor(cx) + dx;
                         const by = Math.floor(cy) + dy;
                         if (bx >= 1 && bx < WORLD_WIDTH - 1 && by >= 3 && by < WORLD_HEIGHT - 1) {
-                            if (netherWorld[bx][by] === BLOCKS.NETHERRACK) {
-                                netherWorld[bx][by] = BLOCKS.AIR;
+                            if (state.netherWorld[bx][by] === BLOCKS.NETHERRACK) {
+                                state.netherWorld[bx][by] = BLOCKS.AIR;
                             }
                         }
                     }
@@ -904,10 +889,10 @@ function generateNetherWorld() {
         const lakeW = 8 + Math.floor(Math.random() * 15);
         for (let x = lakeX; x < lakeX + lakeW && x < WORLD_WIDTH; x++) {
             for (let y = WORLD_HEIGHT - 2; y > 5; y--) {
-                if (netherWorld[x][y] === BLOCKS.AIR && y + 1 < WORLD_HEIGHT && netherWorld[x][y + 1] === BLOCKS.NETHERRACK) {
-                    netherWorld[x][y] = BLOCKS.LAVA;
-                    if (y > 1 && netherWorld[x][y - 1] === BLOCKS.AIR) {
-                        netherWorld[x][y - 1] = BLOCKS.LAVA;
+                if (state.netherWorld[x][y] === BLOCKS.AIR && y + 1 < WORLD_HEIGHT && state.netherWorld[x][y + 1] === BLOCKS.NETHERRACK) {
+                    state.netherWorld[x][y] = BLOCKS.LAVA;
+                    if (y > 1 && state.netherWorld[x][y - 1] === BLOCKS.AIR) {
+                        state.netherWorld[x][y - 1] = BLOCKS.LAVA;
                     }
                     break;
                 }
@@ -919,14 +904,14 @@ function generateNetherWorld() {
     for (let i = 0; i < 40; i++) {
         const gx = Math.floor(Math.random() * WORLD_WIDTH);
         for (let y = 2; y < WORLD_HEIGHT - 1; y++) {
-            if (netherWorld[gx][y] === BLOCKS.NETHERRACK && y + 1 < WORLD_HEIGHT && netherWorld[gx][y + 1] === BLOCKS.AIR) {
-                netherWorld[gx][y] = BLOCKS.GLOWSTONE;
+            if (state.netherWorld[gx][y] === BLOCKS.NETHERRACK && y + 1 < WORLD_HEIGHT && state.netherWorld[gx][y + 1] === BLOCKS.AIR) {
+                state.netherWorld[gx][y] = BLOCKS.GLOWSTONE;
                 for (let dx = -1; dx <= 1; dx++) {
                     const nx = gx + dx;
                     if (nx >= 0 && nx < WORLD_WIDTH && Math.random() < 0.5) {
-                        if (netherWorld[nx][y] === BLOCKS.NETHERRACK) netherWorld[nx][y] = BLOCKS.GLOWSTONE;
-                        if (y + 1 < WORLD_HEIGHT && netherWorld[nx][y + 1] === BLOCKS.AIR && Math.random() < 0.3) {
-                            netherWorld[nx][y + 1] = BLOCKS.GLOWSTONE;
+                        if (state.netherWorld[nx][y] === BLOCKS.NETHERRACK) state.netherWorld[nx][y] = BLOCKS.GLOWSTONE;
+                        if (y + 1 < WORLD_HEIGHT && state.netherWorld[nx][y + 1] === BLOCKS.AIR && Math.random() < 0.3) {
+                            state.netherWorld[nx][y + 1] = BLOCKS.GLOWSTONE;
                         }
                     }
                 }
@@ -941,9 +926,9 @@ function generateNetherWorld() {
         const patchWidth = 5 + Math.floor(Math.random() * 8);
         for (let x = sx; x < sx + patchWidth && x < WORLD_WIDTH; x++) {
             for (let y = WORLD_HEIGHT - 2; y > 5; y--) {
-                if (netherWorld[x][y] === BLOCKS.NETHERRACK &&
-                    (y === 0 || netherWorld[x][y - 1] === BLOCKS.AIR)) {
-                    netherWorld[x][y] = BLOCKS.SOUL_SAND;
+                if (state.netherWorld[x][y] === BLOCKS.NETHERRACK &&
+                    (y === 0 || state.netherWorld[x][y - 1] === BLOCKS.AIR)) {
+                    state.netherWorld[x][y] = BLOCKS.SOUL_SAND;
                     break;
                 }
             }
@@ -961,19 +946,19 @@ function generateNetherWorld() {
             const bx = fx + dx;
             if (bx >= WORLD_WIDTH) break;
             // Bridge floor
-            if (fy < WORLD_HEIGHT) netherWorld[bx][fy] = BLOCKS.NETHER_BRICK;
-            if (fy + 1 < WORLD_HEIGHT) netherWorld[bx][fy + 1] = BLOCKS.NETHER_BRICK;
+            if (fy < WORLD_HEIGHT) state.netherWorld[bx][fy] = BLOCKS.NETHER_BRICK;
+            if (fy + 1 < WORLD_HEIGHT) state.netherWorld[bx][fy + 1] = BLOCKS.NETHER_BRICK;
             // Railing pillars every 4 blocks
             if (dx % 4 === 0) {
                 for (let dy = -3; dy < 0; dy++) {
                     if (fy + dy >= 0 && fy + dy < WORLD_HEIGHT) {
-                        netherWorld[bx][fy + dy] = BLOCKS.NETHER_BRICK;
+                        state.netherWorld[bx][fy + dy] = BLOCKS.NETHER_BRICK;
                     }
                 }
             } else {
                 // Clear air above bridge
                 for (let dy = -2; dy < 0; dy++) {
-                    if (fy + dy >= 0) netherWorld[bx][fy + dy] = BLOCKS.AIR;
+                    if (fy + dy >= 0) state.netherWorld[bx][fy + dy] = BLOCKS.AIR;
                 }
             }
         }
