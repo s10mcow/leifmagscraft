@@ -415,7 +415,7 @@ export function setupInput() {
     });
 
     // Shared left-click / tap handler — called by both mousedown and touchstart
-    function handleLeftClick() {
+    function handleLeftClick(isTap = false) {
         // Title screen taps
         if (state.gameState === "menu") {
             const nb = state.MENU_BUTTONS.newWorld;
@@ -495,8 +495,19 @@ export function setupInput() {
             }
         } else {
             const mob = fn.getMobAtCursor();
-            if (mob && state.player.attackCooldown <= 0) {
+            const held = state.inventory.slots[state.inventory.selectedSlot];
+            const heldInfo = (held && held.count > 0) ? ITEM_INFO[held.itemId] : null;
+            const isGun = !!(heldInfo && heldInfo.toolType === 'gun');
+
+            if (isGun) {
+                // Gun: fire toward tap/click point
+                state.mouse.leftDown = true;
+            } else if (mob && state.player.attackCooldown <= 0) {
+                // Mob at cursor: melee or ranged attack by tapping
                 fn.attackMob(mob);
+            } else if (isTap && held && held.count > 0 && isBlockId(held.itemId)) {
+                // Mobile tap while holding a placeable block: place it
+                fn.placeBlock();
             } else {
                 state.mouse.leftDown = true;
             }
@@ -550,7 +561,7 @@ export function setupInput() {
         state.mouse.y = (t.clientY - rect.top)  * (state.canvas.height / rect.height);
         // Synthesise mousemove so tradingHover / craftingHover / menuHover are up-to-date
         state.canvas.dispatchEvent(new MouseEvent("mousemove", { clientX: t.clientX, clientY: t.clientY, bubbles: false }));
-        handleLeftClick();
+        handleLeftClick(true);
     }, { passive: false });
 
     state.canvas.addEventListener("touchend", (e) => {
