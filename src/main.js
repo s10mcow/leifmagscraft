@@ -2,6 +2,7 @@
 // MAIN.JS - Entry point (ES Module)
 // ============================================================
 
+import { state } from './state.js';
 import './constants.js';
 import './audio.js';
 import './world.js';
@@ -34,6 +35,21 @@ registerFunctions({
     attackMob,
     getMobAtCursor,
     respawnPlayer,
+});
+
+// ============================================================
+// RESPONSIVE CANVAS — fills the full browser window
+// ============================================================
+function resizeCanvas() {
+    state.canvas.width  = window.innerWidth;
+    state.canvas.height = window.innerHeight;
+}
+
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+window.addEventListener('orientationchange', () => {
+    // Small delay lets the browser finish rotating before we read dimensions
+    setTimeout(resizeCanvas, 100);
 });
 
 // Setup input listeners

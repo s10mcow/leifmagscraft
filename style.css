@@ -4,41 +4,87 @@
     box-sizing: border-box;
 }
 
-body {
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
     background-color: #1a1a2e;
-    color: #ffffff;
     font-family: 'Courier New', monospace;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-    padding: 20px;
+    color: #ffffff;
 }
 
-h1 {
-    font-size: 28px;
-    margin-bottom: 15px;
-    color: #4ade80;
-    text-shadow: 2px 2px 0px #166534;
-    letter-spacing: 2px;
-}
-
+/* Canvas fills the entire window — JS sets the pixel dimensions */
 #gameCanvas {
-    border: 4px solid #4ade80;
-    border-radius: 4px;
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
     cursor: crosshair;
     image-rendering: pixelated;
-    box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+    image-rendering: crisp-edges; /* Firefox */
+
+    /* Prevent ALL browser touch behaviors on the canvas */
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
 }
 
+/* Title — small overlay at the top of the canvas on desktop */
+#gameTitle {
+    position: fixed;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 18px;
+    color: #4ade80;
+    text-shadow: 1px 1px 0px #166534;
+    letter-spacing: 2px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 10;
+    opacity: 0.85;
+}
+
+/* Controls — single-line hint at the bottom on desktop */
 #controls {
-    margin-top: 15px;
+    position: fixed;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
     text-align: center;
-    color: #9ca3af;
-    font-size: 14px;
-    line-height: 1.8;
+    color: rgba(156, 163, 175, 0.7);
+    font-size: 11px;
+    line-height: 1.5;
+    pointer-events: none;
+    z-index: 10;
+    white-space: nowrap;
+    max-width: 95vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #controls strong {
-    color: #4ade80;
+    color: rgba(74, 222, 128, 0.85);
+}
+
+/* Mobile — hide title and controls, canvas is truly full-screen */
+@media (max-width: 768px) {
+    #gameTitle {
+        display: none;
+    }
+    #controls {
+        display: none;
+    }
+}
+
+/* Landscape phones — also hide to maximise screen real estate */
+@media (max-height: 500px) {
+    #gameTitle {
+        display: none;
+    }
+    #controls {
+        display: none;
+    }
 }
