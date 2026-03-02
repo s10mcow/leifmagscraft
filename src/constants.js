@@ -29,6 +29,8 @@ export const ITEMS = {
   IRON_BOOTS: 123, GOLD_HELMET: 124, GOLD_CHESTPLATE: 125,
   GOLD_LEGGINGS: 126, GOLD_BOOTS: 127, DIAMOND_HELMET: 128,
   DIAMOND_CHESTPLATE: 129, DIAMOND_LEGGINGS: 130, DIAMOND_BOOTS: 131,
+  // Hazmat suit (151-154)
+  HAZMAT_HELMET: 151, HAZMAT_CHESTPLATE: 152, HAZMAT_LEGGINGS: 153, HAZMAT_BOOTS: 154,
   // Mob drops
   WOOL: 132, MUTTON: 133, LEATHER: 134, STEAK: 135,
   // New items
@@ -92,7 +94,7 @@ export const BIOME_INFO = {
 // --- HELPER FUNCTIONS ---
 export function isBlockId(id) { return id >= 0 && id < 100; }
 export function isTool(id) { return id >= 101 && id <= 115; }
-export function isArmor(id) { return id >= 120 && id <= 131; }
+export function isArmor(id) { return (id >= 120 && id <= 131) || (id >= 151 && id <= 154); }
 export function isFood(id) {
   return id === ITEMS.RAW_PORKCHOP || id === ITEMS.ROTTEN_FLESH ||
          id === ITEMS.MUTTON || id === ITEMS.STEAK ||
@@ -209,6 +211,10 @@ export const ITEM_INFO = {
   [ITEMS.DIAMOND_CHESTPLATE]: { name: "Diamond Chestplate", stackable: false, armorType: "chestplate", defense: 3, durability: 528, color: "#4dfff3" },
   [ITEMS.DIAMOND_LEGGINGS]: { name: "Diamond Leggings", stackable: false, armorType: "leggings", defense: 2, durability: 495, color: "#4dfff3" },
   [ITEMS.DIAMOND_BOOTS]: { name: "Diamond Boots", stackable: false, armorType: "boots", defense: 1, durability: 429, color: "#4dfff3" },
+  [ITEMS.HAZMAT_HELMET]:     { name: "Hazmat Helmet",     stackable: false, armorType: "helmet",     defense: 2, durability: 180, color: "#e8e820", radiation: true },
+  [ITEMS.HAZMAT_CHESTPLATE]: { name: "Hazmat Chestplate", stackable: false, armorType: "chestplate", defense: 3, durability: 270, color: "#e8e820", radiation: true },
+  [ITEMS.HAZMAT_LEGGINGS]:   { name: "Hazmat Leggings",   stackable: false, armorType: "leggings",   defense: 2, durability: 240, color: "#e8e820", radiation: true },
+  [ITEMS.HAZMAT_BOOTS]:      { name: "Hazmat Boots",      stackable: false, armorType: "boots",      defense: 1, durability: 210, color: "#e8e820", radiation: true },
   [ITEMS.WOOL]: { name: "Wool", stackable: true, maxStack: 64 },
   [ITEMS.MUTTON]: { name: "Mutton", stackable: true, maxStack: 64, food: true, healAmount: 3 },
   [ITEMS.LEATHER]: { name: "Leather", stackable: true, maxStack: 64 },
@@ -281,6 +287,10 @@ export const RECIPES = [
   { result: ITEMS.DIAMOND_CHESTPLATE, resultCount: 1, ingredients: [{ id: BLOCKS.DIAMOND, count: 8 }] },
   { result: ITEMS.DIAMOND_LEGGINGS, resultCount: 1, ingredients: [{ id: BLOCKS.DIAMOND, count: 7 }] },
   { result: ITEMS.DIAMOND_BOOTS, resultCount: 1, ingredients: [{ id: BLOCKS.DIAMOND, count: 4 }] },
+  { result: ITEMS.HAZMAT_HELMET,     resultCount: 1, ingredients: [{ id: BLOCKS.GLOWSTONE, count: 5 }] },
+  { result: ITEMS.HAZMAT_CHESTPLATE, resultCount: 1, ingredients: [{ id: BLOCKS.GLOWSTONE, count: 8 }] },
+  { result: ITEMS.HAZMAT_LEGGINGS,   resultCount: 1, ingredients: [{ id: BLOCKS.GLOWSTONE, count: 7 }] },
+  { result: ITEMS.HAZMAT_BOOTS,      resultCount: 1, ingredients: [{ id: BLOCKS.GLOWSTONE, count: 1 }] },
   { result: BLOCKS.CHEST, resultCount: 1, ingredients: [{ id: BLOCKS.PLANKS, count: 4 }] },
   { result: BLOCKS.DOOR_CLOSED, resultCount: 1, ingredients: [{ id: BLOCKS.PLANKS, count: 6 }] },
   { result: BLOCKS.PRESSURE_PLATE, resultCount: 1, ingredients: [{ id: BLOCKS.COBBLESTONE, count: 2 }] },
