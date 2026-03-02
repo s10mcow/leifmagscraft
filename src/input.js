@@ -294,7 +294,7 @@ export function setupInput() {
                 state.tradingVillager = null;
             } else {
                 // Ender Pearl teleport: if holding a pearl, teleport to mouse cursor
-                const heldSlot = state.inventory.hotbar[state.inventory.selectedSlot];
+                const heldSlot = state.inventory.slots[state.inventory.selectedSlot];
                 if (heldSlot && heldSlot.itemId === ITEMS.ENDER_PEARL && heldSlot.count > 0) {
                     const worldX = state.mouse.x + state.camera.x;
                     const worldY = state.mouse.y + state.camera.y;
