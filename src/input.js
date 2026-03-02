@@ -414,6 +414,12 @@ export function setupInput() {
         }
     });
 
+    // Hold-to-mine timer (mobile only)
+    let miningHoldTimer = null;
+
+    // Double-tap tracking for respawn (mobile only)
+    let lastTapTime = 0;
+
     // Shared left-click / tap handler — called by both mousedown and touchstart
     function handleLeftClick(isTap = false) {
         // Title screen taps
@@ -508,6 +514,9 @@ export function setupInput() {
             } else if (isTap && held && held.count > 0 && isBlockId(held.itemId)) {
                 // Mobile tap while holding a placeable block: place it
                 fn.placeBlock();
+            } else if (isTap) {
+                // Mobile: must hold finger down for 200ms before mining starts
+                miningHoldTimer = setTimeout(() => { state.mouse.leftDown = true; }, 200);
             } else {
                 state.mouse.leftDown = true;
             }
@@ -561,11 +570,26 @@ export function setupInput() {
         state.mouse.y = (t.clientY - rect.top)  * (state.canvas.height / rect.height);
         // Synthesise mousemove so tradingHover / craftingHover / menuHover are up-to-date
         state.canvas.dispatchEvent(new MouseEvent("mousemove", { clientX: t.clientX, clientY: t.clientY, bubbles: false }));
+
+        // Double-tap to respawn when game over
+        if (state.gameOver) {
+            const now = Date.now();
+            if (now - lastTapTime < 300) {
+                fn.respawnPlayer();
+                lastTapTime = 0;
+            } else {
+                lastTapTime = now;
+            }
+            return;
+        }
+
         handleLeftClick(true);
     }, { passive: false });
 
     state.canvas.addEventListener("touchend", (e) => {
         e.preventDefault();
+        clearTimeout(miningHoldTimer);
+        miningHoldTimer = null;
         state.mouse.leftDown  = false;
         state.mouse.rightDown = false;
     }, { passive: false });
