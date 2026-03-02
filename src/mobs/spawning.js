@@ -66,8 +66,8 @@ export function spawnMobs(dt, dayBrightness) {
                     const types = ["enderman", "enderman", "enderman", "enderman", "skeleton"];
                     type = types[Math.floor(Math.random() * types.length)];
                 } else {
-                    // Crimson biome: skeletons, pigmen, ghasts
-                    const types = ["skeleton", "pigman", "pigman", "pigman", "ghast", "ghast"];
+                    // Crimson biome: skeletons, pigmen, ghasts, gruntures
+                    const types = ["skeleton", "pigman", "pigman", "pigman", "ghast", "ghast", "grunture"];
                     type = types[Math.floor(Math.random() * types.length)];
                 }
                 state.mobs.push(createMob(type, pos.x, pos.y));

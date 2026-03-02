@@ -154,8 +154,8 @@ export function updateMobs(dt, dayBrightness) {
             continue;
         }
 
-        // Sunlight burning (zombies/skeletons, not creepers/husks/endermen/pigmen/ghasts, not in Nether)
-        if (def.hostile && mob.type !== "creeper" && mob.type !== "husk" && mob.type !== "enderman" && mob.type !== "spider" && mob.type !== "pigman" && mob.type !== "ghast" && dayBrightness > 0.6 && !state.inNether) {
+        // Sunlight burning (zombies/skeletons, not creepers/husks/endermen/pigmen/ghasts/gruntures, not in Nether)
+        if (def.hostile && mob.type !== "creeper" && mob.type !== "husk" && mob.type !== "enderman" && mob.type !== "spider" && mob.type !== "pigman" && mob.type !== "ghast" && mob.type !== "grunture" && dayBrightness > 0.6 && !state.inNether) {
             if (isInSunlight(mob, def)) {
                 mob.burnTimer += dt;
                 if (mob.burnTimer >= 500) {
@@ -649,6 +649,37 @@ export function updateMobs(dt, dayBrightness) {
                         addFloatingText(mob.x + def.width / 2, mob.y - 20, "Iron Golem gave you a flower!", "#ff88aa");
                     }
                 }
+            }
+        }
+
+        else if (mob.type === "grunture") {
+            mob.shootCooldown -= dt;
+            if (dist < def.detectRange * BLOCK_SIZE) {
+                // Always charge at the player
+                mob.velX = dirToPlayer * def.speed;
+                mob.facing = dirToPlayer;
+
+                if (dist <= def.attackRange) {
+                    // Close range: slash attack
+                    if (mob.attackCooldown <= 0) {
+                        hurtPlayer(def.damage, mob.x + def.width / 2);
+                        mob.attackCooldown = 700;
+                        createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 10, "#ff4400", 5);
+                    }
+                } else if (mob.shootCooldown <= 0 && dist < def.shootRange) {
+                    // Long range: spit fireball
+                    createFireball(
+                        mob.x + def.width / 2,
+                        mob.y + def.height / 4,
+                        state.player.x + state.player.width / 2,
+                        state.player.y + state.player.height / 2,
+                        def.fireDamage
+                    );
+                    mob.shootCooldown = def.shootInterval;
+                    createParticles(mob.x + def.width / 2, mob.y + def.height / 4, 6, "#ff6600", 4);
+                }
+            } else {
+                mob.velX *= 0.8;
             }
         }
 

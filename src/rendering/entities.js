@@ -586,6 +586,105 @@ function drawMob(mob) {
         state.ctx.fillRect(sx - 4, sy - 4, def.width + 8, def.height + 8);
     }
 
+    else if (mob.type === "grunture") {
+        const fur      = isHurt ? "#ff7755" : "#5a2510";
+        const belly    = isHurt ? "#ff9977" : "#8a4525";
+        const darkFur  = isHurt ? "#dd5533" : "#3a1508";
+        const hornCol  = "#c8b070";
+        const eyeCol   = "#ff5500";
+
+        // Main body (massive torso)
+        state.ctx.fillStyle = fur;
+        state.ctx.fillRect(sx + 4, sy + 18, 40, 30);
+
+        // Lighter belly stripe
+        state.ctx.fillStyle = belly;
+        state.ctx.fillRect(sx + 12, sy + 22, 24, 22);
+
+        // Fur texture — dark horizontal stripe lines
+        state.ctx.fillStyle = "rgba(0,0,0,0.18)";
+        state.ctx.fillRect(sx + 4, sy + 24, 40, 3);
+        state.ctx.fillRect(sx + 4, sy + 32, 40, 3);
+        state.ctx.fillRect(sx + 4, sy + 40, 40, 3);
+
+        // Head (large, boxy)
+        state.ctx.fillStyle = fur;
+        state.ctx.fillRect(sx + 6, sy + 2, 36, 20);
+
+        // Brow ridge (darker)
+        state.ctx.fillStyle = darkFur;
+        state.ctx.fillRect(sx + 6, sy + 2, 36, 5);
+
+        // Horns — large curved pair (bone/ivory)
+        state.ctx.fillStyle = hornCol;
+        // Left horn: base rises then curves outward
+        state.ctx.fillRect(sx + 9,  sy - 8,  7, 12);
+        state.ctx.fillRect(sx + 3,  sy - 14, 7, 8);
+        state.ctx.fillRect(sx + 1,  sy - 18, 5, 6);
+        // Right horn
+        state.ctx.fillRect(sx + 32, sy - 8,  7, 12);
+        state.ctx.fillRect(sx + 38, sy - 14, 7, 8);
+        state.ctx.fillRect(sx + 42, sy - 18, 5, 6);
+        // Horn tips (darker)
+        state.ctx.fillStyle = "#a09050";
+        state.ctx.fillRect(sx + 1,  sy - 22, 4, 5);
+        state.ctx.fillRect(sx + 43, sy - 22, 4, 5);
+
+        // Muzzle / snout (wide jaw, faces direction player is)
+        const muzzX = mob.facing === 1 ? sx + 32 : sx + 2;
+        state.ctx.fillStyle = belly;
+        state.ctx.fillRect(muzzX, sy + 10, 16, 13);
+        // Nostrils
+        state.ctx.fillStyle = darkFur;
+        state.ctx.fillRect(muzzX + 2,  sy + 15, 4, 4);
+        state.ctx.fillRect(muzzX + 10, sy + 15, 4, 4);
+
+        // Eyes — glowing orange-red
+        state.ctx.fillStyle = eyeCol;
+        if (mob.facing === 1) {
+            state.ctx.fillRect(sx + 28, sy + 6, 9, 7);
+            state.ctx.fillRect(sx + 18, sy + 6, 7, 7);
+        } else {
+            state.ctx.fillRect(sx + 11, sy + 6, 9, 7);
+            state.ctx.fillRect(sx + 23, sy + 6, 7, 7);
+        }
+        // Eye glow halo
+        state.ctx.fillStyle = "rgba(255,100,0,0.35)";
+        if (mob.facing === 1) {
+            state.ctx.fillRect(sx + 26, sy + 4, 13, 11);
+        } else {
+            state.ctx.fillRect(sx + 9,  sy + 4, 13, 11);
+        }
+
+        // Thick arms with claws
+        state.ctx.fillStyle = fur;
+        state.ctx.fillRect(sx - 6, sy + 18, 14, 22);   // left arm
+        state.ctx.fillRect(sx + 40, sy + 18, 14, 22);  // right arm
+        // Claws — 3 per hand (dark)
+        state.ctx.fillStyle = darkFur;
+        state.ctx.fillRect(sx - 7,  sy + 38, 5, 6);
+        state.ctx.fillRect(sx - 2,  sy + 40, 5, 6);
+        state.ctx.fillRect(sx + 3,  sy + 38, 5, 6);
+        state.ctx.fillRect(sx + 40, sy + 38, 5, 6);
+        state.ctx.fillRect(sx + 45, sy + 40, 5, 6);
+        state.ctx.fillRect(sx + 50, sy + 38, 5, 6);
+
+        // Thick legs
+        state.ctx.fillStyle = fur;
+        state.ctx.fillRect(sx + 6,  sy + 46, 14, 10);
+        state.ctx.fillRect(sx + 28, sy + 46, 14, 10);
+        // Feet (dark hooves)
+        state.ctx.fillStyle = darkFur;
+        state.ctx.fillRect(sx + 4,  sy + 52, 18, 4);
+        state.ctx.fillRect(sx + 26, sy + 52, 18, 4);
+
+        // Fire glow around mouth when shoot is ready
+        if (mob.shootCooldown <= 0) {
+            state.ctx.fillStyle = "rgba(255,80,0,0.25)";
+            state.ctx.fillRect(muzzX - 2, sy + 8, 20, 17);
+        }
+    }
+
     // Mob equipment overlay (non-pigman)
     if (mob.equipment && mob.type !== "pigman") {
         if (mob.equipment.armor) {
