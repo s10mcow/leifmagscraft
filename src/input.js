@@ -14,6 +14,15 @@ import { createParticles } from './mobs.js';
 
 // Late-bound function references (set by main.js to avoid circular imports)
 const fn = {};
+
+// Inverse-transforms mouse coords into a panel's virtual coordinate space
+// so hit-tests work correctly when the panel is scaled down on small screens.
+function scaledMouse(pw, ph) {
+    const s = Math.min(1, (state.canvas.width - 8) / pw, (state.canvas.height - 8) / ph);
+    if (s >= 1) return { x: state.mouse.x, y: state.mouse.y };
+    const cx = state.canvas.width / 2, cy = state.canvas.height / 2;
+    return { x: (state.mouse.x - cx * (1 - s)) / s, y: (state.mouse.y - cy * (1 - s)) / s };
+}
 export function registerFunctions(fns) {
     Object.assign(fn, fns);
 }
@@ -22,6 +31,7 @@ export function registerFunctions(fns) {
 export function getInventorySlotAtMouse() {
     if (!state.craftingOpen) return -1;
     const pw = UI.CRAFTING_PANEL_W, ph = UI.CRAFTING_PANEL_H;
+    const { x: mx, y: my } = scaledMouse(pw, ph);
     const px = (state.canvas.width - pw) / 2, py = (state.canvas.height - ph) / 2;
     const is = UI.SLOT_SIZE, ip = UI.SLOT_PAD;
     const itw = UI.INV_TOTAL_W;
@@ -31,7 +41,7 @@ export function getInventorySlotAtMouse() {
     const hotbarY = py + ph + UI.HOTBAR_ROW_Y;
     for (let i = 0; i < HOTBAR_SIZE; i++) {
         const sx = isx + i * (is + ip);
-        if (state.mouse.x >= sx && state.mouse.x <= sx + is && state.mouse.y >= hotbarY && state.mouse.y <= hotbarY + is) {
+        if (mx >= sx && mx <= sx + is && my >= hotbarY && my <= hotbarY + is) {
             return i;
         }
     }
@@ -42,7 +52,7 @@ export function getInventorySlotAtMouse() {
         const col = i % UI.INV_COLS, row = Math.floor(i / UI.INV_COLS);
         const sx = isx + col * (is + ip);
         const sy = bpY + row * (is + ip);
-        if (state.mouse.x >= sx && state.mouse.x <= sx + is && state.mouse.y >= sy && state.mouse.y <= sy + is) {
+        if (mx >= sx && mx <= sx + is && my >= sy && my <= sy + is) {
             return HOTBAR_SIZE + i;
         }
     }
@@ -54,6 +64,7 @@ export function getInventorySlotAtMouse() {
 export function getArmorSlotAtMouse() {
     if (!state.craftingOpen) return null;
     const pw = UI.CRAFTING_PANEL_W, ph = UI.CRAFTING_PANEL_H;
+    const { x: mx, y: my } = scaledMouse(pw, ph);
     const px = (state.canvas.width - pw) / 2, py = (state.canvas.height - ph) / 2;
     const is = UI.SLOT_SIZE, ip = UI.SLOT_PAD;
     const itw = UI.INV_TOTAL_W;
@@ -64,7 +75,7 @@ export function getArmorSlotAtMouse() {
     const armorLabels = ["helmet", "chestplate", "leggings", "boots"];
     for (let i = 0; i < 4; i++) {
         const ay = armorY + i * (is + ip);
-        if (state.mouse.x >= armorX && state.mouse.x <= armorX + is && state.mouse.y >= ay && state.mouse.y <= ay + is) {
+        if (mx >= armorX && mx <= armorX + is && my >= ay && my <= ay + is) {
             return armorLabels[i];
         }
     }
@@ -75,6 +86,7 @@ export function getArmorSlotAtMouse() {
 export function getOffhandSlotAtMouse() {
     if (!state.craftingOpen) return false;
     const pw = UI.CRAFTING_PANEL_W, ph = UI.CRAFTING_PANEL_H;
+    const { x: mx, y: my } = scaledMouse(pw, ph);
     const py = (state.canvas.height - ph) / 2;
     const is = UI.SLOT_SIZE, ip = UI.SLOT_PAD;
     const itw = UI.INV_TOTAL_W;
@@ -83,14 +95,14 @@ export function getOffhandSlotAtMouse() {
     const armorY = py + ph + UI.HOTBAR_ROW_Y;
     const offX = armorX;
     const offY = armorY + 4 * (is + ip) + 8;
-    return state.mouse.x >= offX && state.mouse.x <= offX + is &&
-           state.mouse.y >= offY && state.mouse.y <= offY + is;
+    return mx >= offX && mx <= offX + is && my >= offY && my <= offY + is;
 }
 
 // Figure out which chest slot the mouse is over (in chest menu)
 export function getChestSlotAtMouse() {
     if (!state.chestOpen || !state.chestPos) return -1;
     const pw = UI.CHEST_PANEL_W, ph = UI.CHEST_PANEL_H;
+    const { x: mx, y: my } = scaledMouse(pw, ph);
     const px = (state.canvas.width - pw) / 2, py = (state.canvas.height - ph) / 2;
     const is = UI.SLOT_SIZE, ip = UI.SLOT_PAD;
     const chestCols = UI.CHEST_SLOT_COLS;
@@ -100,7 +112,7 @@ export function getChestSlotAtMouse() {
 
     for (let i = 0; i < 9; i++) {
         const sx = csx + i * (is + ip);
-        if (state.mouse.x >= sx && state.mouse.x <= sx + is && state.mouse.y >= csy && state.mouse.y <= csy + is) {
+        if (mx >= sx && mx <= sx + is && my >= csy && my <= csy + is) {
             return i;
         }
     }
@@ -111,6 +123,7 @@ export function getChestSlotAtMouse() {
 export function getChestInventorySlotAtMouse() {
     if (!state.chestOpen || !state.chestPos) return -1;
     const pw = UI.CHEST_PANEL_W, ph = UI.CHEST_PANEL_H;
+    const { x: mx, y: my } = scaledMouse(pw, ph);
     const px = (state.canvas.width - pw) / 2, py = (state.canvas.height - ph) / 2;
     const is = UI.SLOT_SIZE, ip = UI.SLOT_PAD;
     const itw = UI.INV_TOTAL_W;
@@ -120,7 +133,7 @@ export function getChestInventorySlotAtMouse() {
     const hotbarY = py + ph - 100;
     for (let i = 0; i < HOTBAR_SIZE; i++) {
         const sx = isx + i * (is + ip);
-        if (state.mouse.x >= sx && state.mouse.x <= sx + is && state.mouse.y >= hotbarY && state.mouse.y <= hotbarY + is) {
+        if (mx >= sx && mx <= sx + is && my >= hotbarY && my <= hotbarY + is) {
             return i;
         }
     }
@@ -131,7 +144,7 @@ export function getChestInventorySlotAtMouse() {
         const col = i % UI.INV_COLS, row = Math.floor(i / UI.INV_COLS);
         const sx = isx + col * (is + ip);
         const sy = bpY + row * (is + ip);
-        if (state.mouse.x >= sx && state.mouse.x <= sx + is && state.mouse.y >= sy && state.mouse.y <= sy + is) {
+        if (mx >= sx && mx <= sx + is && my >= sy && my <= sy + is) {
             return HOTBAR_SIZE + i;
         }
     }
@@ -361,6 +374,7 @@ export function setupInput() {
         // Update trading hover
         if (state.tradingOpen) {
             const pw = UI.TRADING_PANEL_W, ph = UI.TRADING_PANEL_H;
+            const { x: mx, y: my } = scaledMouse(pw, ph);
             const px = (state.canvas.width - pw) / 2, py = (state.canvas.height - ph) / 2;
             const startY = py + UI.TRADE_START_Y;
             const rowH = UI.TRADE_ROW_H;
@@ -370,8 +384,8 @@ export function setupInput() {
             state.tradingHover = -1;
             for (let i = 0; i < activeTrades.length; i++) {
                 const ry = startY + i * rowH;
-                if (state.mouse.x >= px + margin && state.mouse.x <= px + pw - margin &&
-                    state.mouse.y >= ry && state.mouse.y <= ry + rowH - 4) {
+                if (mx >= px + margin && mx <= px + pw - margin &&
+                    my >= ry && my <= ry + rowH - 4) {
                     state.tradingHover = i;
                     break;
                 }
@@ -381,6 +395,7 @@ export function setupInput() {
         // Update crafting recipe hover
         if (state.craftingOpen) {
             const pw = UI.CRAFTING_PANEL_W, ph = UI.CRAFTING_PANEL_H;
+            const { x: mx, y: my } = scaledMouse(pw, ph);
             const px = (state.canvas.width - pw) / 2, py = (state.canvas.height - ph) / 2;
             const rw = UI.RECIPE_W, rh = UI.RECIPE_H, cols = UI.RECIPE_COLS, gap = UI.RECIPE_GAP;
             const srx = px + UI.RECIPE_START_X, sry = py + UI.RECIPE_START_Y;
@@ -391,7 +406,7 @@ export function setupInput() {
                 const col = i % cols, row = Math.floor(i / cols);
                 const rx = srx + col * (rw + gap), ry = sry + row * (rh + 6) - state.craftingScroll;
                 if (ry < sry - 5 || ry + rh > recipeAreaBottom) continue;
-                if (state.mouse.x >= rx && state.mouse.x <= rx + rw && state.mouse.y >= ry && state.mouse.y <= ry + rh) {
+                if (mx >= rx && mx <= rx + rw && my >= ry && my <= ry + rh) {
                     state.craftingHover = i;
                     break;
                 }
@@ -399,17 +414,10 @@ export function setupInput() {
         }
     });
 
-    state.canvas.addEventListener("mousedown", (e) => {
-        e.preventDefault();
-
-        // Update mouse position from this event too (in case mousemove hasn't fired)
-        const rect = state.canvas.getBoundingClientRect();
-        state.mouse.x = (e.clientX - rect.left) * (state.canvas.width / rect.width);
-        state.mouse.y = (e.clientY - rect.top) * (state.canvas.height / rect.height);
-
-        // Title screen clicks
-        if (state.gameState === "menu" && e.button === 0) {
-            // Direct hit-test (don't rely solely on mousemove hover)
+    // Shared left-click / tap handler — called by both mousedown and touchstart
+    function handleLeftClick() {
+        // Title screen taps
+        if (state.gameState === "menu") {
             const nb = state.MENU_BUTTONS.newWorld;
             if (nb && state.mouse.x >= nb.x && state.mouse.x <= nb.x + nb.w && state.mouse.y >= nb.y && state.mouse.y <= nb.y + nb.h) {
                 const name = "World " + (state.menuSaveList.length + 1);
@@ -434,74 +442,76 @@ export function setupInput() {
             return;
         }
 
-        // Pause menu clicks
-        if (state.gameState === "paused" && e.button === 0) {
+        // Pause menu taps (use scaledMouse in case panel is scaled on small screens)
+        if (state.gameState === "paused") {
+            const { x: mx, y: my } = scaledMouse(400, 250);
             const rb = state.PAUSE_BUTTONS.resume;
-            if (rb && state.mouse.x >= rb.x && state.mouse.x <= rb.x + rb.w && state.mouse.y >= rb.y && state.mouse.y <= rb.y + rb.h) {
+            if (rb && mx >= rb.x && mx <= rb.x + rb.w && my >= rb.y && my <= rb.y + rb.h) {
                 state.gameState = "playing";
                 state.menuHover = null;
                 return;
             }
             const sb = state.PAUSE_BUTTONS.saveQuit;
-            if (sb && state.mouse.x >= sb.x && state.mouse.x <= sb.x + sb.w && state.mouse.y >= sb.y && state.mouse.y <= sb.y + sb.h) {
+            if (sb && mx >= sb.x && mx <= sb.x + sb.w && my >= sb.y && my <= sb.y + sb.h) {
                 fn.saveAndQuit();
                 return;
             }
             return;
         }
 
-        // Only process game clicks when playing
         if (state.gameState !== "playing") return;
+        if (state.gameOver || state.sleeping) return;
 
-        if (e.button === 0) { // Left click
-            if (state.gameOver || state.sleeping) return;
-            if (state.tradingOpen) {
-                const activeTrades = (state.tradingVillager && state.tradingVillager.tradeList) || TRADES;
-                if (state.tradingHover >= 0 && state.tradingHover < activeTrades.length) {
-                    fn.executeTrade(activeTrades[state.tradingHover]);
-                }
-                return;
+        if (state.tradingOpen) {
+            const activeTrades = (state.tradingVillager && state.tradingVillager.tradeList) || TRADES;
+            if (state.tradingHover >= 0 && state.tradingHover < activeTrades.length) {
+                fn.executeTrade(activeTrades[state.tradingHover]);
             }
-            if (state.chestOpen) {
-                const cs = getChestSlotAtMouse();
-                if (cs >= 0) {
-                    clickChestSlot(cs);
-                } else {
-                    const invSlot = getChestInventorySlotAtMouse();
-                    if (invSlot >= 0) clickInventorySlot(invSlot);
-                }
-                return;
-            }
-            if (state.craftingOpen) {
-                const armorSlot = getArmorSlotAtMouse();
-                if (armorSlot) {
-                    clickArmorSlot(armorSlot);
-                } else if (getOffhandSlotAtMouse()) {
-                    clickOffhandSlot();
-                } else {
-                    const slotIdx = getInventorySlotAtMouse();
-                    if (slotIdx >= 0) {
-                        clickInventorySlot(slotIdx);
-                    } else if (state.craftingHover >= 0 && state.craftingHover < RECIPES.length) {
-                        craft(RECIPES[state.craftingHover]);
-                    }
-                }
+            return;
+        }
+        if (state.chestOpen) {
+            const cs = getChestSlotAtMouse();
+            if (cs >= 0) {
+                clickChestSlot(cs);
             } else {
-                const mob = fn.getMobAtCursor();
-                if (mob && state.player.attackCooldown <= 0) {
-                    fn.attackMob(mob);
-                } else {
-                    // Check if holding a gun — gun firing is handled in handleGunFire()
-                    const heldSlot = state.inventory.slots[state.inventory.selectedSlot];
-                    const heldInfo = heldSlot.count > 0 ? ITEM_INFO[heldSlot.itemId] : null;
-                    if (heldInfo && heldInfo.toolType === "gun") {
-                        state.mouse.leftDown = true; // handleGunFire reads this
-                    } else {
-                        state.mouse.leftDown = true;
-                    }
+                const invSlot = getChestInventorySlotAtMouse();
+                if (invSlot >= 0) clickInventorySlot(invSlot);
+            }
+            return;
+        }
+        if (state.craftingOpen) {
+            const armorSlot = getArmorSlotAtMouse();
+            if (armorSlot) {
+                clickArmorSlot(armorSlot);
+            } else if (getOffhandSlotAtMouse()) {
+                clickOffhandSlot();
+            } else {
+                const slotIdx = getInventorySlotAtMouse();
+                if (slotIdx >= 0) {
+                    clickInventorySlot(slotIdx);
+                } else if (state.craftingHover >= 0 && state.craftingHover < RECIPES.length) {
+                    craft(RECIPES[state.craftingHover]);
                 }
+            }
+        } else {
+            const mob = fn.getMobAtCursor();
+            if (mob && state.player.attackCooldown <= 0) {
+                fn.attackMob(mob);
+            } else {
+                state.mouse.leftDown = true;
             }
         }
+    }
+
+    state.canvas.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+
+        // Update mouse position from this event too (in case mousemove hasn't fired)
+        const rect = state.canvas.getBoundingClientRect();
+        state.mouse.x = (e.clientX - rect.left) * (state.canvas.width / rect.width);
+        state.mouse.y = (e.clientY - rect.top) * (state.canvas.height / rect.height);
+
+        if (e.button === 0) handleLeftClick();
         if (e.button === 2) { // Right click
             if (state.gameOver || state.sleeping || state.tradingOpen) return;
             if (state.chestOpen) {
@@ -530,6 +540,24 @@ export function setupInput() {
     });
 
     state.canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+
+    // Touch support — tap acts as left click
+    state.canvas.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        const rect = state.canvas.getBoundingClientRect();
+        const t = e.changedTouches[0];
+        state.mouse.x = (t.clientX - rect.left) * (state.canvas.width / rect.width);
+        state.mouse.y = (t.clientY - rect.top)  * (state.canvas.height / rect.height);
+        // Synthesise mousemove so tradingHover / craftingHover / menuHover are up-to-date
+        state.canvas.dispatchEvent(new MouseEvent("mousemove", { clientX: t.clientX, clientY: t.clientY, bubbles: false }));
+        handleLeftClick();
+    }, { passive: false });
+
+    state.canvas.addEventListener("touchend", (e) => {
+        e.preventDefault();
+        state.mouse.leftDown  = false;
+        state.mouse.rightDown = false;
+    }, { passive: false });
 
     // Scroll wheel for crafting menu recipe list
     state.canvas.addEventListener("wheel", (e) => {

@@ -22,6 +22,9 @@ const JOY_DEAD   = 10; // dead-zone pixels
 let canvasTouchId = null;
 
 export function setupVirtualControls() {
+    // Fullscreen button works on all devices
+    initFullscreenButton();
+
     if (!isTouch()) return;
 
     buildDOM();
@@ -43,6 +46,9 @@ function buildDOM() {
     const panel = document.createElement('div');
     panel.id = 'vbtn-panel';
     panel.innerHTML = `
+        <div class="vbtn-row">
+            <div id="vbtn-pause" class="vbtn vbtn-sm">⏸</div>
+        </div>
         <div class="vbtn-row">
             <div id="vbtn-inv"   class="vbtn vbtn-sm">INV</div>
             <div id="vbtn-use"   class="vbtn vbtn-sm">USE</div>
@@ -171,6 +177,39 @@ function initButtons() {
     const inv = document.getElementById('vbtn-inv');
     inv.addEventListener('touchstart', (e) => { e.preventDefault(); press('e');   }, { passive: false });
     inv.addEventListener('touchend',   (e) => { e.preventDefault(); release('e'); }, { passive: false });
+
+    // Pause (Escape key)
+    const pauseBtn = document.getElementById('vbtn-pause');
+    pauseBtn.addEventListener('touchstart', (e) => { e.preventDefault(); press('Escape');   }, { passive: false });
+    pauseBtn.addEventListener('touchend',   (e) => { e.preventDefault(); release('Escape'); }, { passive: false });
+
+    // Prevent long-press context menu on all virtual buttons
+    document.addEventListener('contextmenu', (e) => { e.preventDefault(); }, { passive: false });
+}
+
+// ---- Fullscreen / orientation ----------------------------------
+
+async function toggleFullscreen() {
+    try {
+        if (!document.fullscreenElement) {
+            await document.documentElement.requestFullscreen();
+            // Lock to landscape after entering fullscreen
+            await screen.orientation.lock('landscape').catch(() => {});
+        } else {
+            await document.exitFullscreen();
+        }
+    } catch(e) {}
+}
+
+function initFullscreenButton() {
+    const btn = document.getElementById('vbtn-fullscreen');
+    if (!btn) return;
+    btn.addEventListener('click', toggleFullscreen);
+    btn.addEventListener('touchstart', (e) => { e.preventDefault(); toggleFullscreen(); }, { passive: false });
+    // Update icon when fullscreen state changes
+    document.addEventListener('fullscreenchange', () => {
+        btn.textContent = document.fullscreenElement ? '⛶' : '⛶';
+    });
 }
 
 // ---- Canvas touch (aim / hotbar) ------------------------------

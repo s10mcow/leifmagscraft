@@ -176,6 +176,17 @@ export function drawMiningProgress() {
     }
 }
 
+// Scales a panel uniformly so it fits the current canvas.
+// Call inside ctx.save() before drawing the panel content.
+function applyPanelScale(pw, ph) {
+    const s = Math.min(1, (state.canvas.width - 8) / pw, (state.canvas.height - 8) / ph);
+    if (s < 1) {
+        const cx = state.canvas.width / 2, cy = state.canvas.height / 2;
+        state.ctx.translate(cx * (1 - s), cy * (1 - s));
+        state.ctx.scale(s, s);
+    }
+}
+
 // --- CRAFTING MENU ---
 export function drawCraftingMenu() {
     if (!state.craftingOpen) return;
@@ -185,6 +196,8 @@ export function drawCraftingMenu() {
 
     const pw = UI.CRAFTING_PANEL_W, ph = UI.CRAFTING_PANEL_H;
     const px = (state.canvas.width - pw) / 2, py = (state.canvas.height - ph) / 2;
+    state.ctx.save();
+    applyPanelScale(pw, ph);
     state.ctx.fillStyle = "#2a2a3e"; state.ctx.fillRect(px, py, pw, ph);
     state.ctx.strokeStyle = "#4ade80"; state.ctx.lineWidth = 3; state.ctx.strokeRect(px, py, pw, ph); state.ctx.lineWidth = 1;
 
@@ -337,7 +350,8 @@ export function drawCraftingMenu() {
         state.ctx.fillText("O", offhandX + is / 2, offhandY + is / 2 + 6);
     }
 
-    // Cursor item
+    state.ctx.restore();
+    // Cursor item — drawn in screen space after scale is removed
     if (state.cursorItem.itemId !== 0 && state.cursorItem.count > 0) {
         const cs = 32;
         drawItemIcon(state.cursorItem.itemId, state.mouse.x - cs / 2, state.mouse.y - cs / 2, cs);
@@ -360,6 +374,8 @@ export function drawChestMenu() {
 
     const pw = UI.CHEST_PANEL_W, ph = UI.CHEST_PANEL_H;
     const px = (state.canvas.width - pw) / 2, py = (state.canvas.height - ph) / 2;
+    state.ctx.save();
+    applyPanelScale(pw, ph);
     state.ctx.fillStyle = "#2a2a3e"; state.ctx.fillRect(px, py, pw, ph);
     state.ctx.strokeStyle = "#c4a047"; state.ctx.lineWidth = 3; state.ctx.strokeRect(px, py, pw, ph); state.ctx.lineWidth = 1;
 
@@ -410,7 +426,8 @@ export function drawChestMenu() {
         drawInventorySlot(isx + c * (is + ip), bpY + r * (is + ip), is, state.inventory.slots[HOTBAR_SIZE + i], hoverInvSlot === HOTBAR_SIZE + i);
     }
 
-    // Cursor item
+    state.ctx.restore();
+    // Cursor item — drawn in screen space after scale is removed
     if (state.cursorItem.itemId !== 0 && state.cursorItem.count > 0) {
         const cs = 32;
         drawItemIcon(state.cursorItem.itemId, state.mouse.x - cs / 2, state.mouse.y - cs / 2, cs);
@@ -430,6 +447,8 @@ export function drawTradingMenu() {
 
     const pw = UI.TRADING_PANEL_W, ph = UI.TRADING_PANEL_H;
     const px = (state.canvas.width - pw) / 2, py = (state.canvas.height - ph) / 2;
+    state.ctx.save();
+    applyPanelScale(pw, ph);
     state.ctx.fillStyle = "#2a2a3e"; state.ctx.fillRect(px, py, pw, ph);
     state.ctx.strokeStyle = "#ffd700"; state.ctx.lineWidth = 3; state.ctx.strokeRect(px, py, pw, ph); state.ctx.lineWidth = 1;
 
@@ -481,6 +500,7 @@ export function drawTradingMenu() {
         const resultName = (trade.resultCount > 1 ? trade.resultCount + "x " : "") + getItemName(trade.result);
         state.ctx.fillText(resultName, px + pw / 2 + 34, ry + 27);
     }
+    state.ctx.restore();
 }
 
 // --- DEATH SCREEN ---
@@ -654,6 +674,8 @@ export function drawPauseMenu() {
     const pw = 400, ph = 250;
     const px = (state.canvas.width - pw) / 2;
     const py = (state.canvas.height - ph) / 2;
+    state.ctx.save();
+    applyPanelScale(pw, ph);
     state.ctx.fillStyle = "#2a2a3e";
     state.ctx.fillRect(px, py, pw, ph);
     state.ctx.strokeStyle = "#4ade80";
@@ -692,6 +714,7 @@ export function drawPauseMenu() {
     state.ctx.fillText("Save & Quit", state.canvas.width / 2, sqY + 33);
 
     state.ctx.lineWidth = 1;
+    state.ctx.restore();
 }
 
 // --- TRANSIENT STATE SCREENS ---

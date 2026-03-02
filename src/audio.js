@@ -20,9 +20,10 @@ function initAudio() {
     audioReady = true;
 }
 
-// Initialize audio on first user interaction
-document.addEventListener("click", initAudio, { once: false });
-document.addEventListener("keydown", initAudio, { once: false });
+// Initialize audio on first user interaction (touchstart needed for iOS Safari)
+document.addEventListener("click",      initAudio, { once: false });
+document.addEventListener("keydown",    initAudio, { once: false });
+document.addEventListener("touchstart", initAudio, { once: false });
 
 // Master volume (0 to 1)
 const MASTER_VOLUME = 0.3;

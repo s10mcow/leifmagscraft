@@ -888,11 +888,11 @@ function updateSaveIndex(name, timestamp) {
     } else {
         state.menuSaveList.push({ name: name, timestamp: timestamp });
     }
-    localStorage.setItem(SAVE_INDEX_KEY, JSON.stringify(state.menuSaveList));
+    try { localStorage.setItem(SAVE_INDEX_KEY, JSON.stringify(state.menuSaveList)); } catch(e) {}
 }
 
 export function deleteSave(name) {
-    localStorage.removeItem(SAVE_KEY_PREFIX + name);
+    try { localStorage.removeItem(SAVE_KEY_PREFIX + name); } catch(e) {}
     refreshSaveList();
 }
 
