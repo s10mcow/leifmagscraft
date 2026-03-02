@@ -664,6 +664,16 @@ export function updateMobs(dt, dayBrightness) {
                 mob.velX = dirToPlayer * def.speed;
                 mob.facing = dirToPlayer;
 
+                // Smoke billowing from nostrils when aggro
+                mob.smokeTimer = (mob.smokeTimer || 0) - dt;
+                if (mob.smokeTimer <= 0) {
+                    mob.smokeTimer = 220;
+                    const muzzWorldX = mob.x + (mob.facing === 1 ? def.width + 6 : -6);
+                    const muzzWorldY = mob.y + def.height * 0.38;
+                    createParticles(muzzWorldX, muzzWorldY, 4, "#333333", 2.5);
+                    createParticles(muzzWorldX, muzzWorldY, 2, "#777777", 1.5);
+                }
+
                 if (dist <= def.attackRange) {
                     // Close range: slash attack
                     if (mob.attackCooldown <= 0) {

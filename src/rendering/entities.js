@@ -587,104 +587,167 @@ function drawMob(mob) {
     }
 
     else if (mob.type === "grunture") {
-        const fur      = isHurt ? "#ff7755" : "#5a2510";
-        const belly    = isHurt ? "#ff9977" : "#8a4525";
-        const darkFur  = isHurt ? "#dd5533" : "#3a1508";
-        const hornCol  = "#c8b070";
-        const eyeCol   = "#ff5500";
+        const fur     = isHurt ? "#ff7755" : "#5a2510";
+        const belly   = isHurt ? "#ff9977" : "#8a4525";
+        const darkFur = isHurt ? "#dd5533" : "#3a1508";
+        const hornCol = "#c8b070";
+        const tipCol  = "#a09050";
+        const eyeCol  = "#ff5500";
+        const f       = mob.facing;
 
-        // Main body (massive torso)
-        state.ctx.fillStyle = fur;
-        state.ctx.fillRect(sx + 4, sy + 18, 40, 30);
+        if (!mob.detectedPlayer) {
+            // ══════ BIPEDAL — calm, upright walk ══════
 
-        // Lighter belly stripe
-        state.ctx.fillStyle = belly;
-        state.ctx.fillRect(sx + 12, sy + 22, 24, 22);
+            // Two thick legs (drawn behind torso)
+            state.ctx.fillStyle = fur;
+            state.ctx.fillRect(sx + 7,  sy + 42, 13, 14);
+            state.ctx.fillRect(sx + 28, sy + 42, 13, 14);
+            state.ctx.fillStyle = darkFur;
+            state.ctx.fillRect(sx + 5,  sy + 52, 17, 4);
+            state.ctx.fillRect(sx + 26, sy + 52, 17, 4);
 
-        // Fur texture — dark horizontal stripe lines
-        state.ctx.fillStyle = "rgba(0,0,0,0.18)";
-        state.ctx.fillRect(sx + 4, sy + 24, 40, 3);
-        state.ctx.fillRect(sx + 4, sy + 32, 40, 3);
-        state.ctx.fillRect(sx + 4, sy + 40, 40, 3);
+            // Upright torso
+            state.ctx.fillStyle = fur;
+            state.ctx.fillRect(sx + 6, sy + 18, 36, 24);
+            state.ctx.fillStyle = belly;
+            state.ctx.fillRect(sx + 12, sy + 22, 24, 18);
+            state.ctx.fillStyle = "rgba(0,0,0,0.14)";
+            state.ctx.fillRect(sx + 6, sy + 27, 36, 3);
+            state.ctx.fillRect(sx + 6, sy + 35, 36, 3);
 
-        // Head (large, boxy)
-        state.ctx.fillStyle = fur;
-        state.ctx.fillRect(sx + 6, sy + 2, 36, 20);
+            // Head
+            state.ctx.fillStyle = fur;
+            state.ctx.fillRect(sx + 7, sy + 2, 34, 18);
+            state.ctx.fillStyle = darkFur;
+            state.ctx.fillRect(sx + 7, sy + 2, 34, 5);
 
-        // Brow ridge (darker)
-        state.ctx.fillStyle = darkFur;
-        state.ctx.fillRect(sx + 6, sy + 2, 36, 5);
+            // Horns pointing upward
+            state.ctx.fillStyle = hornCol;
+            state.ctx.fillRect(sx + 10, sy - 6,  6, 10);
+            state.ctx.fillRect(sx + 5,  sy - 14, 6, 10);
+            state.ctx.fillRect(sx + 32, sy - 6,  6, 10);
+            state.ctx.fillRect(sx + 37, sy - 14, 6, 10);
+            state.ctx.fillStyle = tipCol;
+            state.ctx.fillRect(sx + 4,  sy - 21, 5, 8);
+            state.ctx.fillRect(sx + 39, sy - 21, 5, 8);
 
-        // Horns — large curved pair (bone/ivory)
-        state.ctx.fillStyle = hornCol;
-        // Left horn: base rises then curves outward
-        state.ctx.fillRect(sx + 9,  sy - 8,  7, 12);
-        state.ctx.fillRect(sx + 3,  sy - 14, 7, 8);
-        state.ctx.fillRect(sx + 1,  sy - 18, 5, 6);
-        // Right horn
-        state.ctx.fillRect(sx + 32, sy - 8,  7, 12);
-        state.ctx.fillRect(sx + 38, sy - 14, 7, 8);
-        state.ctx.fillRect(sx + 42, sy - 18, 5, 6);
-        // Horn tips (darker)
-        state.ctx.fillStyle = "#a09050";
-        state.ctx.fillRect(sx + 1,  sy - 22, 4, 5);
-        state.ctx.fillRect(sx + 43, sy - 22, 4, 5);
+            // Muzzle (relaxed/closed)
+            const muzzBi = f === 1 ? sx + 32 : sx + 2;
+            state.ctx.fillStyle = belly;
+            state.ctx.fillRect(muzzBi, sy + 9, 14, 11);
+            state.ctx.fillStyle = darkFur;
+            state.ctx.fillRect(muzzBi + 2, sy + 14, 3, 3);
+            state.ctx.fillRect(muzzBi + 9, sy + 14, 3, 3);
 
-        // Muzzle / snout (wide jaw, faces direction player is)
-        const muzzX = mob.facing === 1 ? sx + 32 : sx + 2;
-        state.ctx.fillStyle = belly;
-        state.ctx.fillRect(muzzX, sy + 10, 16, 13);
-        // Nostrils
-        state.ctx.fillStyle = darkFur;
-        state.ctx.fillRect(muzzX + 2,  sy + 15, 4, 4);
-        state.ctx.fillRect(muzzX + 10, sy + 15, 4, 4);
+            // Eyes — calm, dim glow
+            state.ctx.fillStyle = eyeCol;
+            state.ctx.fillRect(f === 1 ? sx + 26 : sx + 14, sy + 6, 8, 6);
+            state.ctx.fillStyle = "rgba(255,100,0,0.18)";
+            state.ctx.fillRect(f === 1 ? sx + 24 : sx + 12, sy + 4, 12, 10);
 
-        // Eyes — glowing orange-red
-        state.ctx.fillStyle = eyeCol;
-        if (mob.facing === 1) {
-            state.ctx.fillRect(sx + 28, sy + 6, 9, 7);
-            state.ctx.fillRect(sx + 18, sy + 6, 7, 7);
+            // Arms hanging at sides
+            state.ctx.fillStyle = fur;
+            state.ctx.fillRect(sx - 4,  sy + 18, 12, 20);
+            state.ctx.fillRect(sx + 40, sy + 18, 12, 20);
+            // Claws pointing down (relaxed)
+            state.ctx.fillStyle = darkFur;
+            state.ctx.fillRect(sx - 5,  sy + 36, 4, 6);
+            state.ctx.fillRect(sx - 1,  sy + 38, 4, 6);
+            state.ctx.fillRect(sx + 3,  sy + 36, 4, 6);
+            state.ctx.fillRect(sx + 40, sy + 36, 4, 6);
+            state.ctx.fillRect(sx + 44, sy + 38, 4, 6);
+            state.ctx.fillRect(sx + 48, sy + 36, 4, 6);
+
         } else {
-            state.ctx.fillRect(sx + 11, sy + 6, 9, 7);
-            state.ctx.fillRect(sx + 23, sy + 6, 7, 7);
-        }
-        // Eye glow halo
-        state.ctx.fillStyle = "rgba(255,100,0,0.35)";
-        if (mob.facing === 1) {
-            state.ctx.fillRect(sx + 26, sy + 4, 13, 11);
-        } else {
-            state.ctx.fillRect(sx + 9,  sy + 4, 13, 11);
-        }
+            // ══════ QUADRUPED — aggro, charging on all fours ══════
 
-        // Thick arms with claws
-        state.ctx.fillStyle = fur;
-        state.ctx.fillRect(sx - 6, sy + 18, 14, 22);   // left arm
-        state.ctx.fillRect(sx + 40, sy + 18, 14, 22);  // right arm
-        // Claws — 3 per hand (dark)
-        state.ctx.fillStyle = darkFur;
-        state.ctx.fillRect(sx - 7,  sy + 38, 5, 6);
-        state.ctx.fillRect(sx - 2,  sy + 40, 5, 6);
-        state.ctx.fillRect(sx + 3,  sy + 38, 5, 6);
-        state.ctx.fillRect(sx + 40, sy + 38, 5, 6);
-        state.ctx.fillRect(sx + 45, sy + 40, 5, 6);
-        state.ctx.fillRect(sx + 50, sy + 38, 5, 6);
+            // Back legs (at rear)
+            const blX = f === 1 ? sx + 4 : sx + 26;
+            state.ctx.fillStyle = fur;
+            state.ctx.fillRect(blX,      sy + 40, 11, 16);
+            state.ctx.fillRect(blX + 12, sy + 40, 11, 16);
+            state.ctx.fillStyle = darkFur;
+            state.ctx.fillRect(blX - 2,  sy + 52, 15, 4);
+            state.ctx.fillRect(blX + 10, sy + 52, 15, 4);
 
-        // Thick legs
-        state.ctx.fillStyle = fur;
-        state.ctx.fillRect(sx + 6,  sy + 46, 14, 10);
-        state.ctx.fillRect(sx + 28, sy + 46, 14, 10);
-        // Feet (dark hooves)
-        state.ctx.fillStyle = darkFur;
-        state.ctx.fillRect(sx + 4,  sy + 52, 18, 4);
-        state.ctx.fillRect(sx + 26, sy + 52, 18, 4);
+            // Low horizontal body slab
+            state.ctx.fillStyle = fur;
+            state.ctx.fillRect(sx + 2, sy + 26, 44, 18);
+            state.ctx.fillStyle = belly;
+            state.ctx.fillRect(sx + 8, sy + 30, 32, 12);
+            state.ctx.fillStyle = darkFur;
+            state.ctx.fillRect(sx + 10, sy + 21, 28, 7);  // spine hump
+            state.ctx.fillStyle = "rgba(0,0,0,0.18)";
+            state.ctx.fillRect(sx + 2, sy + 31, 44, 3);
+            state.ctx.fillRect(sx + 2, sy + 39, 44, 3);
 
-        // Fire glow around mouth when shoot is ready
-        if (mob.shootCooldown <= 0) {
-            state.ctx.fillStyle = "rgba(255,80,0,0.25)";
-            state.ctx.fillRect(muzzX - 2, sy + 8, 20, 17);
+            // Front legs (near head)
+            const flX = f === 1 ? sx + 28 : sx + 10;
+            state.ctx.fillStyle = fur;
+            state.ctx.fillRect(flX,      sy + 40, 11, 16);
+            state.ctx.fillRect(flX + 12, sy + 40, 11, 16);
+            state.ctx.fillStyle = darkFur;
+            state.ctx.fillRect(flX - 2,  sy + 52, 15, 4);
+            state.ctx.fillRect(flX + 10, sy + 52, 15, 4);
+            state.ctx.fillRect(f === 1 ? flX + 22 : flX - 5, sy + 52, 5, 7);  // leading claw
+
+            // Head thrust forward (extends past collision box)
+            const hx = f === 1 ? sx + 34 : sx - 14;
+            state.ctx.fillStyle = fur;
+            state.ctx.fillRect(hx, sy + 16, 28, 22);
+            state.ctx.fillStyle = darkFur;
+            state.ctx.fillRect(hx, sy + 16, 28, 7);  // low aggressive brow
+
+            // Horns angled forward like a charging bull
+            state.ctx.fillStyle = hornCol;
+            if (f === 1) {
+                state.ctx.fillRect(hx + 2,  sy + 8, 6, 10);
+                state.ctx.fillRect(hx + 6,  sy + 2, 8,  8);
+                state.ctx.fillRect(hx + 16, sy + 8, 6, 10);
+                state.ctx.fillRect(hx + 16, sy + 2, 8,  8);
+            } else {
+                state.ctx.fillRect(hx + 20, sy + 8, 6, 10);
+                state.ctx.fillRect(hx + 14, sy + 2, 8,  8);
+                state.ctx.fillRect(hx + 6,  sy + 8, 6, 10);
+                state.ctx.fillRect(hx + 4,  sy + 2, 8,  8);
+            }
+            state.ctx.fillStyle = tipCol;
+            if (f === 1) {
+                state.ctx.fillRect(hx + 8,  sy - 4, 5, 8);
+                state.ctx.fillRect(hx + 18, sy - 4, 5, 8);
+            } else {
+                state.ctx.fillRect(hx + 15, sy - 4, 5, 8);
+                state.ctx.fillRect(hx + 5,  sy - 4, 5, 8);
+            }
+
+            // Wide open snarling muzzle
+            const muzzQ = f === 1 ? hx + 16 : hx + 2;
+            state.ctx.fillStyle = belly;
+            state.ctx.fillRect(muzzQ, sy + 24, 14, 14);
+            state.ctx.fillStyle = darkFur;
+            state.ctx.fillRect(muzzQ + 2, sy + 30, 10, 6);  // open mouth
+            state.ctx.fillRect(muzzQ + 2, sy + 25, 3,  3);  // nostril
+            state.ctx.fillRect(muzzQ + 9, sy + 25, 3,  3);
+
+            // Eyes — wide furious blaze
+            state.ctx.fillStyle = eyeCol;
+            if (f === 1) {
+                state.ctx.fillRect(hx + 4,  sy + 20, 10, 8);
+                state.ctx.fillRect(hx + 16, sy + 20, 8,  8);
+            } else {
+                state.ctx.fillRect(hx + 14, sy + 20, 10, 8);
+                state.ctx.fillRect(hx + 4,  sy + 20, 8,  8);
+            }
+            state.ctx.fillStyle = "rgba(255,80,0,0.45)";
+            state.ctx.fillRect(hx + 2, sy + 16, 24, 16);
+
+            // Fire glow at mouth when ready to spit
+            if (mob.shootCooldown <= 0) {
+                state.ctx.fillStyle = "rgba(255,120,0,0.35)";
+                state.ctx.fillRect(muzzQ - 2, sy + 22, 18, 18);
+            }
         }
     }
-
     // Mob equipment overlay (non-pigman)
     if (mob.equipment && mob.type !== "pigman") {
         if (mob.equipment.armor) {
