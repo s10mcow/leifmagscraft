@@ -386,21 +386,6 @@ export function startNewWorld(worldName) {
             state.player.y = (findSurfaceY(startX) - 2) * BLOCK_SIZE;
             console.log("Player placed at x:", startX, "y:", state.player.y / BLOCK_SIZE);
 
-            // Spawn loadout
-            const loadout = [
-                { itemId: ITEMS.WASTELAND_TELEPORTER,  count: 1,  durability: 0 },
-                { itemId: ITEMS.MINIATURE_NETHER_PORTAL, count: 1, durability: 0 },
-                { itemId: ITEMS.POSSUM_TELEPORTER,     count: 1,  durability: 0 },
-                { itemId: ITEMS.FLAMETHROWER,          count: 1,  durability: ITEM_INFO[ITEMS.FLAMETHROWER].durability },
-                { itemId: ITEMS.FUEL_CANISTER,         count: 10, durability: 0 },
-            ];
-            for (let i = 0; i < loadout.length; i++) {
-                state.inventory.slots[i] = { ...loadout[i] };
-            }
-            state.inventory.armor.helmet     = { itemId: ITEMS.RIOT_HELMET,     count: 1, durability: ITEM_INFO[ITEMS.RIOT_HELMET].durability };
-            state.inventory.armor.chestplate = { itemId: ITEMS.RIOT_CHESTPLATE, count: 1, durability: ITEM_INFO[ITEMS.RIOT_CHESTPLATE].durability };
-            state.inventory.armor.leggings   = { itemId: ITEMS.RIOT_LEGGINGS,   count: 1, durability: ITEM_INFO[ITEMS.RIOT_LEGGINGS].durability };
-            state.inventory.armor.boots      = { itemId: ITEMS.RIOT_BOOTS,      count: 1, durability: ITEM_INFO[ITEMS.RIOT_BOOTS].durability };
 
             state.currentWorldName = worldName || ("World " + Date.now());
             state.gameState = "playing";
@@ -448,21 +433,6 @@ export function startMultiplayerWorld(worldName) {
             state.player.x = startX * BLOCK_SIZE;
             state.player.y = (findSurfaceY(startX) - 2) * BLOCK_SIZE;
 
-            // Spawn loadout
-            const loadout = [
-                { itemId: ITEMS.WASTELAND_TELEPORTER,  count: 1,  durability: 0 },
-                { itemId: ITEMS.MINIATURE_NETHER_PORTAL, count: 1, durability: 0 },
-                { itemId: ITEMS.POSSUM_TELEPORTER,     count: 1,  durability: 0 },
-                { itemId: ITEMS.FLAMETHROWER,          count: 1,  durability: ITEM_INFO[ITEMS.FLAMETHROWER].durability },
-                { itemId: ITEMS.FUEL_CANISTER,         count: 10, durability: 0 },
-            ];
-            for (let i = 0; i < loadout.length; i++) {
-                state.inventory.slots[i] = { ...loadout[i] };
-            }
-            state.inventory.armor.helmet     = { itemId: ITEMS.RIOT_HELMET,     count: 1, durability: ITEM_INFO[ITEMS.RIOT_HELMET].durability };
-            state.inventory.armor.chestplate = { itemId: ITEMS.RIOT_CHESTPLATE, count: 1, durability: ITEM_INFO[ITEMS.RIOT_CHESTPLATE].durability };
-            state.inventory.armor.leggings   = { itemId: ITEMS.RIOT_LEGGINGS,   count: 1, durability: ITEM_INFO[ITEMS.RIOT_LEGGINGS].durability };
-            state.inventory.armor.boots      = { itemId: ITEMS.RIOT_BOOTS,      count: 1, durability: ITEM_INFO[ITEMS.RIOT_BOOTS].durability };
 
             state.currentWorldName = worldName || ("World " + Date.now());
             state.gameState = "playing";
