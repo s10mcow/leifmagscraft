@@ -54,18 +54,6 @@ export function spawnMobs(dt, dayBrightness) {
         else if (m.type !== "villager" && m.type !== "iron_golem" && m.type !== "companion") passiveCount++;
     }
 
-    if (state.inVoid) {
-        if (hostileCount < MAX_HOSTILE_MOBS) {
-            const pos = findSpawnPosition();
-            if (pos) {
-                const g = createMob("glitched", pos.x, pos.y);
-                state.mobs.push(g);
-                state.glitchedActive = true;
-            }
-        }
-        return;
-    }
-
     if (state.inPossum) {
         // Possum realm: only friendly possums spawn, no hostiles
         if (passiveCount < MAX_PASSIVE_MOBS + 4) {

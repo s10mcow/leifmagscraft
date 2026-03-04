@@ -10,6 +10,7 @@ import { state } from '../state.js';
 import { BLOCKS, ITEMS, ITEM_INFO, WORLD_WIDTH, WORLD_HEIGHT, BLOCK_SIZE, MOB_DEFS, SAVE_KEY_PREFIX, SAVE_INDEX_KEY } from '../constants.js';
 import { ARMOR_SLOT_TYPES } from '../inventory.js';
 import { findSurfaceY, generateWorld, generateNetherWorld } from '../world.js';
+import { checkExistingSession } from '../auth.js';
 import { updateCamera } from '../player.js';
 import { createMob, spawnVillagers } from '../mobs.js';
 import { rleEncode, rleDecode } from './compression.js';
@@ -24,7 +25,6 @@ export function resetAllGameState() {
     state.world.length = 0;
     state.netherWorld.length = 0;
     state.wastelandWorld.length = 0;
-    state.voidWorld.length = 0;
     state.possumWorld.length = 0;
     state.biomeMap.length = 0;
     state.netherBiomeMap.length = 0;
@@ -32,7 +32,6 @@ export function resetAllGameState() {
     state.bgWorld.length = 0;
     state.netherBgWorld.length = 0;
     state.wastelandBgWorld.length = 0;
-    state.voidBgWorld.length = 0;
     state.possumBgWorld.length = 0;
     state.activeBgWorld = null;
     for (const key in state.chestData) delete state.chestData[key];
@@ -81,7 +80,6 @@ export function resetAllGameState() {
     // Dimension
     state.inNether = false;
     state.inWasteland = false;
-    state.inVoid = false;
     state.inPossum = false;
     state.activeWorld = state.world;
     state.overworldPortalX = 0; state.overworldPortalY = 0;
@@ -90,9 +88,6 @@ export function resetAllGameState() {
     state.wastelandReturnX = 0; state.wastelandReturnY = 0;
     state.wastelandReturnDim = 'overworld';
     state.radiationTimer = 3000;
-    state.voidPortalX = 0; state.voidPortalY = 0;
-    state.voidReturnX = 0; state.voidReturnY = 0;
-    state.voidReturnDim = 'overworld';
     state.possumReturnX = 0; state.possumReturnY = 0;
     state.possumReturnDim = 'overworld';
     state.portalCooldown = 0;
@@ -166,7 +161,6 @@ export function saveWorld() {
         world: rleEncode(state.world),
         netherWorld: state.netherWorld.length > 0 ? rleEncode(state.netherWorld) : null,
         wastelandWorld: state.wastelandWorld.length > 0 ? rleEncode(state.wastelandWorld) : null,
-        voidWorld: state.voidWorld.length > 0 ? rleEncode(state.voidWorld) : null,
         possumWorld: state.possumWorld.length > 0 ? rleEncode(state.possumWorld) : null,
         biomeMap: state.biomeMap.slice(),
         netherBiomeMap: state.netherBiomeMap.slice(),
@@ -174,7 +168,6 @@ export function saveWorld() {
         bgWorld: state.bgWorld.length > 0 ? rleEncode(state.bgWorld) : null,
         netherBgWorld: state.netherBgWorld.length > 0 ? rleEncode(state.netherBgWorld) : null,
         wastelandBgWorld: state.wastelandBgWorld.length > 0 ? rleEncode(state.wastelandBgWorld) : null,
-        voidBgWorld: state.voidBgWorld.length > 0 ? rleEncode(state.voidBgWorld) : null,
         possumBgWorld: state.possumBgWorld.length > 0 ? rleEncode(state.possumBgWorld) : null,
         chestData: JSON.parse(JSON.stringify(state.chestData)),
         inventory: {
@@ -197,7 +190,6 @@ export function saveWorld() {
         timeOfDay: state.timeOfDay,
         inNether: state.inNether,
         inWasteland: state.inWasteland,
-        inVoid: state.inVoid,
         inPossum: state.inPossum,
         overworldPortalX: state.overworldPortalX,
         overworldPortalY: state.overworldPortalY,
@@ -208,11 +200,6 @@ export function saveWorld() {
         wastelandReturnX: state.wastelandReturnX,
         wastelandReturnY: state.wastelandReturnY,
         wastelandReturnDim: state.wastelandReturnDim || 'overworld',
-        voidPortalX: state.voidPortalX,
-        voidPortalY: state.voidPortalY,
-        voidReturnX: state.voidReturnX,
-        voidReturnY: state.voidReturnY,
-        voidReturnDim: state.voidReturnDim || 'overworld',
         possumReturnX: state.possumReturnX,
         possumReturnY: state.possumReturnY,
         possumReturnDim: state.possumReturnDim || 'overworld',
@@ -260,10 +247,6 @@ export function loadWorld(worldName) {
                 const wDecoded = rleDecode(data.wastelandWorld, WORLD_WIDTH, WORLD_HEIGHT);
                 for (let x = 0; x < WORLD_WIDTH; x++) state.wastelandWorld[x] = wDecoded[x];
             }
-            if (data.voidWorld) {
-                const vDecoded = rleDecode(data.voidWorld, WORLD_WIDTH, WORLD_HEIGHT);
-                for (let x = 0; x < WORLD_WIDTH; x++) state.voidWorld[x] = vDecoded[x];
-            }
             if (data.possumWorld) {
                 const pDecoded = rleDecode(data.possumWorld, WORLD_WIDTH, WORLD_HEIGHT);
                 for (let x = 0; x < WORLD_WIDTH; x++) state.possumWorld[x] = pDecoded[x];
@@ -288,10 +271,6 @@ export function loadWorld(worldName) {
             if (data.wastelandBgWorld) {
                 const wbgDecoded = rleDecode(data.wastelandBgWorld, WORLD_WIDTH, WORLD_HEIGHT);
                 for (let x = 0; x < WORLD_WIDTH; x++) state.wastelandBgWorld[x] = wbgDecoded[x];
-            }
-            if (data.voidBgWorld) {
-                const vbgDecoded = rleDecode(data.voidBgWorld, WORLD_WIDTH, WORLD_HEIGHT);
-                for (let x = 0; x < WORLD_WIDTH; x++) state.voidBgWorld[x] = vbgDecoded[x];
             }
             if (data.possumBgWorld) {
                 const pbgDecoded = rleDecode(data.possumBgWorld, WORLD_WIDTH, WORLD_HEIGHT);
@@ -331,14 +310,10 @@ export function loadWorld(worldName) {
             state.timeOfDay = data.timeOfDay;
             state.inNether = data.inNether;
             state.inWasteland = data.inWasteland || false;
-            state.inVoid = data.inVoid || false;
             state.inPossum = data.inPossum || false;
             if (state.inPossum) {
                 state.activeWorld   = state.possumWorld;
                 state.activeBgWorld = state.possumBgWorld;
-            } else if (state.inVoid) {
-                state.activeWorld   = state.voidWorld;
-                state.activeBgWorld = state.voidBgWorld;
             } else if (state.inWasteland) {
                 state.activeWorld   = state.wastelandWorld;
                 state.activeBgWorld = state.wastelandBgWorld;
@@ -358,11 +333,6 @@ export function loadWorld(worldName) {
             state.wastelandReturnX = data.wastelandReturnX || 0;
             state.wastelandReturnY = data.wastelandReturnY || 0;
             state.wastelandReturnDim = data.wastelandReturnDim || 'overworld';
-            state.voidPortalX = data.voidPortalX || 0;
-            state.voidPortalY = data.voidPortalY || 0;
-            state.voidReturnX = data.voidReturnX || 0;
-            state.voidReturnY = data.voidReturnY || 0;
-            state.voidReturnDim = data.voidReturnDim || 'overworld';
             state.possumReturnX = data.possumReturnX || 0;
             state.possumReturnY = data.possumReturnY || 0;
             state.possumReturnDim = data.possumReturnDim || 'overworld';
@@ -418,7 +388,6 @@ export function startNewWorld(worldName) {
 
             // Spawn loadout
             const loadout = [
-                { itemId: ITEMS.VOID_TELEPORTER,       count: 1,  durability: 0 },
                 { itemId: ITEMS.WASTELAND_TELEPORTER,  count: 1,  durability: 0 },
                 { itemId: ITEMS.MINIATURE_NETHER_PORTAL, count: 1, durability: 0 },
                 { itemId: ITEMS.POSSUM_TELEPORTER,     count: 1,  durability: 0 },
@@ -445,6 +414,70 @@ export function startNewWorld(worldName) {
 }
 
 // ============================================================
+// START MULTIPLAYER WORLD
+// ============================================================
+
+export function startMultiplayerWorld(worldName) {
+    state.multiplayerMode = true;
+    state.gameState = "generating";
+    setTimeout(function() {
+        try {
+            resetAllGameState();
+
+            // Use a fixed seed for deterministic world generation so all
+            // players in the same session get the same world layout.
+            const MULTIPLAYER_SEED = 0xC0FFEE42;
+            function mulberry32(s) {
+                return function() {
+                    s |= 0; s = s + 0x6D2B79F5 | 0;
+                    let t = Math.imul(s ^ s >>> 15, 1 | s);
+                    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+                    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+                };
+            }
+            const seededRng = mulberry32(MULTIPLAYER_SEED);
+            const origRandom = Math.random;
+            Math.random = seededRng;
+            generateWorld();
+            Math.random = origRandom;
+
+            state.activeWorld = state.world;
+            spawnVillagers();
+
+            const startX = Math.floor(WORLD_WIDTH / 2);
+            state.player.x = startX * BLOCK_SIZE;
+            state.player.y = (findSurfaceY(startX) - 2) * BLOCK_SIZE;
+
+            // Spawn loadout
+            const loadout = [
+                { itemId: ITEMS.WASTELAND_TELEPORTER,  count: 1,  durability: 0 },
+                { itemId: ITEMS.MINIATURE_NETHER_PORTAL, count: 1, durability: 0 },
+                { itemId: ITEMS.POSSUM_TELEPORTER,     count: 1,  durability: 0 },
+                { itemId: ITEMS.FLAMETHROWER,          count: 1,  durability: ITEM_INFO[ITEMS.FLAMETHROWER].durability },
+                { itemId: ITEMS.FUEL_CANISTER,         count: 10, durability: 0 },
+            ];
+            for (let i = 0; i < loadout.length; i++) {
+                state.inventory.slots[i] = { ...loadout[i] };
+            }
+            state.inventory.armor.helmet     = { itemId: ITEMS.RIOT_HELMET,     count: 1, durability: ITEM_INFO[ITEMS.RIOT_HELMET].durability };
+            state.inventory.armor.chestplate = { itemId: ITEMS.RIOT_CHESTPLATE, count: 1, durability: ITEM_INFO[ITEMS.RIOT_CHESTPLATE].durability };
+            state.inventory.armor.leggings   = { itemId: ITEMS.RIOT_LEGGINGS,   count: 1, durability: ITEM_INFO[ITEMS.RIOT_LEGGINGS].durability };
+            state.inventory.armor.boots      = { itemId: ITEMS.RIOT_BOOTS,      count: 1, durability: ITEM_INFO[ITEMS.RIOT_BOOTS].durability };
+
+            state.currentWorldName = worldName || ("World " + Date.now());
+            state.gameState = "playing";
+
+            // Connect to multiplayer server after world is ready
+            import('../multiplayer.js').then(m => m.connectMultiplayer());
+        } catch (e) {
+            console.error("Multiplayer world generation error:", e);
+            state.multiplayerMode = false;
+            state.gameState = "menu";
+        }
+    }, 50);
+}
+
+// ============================================================
 // SAVE AND QUIT
 // ============================================================
 
@@ -465,5 +498,37 @@ export function saveAndQuit() {
 
 export function startGame() {
     refreshSaveList();
+    // Show a brief loading state while we check for an existing Supabase session
+    state.gameState = 'authChecking';
     requestAnimationFrame(gameLoop);
+
+    checkExistingSession().then((hasSession) => {
+        if (hasSession) {
+            // Valid session — skip password entry, go straight to login confirmation
+            state.gameState = 'accountLogin';
+            document.title = "Leef & Maggie's Minecraft 2D \u2014 A Two-Block Building Adventure";
+        } else {
+            const savedAccount = localStorage.getItem('lm2d_account');
+            if (savedAccount) {
+                // Had an account before, session expired — need to re-enter password
+                state.playerAccount = savedAccount;
+                state.gameState = 'accountLogin';
+                document.title = "Leef & Maggie's Minecraft 2D \u2014 A Two-Block Building Adventure";
+            } else {
+                state.gameState = 'accountCreate';
+                document.title = 'Make an Account';
+            }
+        }
+    }).catch(() => {
+        // Supabase unreachable — fall back to local account
+        const savedAccount = localStorage.getItem('lm2d_account');
+        if (savedAccount) {
+            state.playerAccount = savedAccount;
+            state.multiplayerName = savedAccount;
+            state.gameState = 'accountLogin';
+        } else {
+            state.gameState = 'accountCreate';
+            document.title = 'Make an Account';
+        }
+    });
 }

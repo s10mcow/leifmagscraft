@@ -59,8 +59,6 @@ export const ITEMS = {
   BUCKET: 162, WATER_BUCKET: 163, LAVA_BUCKET: 164, TOXIC_BUCKET: 165,
   // Flamethrower
   FUEL_CANISTER: 166, FLAMETHROWER: 167,
-  // Void
-  VOID_TELEPORTER: 168,
   // Possum Realm
   POSSUM_TELEPORTER: 169,
   POSSUM_TOOTH: 170,
@@ -287,8 +285,6 @@ export const ITEM_INFO = {
   // Flamethrower
   [ITEMS.FUEL_CANISTER]: { name: "Fuel Canister", stackable: true, maxStack: 10, color: "#d4a820" },
   [ITEMS.FLAMETHROWER]:  { name: "Flamethrower",  stackable: false, toolType: "gun", tier: 3, speed: 1, durability: 300, damage: 5, color: "#4a2a10", fireRate: 80, ammoType: "fuel", magSize: 60, reloadTime: 2500 },
-  // Void
-  [ITEMS.VOID_TELEPORTER]: { name: "Void Teleporter", stackable: false, color: "#5a20a0" },
   // Possum Realm
   [ITEMS.POSSUM_TELEPORTER]: { name: "Possum Teleporter", stackable: false, color: "#e8a0d0" },
   [ITEMS.POSSUM_TOOTH]: { name: "Possum's Tooth", stackable: true, maxStack: 16, color: "#fffff0" },
@@ -374,7 +370,6 @@ export const RECIPES = [
   { result: ITEMS.ROCKET, resultCount: 4, ingredients: [{ id: BLOCKS.IRON, count: 1 }, { id: ITEMS.GUNPOWDER, count: 1 }] },
   { result: ITEMS.MINIATURE_NETHER_PORTAL, resultCount: 1, ingredients: [{ id: BLOCKS.OBSIDIAN, count: 4 }, { id: ITEMS.FLINT_AND_STEEL, count: 1 }] },
   { result: ITEMS.WASTELAND_TELEPORTER, resultCount: 1, ingredients: [{ id: BLOCKS.COBBLESTONE, count: 24 }, { id: BLOCKS.OBSIDIAN, count: 4 }] },
-  { result: ITEMS.VOID_TELEPORTER, resultCount: 1, ingredients: [{ id: ITEMS.TITANIUM_INGOT, count: 4 }, { id: BLOCKS.URANIUM_ORE, count: 1 }] },
   { result: ITEMS.POSSUM_TELEPORTER, resultCount: 1, ingredients: [{ id: ITEMS.RAW_PORKCHOP, count: 10 }, { id: ITEMS.STEAK, count: 10 }, { id: BLOCKS.GLOWSTONE, count: 5 }] },
   { result: ITEMS.TOOTH_ROPE, resultCount: 1, ingredients: [{ id: ITEMS.POSSUM_TOOTH, count: 1 }, { id: ITEMS.POSSUM_TAIL, count: 1 }] },
   { result: ITEMS.SHIELD, resultCount: 1, ingredients: [{ id: BLOCKS.PLANKS, count: 6 }, { id: BLOCKS.IRON, count: 1 }] },
@@ -474,15 +469,6 @@ export const LOOT_TABLES = {
     { id: ITEMS.BONE, min: 1, max: 5, chance: 0.6 },
     { id: BLOCKS.GLOWSTONE, min: 1, max: 3, chance: 0.4 },
     { id: ITEMS.WASTELAND_TELEPORTER, min: 1, max: 1, chance: 0.05 },
-  ],
-  void_cache: [
-    { id: BLOCKS.DIAMOND, min: 2, max: 6, chance: 0.8 },
-    { id: BLOCKS.OBSIDIAN, min: 4, max: 12, chance: 0.9 },
-    { id: ITEMS.TITANIUM_INGOT, min: 1, max: 3, chance: 0.6 },
-    { id: BLOCKS.URANIUM_ORE, min: 1, max: 2, chance: 0.4 },
-    { id: ITEMS.NETHERITE_INGOT, min: 1, max: 2, chance: 0.35 },
-    { id: ITEMS.DIAMOND_SWORD, min: 1, max: 1, chance: 0.25 },
-    { id: ITEMS.VOID_TELEPORTER, min: 1, max: 1, chance: 0.08 },
   ],
   possum_cache: [
     { id: ITEMS.FLOWER, min: 4, max: 10, chance: 0.9 },

@@ -12,7 +12,7 @@ import { updatePlayer, updateCamera, updatePlateTimers, hurtPlayer } from '../pl
 import { updateMobs, updateProjectiles, updateParticles, spawnMobs } from '../mobs.js';
 import { addFloatingText } from '../inventory.js';
 import { updateMusic } from '../audio.js';
-import { drawTitleScreen, drawPauseMenu, drawGeneratingScreen, drawLoadingScreen, drawSavingScreen } from '../ui.js';
+import { drawTitleScreen, drawPauseMenu, drawGeneratingScreen, drawLoadingScreen, drawSavingScreen, drawModeSelectScreen, drawAccountCreateScreen, drawAccountLoginScreen, drawAuthCheckingScreen } from '../ui.js';
 import { updateMining, handleGunFire } from './input-handlers.js';
 import { updateSleep, updateLeafDecay } from './systems.js';
 import { drawGameFrame } from './frame-renderer.js';
@@ -30,8 +30,24 @@ export function gameLoop(timestamp) {
 
     try {
         switch (state.gameState) {
+            case "authChecking":
+                drawAuthCheckingScreen();
+                break;
+
+            case "accountCreate":
+                drawAccountCreateScreen();
+                break;
+
+            case "accountLogin":
+                drawAccountLoginScreen();
+                break;
+
             case "menu":
                 drawTitleScreen();
+                break;
+
+            case "modeSelect":
+                drawModeSelectScreen();
                 break;
 
             case "generating":
@@ -55,7 +71,6 @@ export function gameLoop(timestamp) {
                 state.cachedDayBrightness = Math.cos(state.timeOfDay * Math.PI * 2) * 0.5 + 0.5;
                 if (state.inNether) state.cachedDayBrightness = 0.3;
                 if (state.inWasteland) state.cachedDayBrightness = 0.25;
-                if (state.inVoid) state.cachedDayBrightness = 0.0;
                 if (state.inPossum) state.cachedDayBrightness = 1.0;
 
                 if (state.portalCooldown > 0) state.portalCooldown -= dt;

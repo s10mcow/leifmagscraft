@@ -43,13 +43,16 @@ function buildDOM() {
     joyBase.innerHTML = '<div id="joy-thumb"></div>';
     document.body.appendChild(joyBase);
 
+    // Pause button — top-right corner, away from all action buttons
+    const pauseWrap = document.createElement('div');
+    pauseWrap.id = 'vbtn-pause-wrap';
+    pauseWrap.innerHTML = `<div id="vbtn-pause" class="vbtn vbtn-sm">⏸</div>`;
+    document.body.appendChild(pauseWrap);
+
     // Right-side action panel
     const panel = document.createElement('div');
     panel.id = 'vbtn-panel';
     panel.innerHTML = `
-        <div class="vbtn-row">
-            <div id="vbtn-pause" class="vbtn vbtn-sm">⏸</div>
-        </div>
         <div class="vbtn-row">
             <div id="vbtn-inv"    class="vbtn vbtn-sm">INV</div>
             <div id="vbtn-use"    class="vbtn vbtn-sm">USE</div>

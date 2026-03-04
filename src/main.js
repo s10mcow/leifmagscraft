@@ -14,7 +14,7 @@ import './ui.js';
 import { setupInput, registerFunctions } from './input.js';
 import { setupVirtualControls } from './virtualControls.js';
 import {
-    startGame, startNewWorld, loadWorld, deleteSave, saveAndQuit,
+    startGame, startNewWorld, startMultiplayerWorld, loadWorld, deleteSave, saveAndQuit,
     interact, executeTrade, placeBlock, toggleDoor, teleportToOtherDimension,
     handleGunFire
 } from './game.js';
@@ -27,6 +27,7 @@ setTeleportToOtherDimension(teleportToOtherDimension);
 // Register functions that input.js needs from other modules
 registerFunctions({
     startNewWorld,
+    startMultiplayerWorld,
     loadWorld,
     deleteSave,
     saveAndQuit,
@@ -41,9 +42,13 @@ registerFunctions({
 // ============================================================
 // RESPONSIVE CANVAS — fills the full browser window
 // ============================================================
+// Cap internal render resolution so large windows don't tank performance.
+// CSS stretches the canvas to fill the viewport (style.css sets width/height: 100vw/100vh).
+const MAX_RENDER_W = 1280;
+const MAX_RENDER_H = 800;
 function resizeCanvas() {
-    state.canvas.width  = window.innerWidth;
-    state.canvas.height = window.innerHeight;
+    state.canvas.width  = Math.min(window.innerWidth,  MAX_RENDER_W);
+    state.canvas.height = Math.min(window.innerHeight, MAX_RENDER_H);
 }
 
 resizeCanvas();

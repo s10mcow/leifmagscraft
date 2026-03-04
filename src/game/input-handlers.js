@@ -12,7 +12,7 @@ import { addToInventory, addFloatingText, getEquippedTool, getEquippedTier, dama
 import { isBlockSolid, initChestData, removeChestData, checkLavaWaterInteraction } from '../world.js';
 import { playMineHit, playBlockBreak, playBlockPlace, playPickup } from '../audio.js';
 import { createBullet, createRocket, createFlame, createParticles, createToothRope } from '../mobs.js';
-import { scheduleLeafDecay, WOOD_BLOCKS, TREE_BLOCKS, teleportToOtherDimension, teleportToWasteland, teleportToVoid, teleportToPossum } from './systems.js';
+import { scheduleLeafDecay, WOOD_BLOCKS, TREE_BLOCKS, teleportToOtherDimension, teleportToWasteland, teleportToPossum } from './systems.js';
 
 // ============================================================
 // MINING LOGIC
@@ -246,11 +246,6 @@ export function interact() {
     // Wasteland Teleporter: teleport to/from Wasteland
     if (heldSlot.itemId === ITEMS.WASTELAND_TELEPORTER && state.portalCooldown <= 0) {
         teleportToWasteland();
-        return;
-    }
-    // Void Teleporter: teleport to/from Void
-    if (heldSlot.itemId === ITEMS.VOID_TELEPORTER && state.portalCooldown <= 0) {
-        teleportToVoid();
         return;
     }
     // Possum Teleporter: teleport to/from Possum Realm

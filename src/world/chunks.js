@@ -8,11 +8,10 @@
 import { state } from '../state.js';
 import { BLOCKS, WORLD_WIDTH, WORLD_HEIGHT, ITEM_INFO, LOOT_TABLES } from '../constants.js';
 
-// dimension: 'overworld' | 'nether' | 'wasteland' | 'void' | 'possum'
+// dimension: 'overworld' | 'nether' | 'wasteland' | 'possum'
 export function switchDimension(dimension) {
     state.inNether    = dimension === 'nether';
     state.inWasteland = dimension === 'wasteland';
-    state.inVoid      = dimension === 'void';
     state.inPossum    = dimension === 'possum';
     if (dimension === 'nether') {
         state.activeWorld    = state.netherWorld;
@@ -20,9 +19,6 @@ export function switchDimension(dimension) {
     } else if (dimension === 'wasteland') {
         state.activeWorld    = state.wastelandWorld;
         state.activeBgWorld  = state.wastelandBgWorld;
-    } else if (dimension === 'void') {
-        state.activeWorld    = state.voidWorld;
-        state.activeBgWorld  = state.voidBgWorld;
     } else if (dimension === 'possum') {
         state.activeWorld    = state.possumWorld;
         state.activeBgWorld  = state.possumBgWorld;

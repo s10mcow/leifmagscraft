@@ -620,8 +620,8 @@ export function drawHUD() {
 
     // Dimension indicator
     state.ctx.fillStyle = "rgba(0,0,0,0.4)"; state.ctx.fillRect(state.canvas.width - 150, 76, 145, 20);
-    const dimColor = state.inNether ? "#ff4444" : state.inWasteland ? "#c8a030" : state.inVoid ? "#8840ff" : state.inPossum ? "#ff88cc" : "#4ade80";
-    const dimName  = state.inNether ? "NETHER"  : state.inWasteland ? "WASTELAND" : state.inVoid ? "THE VOID" : state.inPossum ? "POSSUM REALM" : "Overworld";
+    const dimColor = state.inNether ? "#ff4444" : state.inWasteland ? "#c8a030" : state.inPossum ? "#ff88cc" : "#4ade80";
+    const dimName  = state.inNether ? "NETHER"  : state.inWasteland ? "WASTELAND" : state.inPossum ? "POSSUM REALM" : "Overworld";
     state.ctx.fillStyle = dimColor; state.ctx.font = "bold 11px 'Courier New', monospace";
     state.ctx.fillText(dimName, state.canvas.width - 10, 90);
 }
@@ -728,6 +728,369 @@ export function drawTitleScreen() {
 
     state.ctx.lineWidth = 1;
     state.ctx.textAlign = "center";
+}
+
+// --- MODE SELECT SCREEN ---
+export function drawModeSelectScreen() {
+    const w = state.canvas.width, h = state.canvas.height;
+    state.ctx.fillStyle = "#0a0a0a";
+    state.ctx.fillRect(0, 0, w, h);
+
+    // Subtle pixel-art grid overlay
+    state.ctx.fillStyle = "rgba(255,255,255,0.015)";
+    for (let x = 0; x < w; x += 32) state.ctx.fillRect(x, 0, 1, h);
+    for (let y = 0; y < h; y += 32) state.ctx.fillRect(0, y, w, 1);
+
+    state.ctx.fillStyle = "#4ade80";
+    state.ctx.font = "bold 28px 'Courier New', monospace";
+    state.ctx.textAlign = "center";
+    state.ctx.fillText("Choose Mode", w / 2, h * 0.32);
+    state.ctx.fillStyle = "#6b7280";
+    state.ctx.font = "13px 'Courier New', monospace";
+    state.ctx.fillText(`World: ${state.pendingWorldName || 'New World'}`, w / 2, h * 0.32 + 26);
+
+    const btnW = 300, btnH = 72, btnX = w / 2 - btnW / 2;
+
+    // --- Single Player ---
+    const spY = h * 0.44;
+    const hSP = state.menuHover === "modeSP";
+    state.ctx.fillStyle = hSP ? "rgba(74,222,128,0.25)" : "rgba(74,222,128,0.10)";
+    state.ctx.fillRect(btnX, spY, btnW, btnH);
+    state.ctx.strokeStyle = "#4ade80";
+    state.ctx.lineWidth = hSP ? 3 : 2;
+    state.ctx.strokeRect(btnX, spY, btnW, btnH);
+    state.ctx.fillStyle = "#4ade80";
+    state.ctx.font = "bold 18px 'Courier New', monospace";
+    state.ctx.fillText("Single Player", w / 2, spY + 32);
+    state.ctx.fillStyle = "#9ca3af";
+    state.ctx.font = "11px 'Courier New', monospace";
+    state.ctx.fillText("Just you, your world", w / 2, spY + 52);
+
+    // --- Multiplayer ---
+    const mpY = spY + btnH + 18;
+    const hMP = state.menuHover === "modeMP";
+    state.ctx.fillStyle = hMP ? "rgba(96,165,250,0.25)" : "rgba(96,165,250,0.10)";
+    state.ctx.fillRect(btnX, mpY, btnW, btnH);
+    state.ctx.strokeStyle = "#60a5fa";
+    state.ctx.lineWidth = hMP ? 3 : 2;
+    state.ctx.strokeRect(btnX, mpY, btnW, btnH);
+    state.ctx.fillStyle = "#60a5fa";
+    state.ctx.font = "bold 18px 'Courier New', monospace";
+    state.ctx.fillText("Multiplayer", w / 2, mpY + 32);
+    state.ctx.fillStyle = "#9ca3af";
+    state.ctx.font = "11px 'Courier New', monospace";
+    state.ctx.fillText("Shared world with others online", w / 2, mpY + 52);
+
+    // --- Back ---
+    const backY = mpY + btnH + 18;
+    const hBack = state.menuHover === "modeBack";
+    state.ctx.fillStyle = hBack ? "rgba(156,163,175,0.2)" : "rgba(156,163,175,0.06)";
+    state.ctx.fillRect(btnX, backY, btnW, 44);
+    state.ctx.strokeStyle = hBack ? "#9ca3af" : "#444";
+    state.ctx.lineWidth = hBack ? 2 : 1;
+    state.ctx.strokeRect(btnX, backY, btnW, 44);
+    state.ctx.fillStyle = "#9ca3af";
+    state.ctx.font = "13px 'Courier New', monospace";
+    state.ctx.fillText("← Back", w / 2, backY + 27);
+
+    // Store hit areas
+    state.MENU_BUTTONS.modeSP   = { x: btnX, y: spY,   w: btnW, h: btnH };
+    state.MENU_BUTTONS.modeMP   = { x: btnX, y: mpY,   w: btnW, h: btnH };
+    state.MENU_BUTTONS.modeBack = { x: btnX, y: backY, w: btnW, h: 44   };
+
+    state.ctx.lineWidth = 1;
+    state.ctx.textAlign = "center";
+}
+
+// --- SHARED ACCOUNT SCREEN BACKGROUND ---
+function drawAccountBg() {
+    const ctx = state.ctx;
+    const w = state.canvas.width, h = state.canvas.height;
+    ctx.fillStyle = "#0a0a0a";
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = "rgba(255,255,255,0.015)";
+    for (let x = 0; x < w; x += 32) ctx.fillRect(x, 0, 1, h);
+    for (let y = 0; y < h; y += 32) ctx.fillRect(0, y, w, 1);
+    return { w, h };
+}
+
+function drawAccountInput(ctx, label, value, isPassword, isActive, x, y, w, h) {
+    const cursor = isActive && Math.floor(Date.now() / 500) % 2 === 0 ? "|" : "";
+    ctx.fillStyle = "rgba(0,0,0,0.6)";
+    ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = isActive ? "#4ade80" : "#374151";
+    ctx.lineWidth = isActive ? 2 : 1;
+    ctx.strokeRect(x, y, w, h);
+    // Label
+    ctx.fillStyle = isActive ? "#4ade80" : "#6b7280";
+    ctx.font = "11px 'Courier New', monospace";
+    ctx.textAlign = "left";
+    ctx.fillText(label, x + 2, y - 6);
+    // Value
+    if (value) {
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "18px 'Courier New', monospace";
+        const display = isPassword ? "•".repeat(value.length) + cursor : value + cursor;
+        ctx.fillText(display, x + 12, y + h * 0.65);
+    } else {
+        ctx.fillStyle = "rgba(255,255,255,0.22)";
+        ctx.font = "14px 'Courier New', monospace";
+        ctx.fillText(isPassword ? "Enter password..." : "Enter username...", x + 12, y + h * 0.65);
+        if (isActive) {
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "18px 'Courier New', monospace";
+            ctx.fillText(cursor, x + 12, y + h * 0.65);
+        }
+    }
+    ctx.textAlign = "center";
+    ctx.lineWidth = 1;
+}
+
+// --- AUTH CHECKING SCREEN (brief flash while Supabase responds) ---
+export function drawAuthCheckingScreen() {
+    const { w, h } = drawAccountBg();
+    const ctx = state.ctx;
+    ctx.fillStyle = "#4ade80";
+    ctx.font = "bold 20px 'Courier New', monospace";
+    ctx.textAlign = "center";
+    const dots = ".".repeat(Math.floor(Date.now() / 400) % 4);
+    ctx.fillText("Connecting" + dots, w / 2, h / 2);
+}
+
+// --- ACCOUNT CREATE SCREEN ---
+export function drawAccountCreateScreen() {
+    const { w, h } = drawAccountBg();
+    const ctx = state.ctx;
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#4ade80";
+    ctx.font = "bold 30px 'Courier New', monospace";
+    ctx.fillText("Create Account", w / 2, h * 0.22);
+    ctx.fillStyle = "#6b7280";
+    ctx.font = "13px 'Courier New', monospace";
+    ctx.fillText("Pick a username and password to get started", w / 2, h * 0.22 + 28);
+
+    const fieldW = 320, fieldH = 46, fieldX = w / 2 - 160;
+    const unY = h * 0.36;
+    const pwY = unY + fieldH + 28;
+
+    drawAccountInput(ctx, "USERNAME", state.accountInput, false,
+        state.accountActiveField === 'username', fieldX, unY, fieldW, fieldH);
+    drawAccountInput(ctx, "PASSWORD  (min 6 chars)", state.accountPassword, true,
+        state.accountActiveField === 'password', fieldX, pwY, fieldW, fieldH);
+
+    state.MENU_BUTTONS.accountUsernameField = { x: fieldX, y: unY, w: fieldW, h: fieldH };
+    state.MENU_BUTTONS.accountPasswordField = { x: fieldX, y: pwY, w: fieldW, h: fieldH };
+
+    // Error
+    if (state.accountError) {
+        ctx.fillStyle = "#f87171";
+        ctx.font = "13px 'Courier New', monospace";
+        ctx.fillText(state.accountError, w / 2, pwY + fieldH + 22);
+    }
+
+    // Button
+    const btnW = 240, btnH = 46;
+    const btnX = w / 2 - btnW / 2;
+    const btnY = pwY + fieldH + (state.accountError ? 46 : 26);
+    const ready = state.accountInput.trim().length > 0 && state.accountPassword.length >= 6;
+    const hover = state.menuHover === "accountCreate";
+
+    if (state.accountLoading) {
+        ctx.fillStyle = "#6b7280";
+        ctx.font = "bold 16px 'Courier New', monospace";
+        ctx.fillText("Creating account...", w / 2, btnY + 30);
+    } else {
+        ctx.fillStyle = hover && ready ? "rgba(74,222,128,0.3)" : "rgba(74,222,128,0.10)";
+        ctx.fillRect(btnX, btnY, btnW, btnH);
+        ctx.strokeStyle = ready ? "#4ade80" : "#374151";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(btnX, btnY, btnW, btnH);
+        ctx.fillStyle = ready ? "#4ade80" : "#6b7280";
+        ctx.font = "bold 16px 'Courier New', monospace";
+        ctx.fillText("Create Account", w / 2, btnY + 30);
+        state.MENU_BUTTONS.accountCreate = { x: btnX, y: btnY, w: btnW, h: btnH };
+    }
+
+    ctx.fillStyle = "#374151";
+    ctx.font = "12px 'Courier New', monospace";
+    ctx.fillText("Tab to switch fields  •  Enter to confirm", w / 2, btnY + btnH + 18);
+    ctx.lineWidth = 1;
+}
+
+// --- ACCOUNT LOGIN SCREEN ---
+export function drawAccountLoginScreen() {
+    const { w, h } = drawAccountBg();
+    const ctx = state.ctx;
+    const hasSession = !!state.supabaseSession;
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#9ca3af";
+    ctx.font = "13px 'Courier New', monospace";
+    ctx.fillText("WELCOME BACK", w / 2, h * 0.24);
+    ctx.fillStyle = "#facc15";
+    ctx.font = "bold 34px 'Courier New', monospace";
+    ctx.fillText(state.playerAccount || "Player", w / 2, h * 0.24 + 44);
+
+    const btnW = 280, btnH = 50, btnX = w / 2 - 140;
+
+    if (hasSession) {
+        // Session still valid — just a continue button, no password needed
+        ctx.fillStyle = "#6b7280";
+        ctx.font = "13px 'Courier New', monospace";
+        ctx.fillText("Your session is still active.", w / 2, h * 0.24 + 74);
+
+        const contY = h * 0.50;
+        const hCont = state.menuHover === "accountLogin";
+        ctx.fillStyle = hCont ? "rgba(74,222,128,0.25)" : "rgba(74,222,128,0.10)";
+        ctx.fillRect(btnX, contY, btnW, btnH);
+        ctx.strokeStyle = "#4ade80";
+        ctx.lineWidth = hCont ? 3 : 2;
+        ctx.strokeRect(btnX, contY, btnW, btnH);
+        ctx.fillStyle = "#4ade80";
+        ctx.font = "bold 16px 'Courier New', monospace";
+        ctx.fillText(`Continue as ${state.playerAccount}`, w / 2, contY + 32);
+        state.MENU_BUTTONS.accountLogin = { x: btnX, y: contY, w: btnW, h: btnH };
+
+        const chY = contY + btnH + 14;
+        const hChange = state.menuHover === "accountChange";
+        ctx.fillStyle = hChange ? "rgba(156,163,175,0.18)" : "rgba(156,163,175,0.06)";
+        ctx.fillRect(btnX, chY, btnW, 40);
+        ctx.strokeStyle = hChange ? "#9ca3af" : "#374151";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(btnX, chY, btnW, 40);
+        ctx.fillStyle = "#9ca3af";
+        ctx.font = "13px 'Courier New', monospace";
+        ctx.fillText("Change Account", w / 2, chY + 25);
+        state.MENU_BUTTONS.accountChange = { x: btnX, y: chY, w: btnW, h: 40 };
+    } else {
+        // Session expired — need password
+        ctx.fillStyle = "#6b7280";
+        ctx.font = "13px 'Courier New', monospace";
+        ctx.fillText("Session expired — enter your password to continue.", w / 2, h * 0.24 + 74);
+
+        const fieldW = 280, fieldH = 46, fieldX = w / 2 - 140;
+        const pwY = h * 0.46;
+        drawAccountInput(ctx, "PASSWORD", state.accountPassword, true, true, fieldX, pwY, fieldW, fieldH);
+        state.MENU_BUTTONS.accountPasswordField = { x: fieldX, y: pwY, w: fieldW, h: fieldH };
+
+        if (state.accountError) {
+            ctx.fillStyle = "#f87171";
+            ctx.font = "13px 'Courier New', monospace";
+            ctx.fillText(state.accountError, w / 2, pwY + fieldH + 20);
+        }
+
+        const loginY = pwY + fieldH + (state.accountError ? 44 : 24);
+        if (state.accountLoading) {
+            ctx.fillStyle = "#6b7280";
+            ctx.font = "bold 15px 'Courier New', monospace";
+            ctx.fillText("Logging in...", w / 2, loginY + 28);
+        } else {
+            const hLogin = state.menuHover === "accountLogin";
+            ctx.fillStyle = hLogin ? "rgba(74,222,128,0.25)" : "rgba(74,222,128,0.10)";
+            ctx.fillRect(btnX, loginY, btnW, btnH);
+            ctx.strokeStyle = "#4ade80";
+            ctx.lineWidth = hLogin ? 3 : 2;
+            ctx.strokeRect(btnX, loginY, btnW, btnH);
+            ctx.fillStyle = "#4ade80";
+            ctx.font = "bold 16px 'Courier New', monospace";
+            ctx.fillText("Log In", w / 2, loginY + 32);
+            state.MENU_BUTTONS.accountLogin = { x: btnX, y: loginY, w: btnW, h: btnH };
+        }
+
+        const chY = (state.accountLoading ? h * 0.46 + fieldH + 68 : h * 0.46 + fieldH + (state.accountError ? 44 : 24) + btnH + 14);
+        const hChange = state.menuHover === "accountChange";
+        ctx.fillStyle = hChange ? "rgba(156,163,175,0.18)" : "rgba(156,163,175,0.06)";
+        ctx.fillRect(btnX, chY, btnW, 40);
+        ctx.strokeStyle = hChange ? "#9ca3af" : "#374151";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(btnX, chY, btnW, 40);
+        ctx.fillStyle = "#9ca3af";
+        ctx.font = "13px 'Courier New', monospace";
+        ctx.fillText("Different Account", w / 2, chY + 25);
+        state.MENU_BUTTONS.accountChange = { x: btnX, y: chY, w: btnW, h: 40 };
+    }
+
+    ctx.lineWidth = 1;
+}
+
+// --- CHAT OVERLAY ---
+export function drawChat() {
+    const w = state.canvas.width, h = state.canvas.height;
+    const chatX = 14;
+    const msgH = 20;
+    const maxVisible = 8;
+    const chatW = Math.min(420, w - 28);
+
+    // Tick timers and collect visible messages
+    const visible = [];
+    for (const m of state.chatMessages) {
+        if (!state.chatOpen) m.timer = Math.max(0, m.timer - 1);
+        if (m.timer > 0 || state.chatOpen) visible.push(m);
+    }
+    const slice = visible.slice(-maxVisible);
+
+    // Messages area bottom edge = just above input box (or above hotbar)
+    const hotbarH = 64;
+    const inputH = 32;
+    const bottomY = h - hotbarH - (state.chatOpen ? inputH + 6 : 4);
+    const startY = bottomY - slice.length * msgH;
+
+    state.ctx.save();
+    state.ctx.font = "13px 'Courier New', monospace";
+    state.ctx.textAlign = "left";
+
+    if (state.chatOpen) {
+        // Background panel for messages when chat is open
+        state.ctx.fillStyle = "rgba(0,0,0,0.35)";
+        state.ctx.fillRect(chatX - 2, startY - 4, chatW + 4, slice.length * msgH + 6);
+    }
+
+    for (let i = 0; i < slice.length; i++) {
+        const m = slice[i];
+        const alpha = state.chatOpen ? 1 : Math.min(1, m.timer / 60);
+        state.ctx.globalAlpha = alpha;
+        // Soft shadow
+        state.ctx.fillStyle = "rgba(0,0,0,0.6)";
+        state.ctx.fillText(m.text, chatX + 1, startY + i * msgH + msgH - 1);
+        state.ctx.fillStyle = m.color || '#ffffff';
+        state.ctx.fillText(m.text, chatX, startY + i * msgH + msgH - 2);
+    }
+    state.ctx.globalAlpha = 1;
+
+    // Input box (visible only when chatOpen)
+    if (state.chatOpen) {
+        const inputY = bottomY + 4;
+        // Outline-only box (Roblox-style)
+        state.ctx.strokeStyle = "rgba(255,255,255,0.55)";
+        state.ctx.lineWidth = 1.5;
+        state.ctx.fillStyle = "rgba(0,0,0,0.18)";
+        state.ctx.fillRect(chatX, inputY, chatW, inputH);
+        state.ctx.strokeRect(chatX, inputY, chatW, inputH);
+        // Cursor blink
+        const cursor = Math.floor(Date.now() / 530) % 2 === 0 ? '|' : '';
+        state.ctx.fillStyle = '#ffffff';
+        state.ctx.fillText(state.chatInput + cursor, chatX + 7, inputY + 21);
+        // Hint
+        if (!state.chatInput) {
+            state.ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            state.ctx.fillText('Type a message... (Enter to send, Esc to cancel)', chatX + 7, inputY + 21);
+        }
+        state.ctx.lineWidth = 1;
+    } else if (!state.chatOpen && !state.chatMessages.some(m => m.timer > 0)) {
+        // Show a faint "T to chat" hint
+        state.ctx.globalAlpha = 0.25;
+        state.ctx.strokeStyle = "rgba(255,255,255,0.4)";
+        state.ctx.lineWidth = 1;
+        state.ctx.strokeRect(chatX, h - hotbarH - inputH - 2, chatW, inputH);
+        state.ctx.fillStyle = '#ffffff';
+        state.ctx.font = "11px 'Courier New', monospace";
+        state.ctx.fillText('Press T to chat', chatX + 7, h - hotbarH - inputH + 12);
+        state.ctx.globalAlpha = 1;
+        state.ctx.lineWidth = 1;
+    }
+
+    state.ctx.restore();
 }
 
 // --- PAUSE MENU ---

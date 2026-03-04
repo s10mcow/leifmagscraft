@@ -16,6 +16,7 @@ export {
     saveWorld,
     loadWorld,
     startNewWorld,
+    startMultiplayerWorld,
     saveAndQuit,
     startGame,
 } from './state-management.js';

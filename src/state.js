@@ -76,15 +76,6 @@ export const state = {
     wastelandReturnX: 0,
     wastelandReturnY: 0,
     radiationTimer: 3000,
-    // Void dimension
-    voidWorld: [],
-    voidBgWorld: [],
-    inVoid: false,
-    voidPortalX: 0,
-    voidPortalY: 0,
-    voidReturnX: 0,
-    voidReturnY: 0,
-    voidReturnDim: 'overworld',
     // Possum Realm dimension
     possumWorld: [],
     possumBgWorld: [],
@@ -144,12 +135,38 @@ export const state = {
     musicNoteIndex: 0,
     musicIsNight: false,
 
+    // Account
+    playerAccount: null,        // current username (persisted in localStorage)
+    supabaseSession: null,      // active Supabase session object
+    accountInput: '',           // username being typed
+    accountPassword: '',        // password being typed
+    accountActiveField: 'username', // 'username' | 'password'
+    accountError: null,         // error string from Supabase
+    accountLoading: false,      // true while awaiting Supabase
+
     // Menu UI
     menuHover: null,
     menuSaveList: [],
     menuScrollOffset: 0,
-    MENU_BUTTONS: { newWorld: null, savedWorlds: [] },
+    MENU_BUTTONS: { newWorld: null, savedWorlds: [], modeSP: null, modeMP: null, modeBack: null,
+                    accountCreate: null, accountLogin: null, accountChange: null,
+                    accountUsernameField: null, accountPasswordField: null },
     PAUSE_BUTTONS: { resume: null, saveQuit: null },
+
+    // Mode selection
+    pendingWorldName: null,
+
+    // Multiplayer
+    multiplayerMode: false,
+    multiplayerConnected: false,
+    myPlayerId: null,
+    multiplayerName: 'Player',
+    otherPlayers: {},           // { id: {x, y, facing, health, name} }
+
+    // Chat
+    chatMessages: [],           // [{text, color, timer}]
+    chatOpen: false,
+    chatInput: '',
 };
 
 // Initialize inventory slots

@@ -13,12 +13,15 @@ html, body {
     color: #ffffff;
 }
 
-/* Canvas fills the entire window — JS sets the pixel dimensions */
+/* Canvas fills the entire window — JS sets internal pixel dimensions (capped for perf),
+   CSS stretches it to fill the full viewport. */
 #gameCanvas {
     display: block;
     position: fixed;
     top: 0;
     left: 0;
+    width: 100vw;
+    height: 100vh;
     cursor: crosshair;
     image-rendering: pixelated;
     image-rendering: crisp-edges; /* Firefox */
@@ -93,7 +96,8 @@ html, body {
 
 /* Hidden on mouse/pointer devices */
 #joy-base,
-#vbtn-panel {
+#vbtn-panel,
+#vbtn-pause-wrap {
     display: none;
 }
 
@@ -125,6 +129,15 @@ html, body {
         border: 2px solid rgba(255, 255, 255, 0.65);
         pointer-events: none;
         will-change: transform;
+    }
+
+    /* Pause button — top-right, clear of all other controls */
+    #vbtn-pause-wrap {
+        display: block;
+        position: fixed;
+        top: 14px;
+        right: 14px;
+        z-index: 25;
     }
 
     /* Right-side button panel */

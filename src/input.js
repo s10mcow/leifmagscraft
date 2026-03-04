@@ -237,7 +237,67 @@ function handleRightClickAction() {
 // Wrap all event listener setup into a single function
 export function setupInput() {
     document.addEventListener("keydown", (e) => {
+        // Account screens — intercept ALL keys while typing
+        if (state.gameState === "accountCreate" || state.gameState === "accountLogin") {
+            e.preventDefault();
+            const field = state.accountActiveField;
+            if (e.key === "Tab") {
+                state.accountActiveField = field === 'username' ? 'password' : 'username';
+            } else if (e.key === "Enter") {
+                if (state.gameState === "accountCreate") {
+                    const name = state.accountInput.trim();
+                    if (name.length > 0 && state.accountPassword.length >= 6 && !state.accountLoading) {
+                        import('./auth.js').then(m => m.createAccount(name, state.accountPassword));
+                    }
+                } else if (state.supabaseSession) {
+                    state.gameState = 'menu';
+                } else if (state.accountPassword.length > 0 && !state.accountLoading) {
+                    import('./auth.js').then(m => m.loginAccount(state.playerAccount, state.accountPassword));
+                }
+            } else if (e.key === "Backspace") {
+                if (field === 'password') state.accountPassword = state.accountPassword.slice(0, -1);
+                else state.accountInput = state.accountInput.slice(0, -1);
+            } else if (e.key.length === 1) {
+                if (field === 'password' && state.accountPassword.length < 40) state.accountPassword += e.key;
+                else if (field === 'username' && state.accountInput.length < 20) state.accountInput += e.key;
+            }
+            return;
+        }
+
+        // Chat input mode — intercept ALL keys while chat is open
+        if (state.chatOpen) {
+            e.preventDefault();
+            if (e.key === 'Enter') {
+                const text = state.chatInput.trim();
+                if (text) {
+                    if (state.multiplayerMode) {
+                        import('./multiplayer.js').then(m => m.sendChat(text));
+                    } else {
+                        state.chatMessages.push({ text: `You: ${text}`, color: '#ffff88', timer: 600 });
+                        if (state.chatMessages.length > 30) state.chatMessages.shift();
+                    }
+                }
+                state.chatInput = '';
+                state.chatOpen = false;
+            } else if (e.key === 'Escape') {
+                state.chatInput = '';
+                state.chatOpen = false;
+            } else if (e.key === 'Backspace') {
+                state.chatInput = state.chatInput.slice(0, -1);
+            } else if (e.key.length === 1 && state.chatInput.length < 120) {
+                state.chatInput += e.key;
+            }
+            return;
+        }
+
         state.keys[e.key] = true;
+
+        // T — open chat (in-game only)
+        if ((e.key === 't' || e.key === 'T') && state.gameState === 'playing' && !state.gameOver) {
+            state.chatOpen = true;
+            state.chatInput = '';
+            return;
+        }
 
         // Escape: pause/unpause or close menus
         if (e.key === "Escape") {
@@ -370,6 +430,28 @@ export function setupInput() {
         state.mouse.x = (e.clientX - rect.left) * (state.canvas.width / rect.width);
         state.mouse.y = (e.clientY - rect.top) * (state.canvas.height / rect.height);
 
+        // Account screen hover detection
+        if (state.gameState === "accountCreate") {
+            state.menuHover = null;
+            const b = state.MENU_BUTTONS.accountCreate;
+            if (b && state.mouse.x >= b.x && state.mouse.x <= b.x + b.w && state.mouse.y >= b.y && state.mouse.y <= b.y + b.h) {
+                state.menuHover = "accountCreate";
+            }
+            return;
+        }
+        if (state.gameState === "accountLogin") {
+            state.menuHover = null;
+            const lb = state.MENU_BUTTONS.accountLogin;
+            if (lb && state.mouse.x >= lb.x && state.mouse.x <= lb.x + lb.w && state.mouse.y >= lb.y && state.mouse.y <= lb.y + lb.h) {
+                state.menuHover = "accountLogin";
+            }
+            const cb = state.MENU_BUTTONS.accountChange;
+            if (cb && state.mouse.x >= cb.x && state.mouse.x <= cb.x + cb.w && state.mouse.y >= cb.y && state.mouse.y <= cb.y + cb.h) {
+                state.menuHover = "accountChange";
+            }
+            return;
+        }
+
         // Menu hover detection
         if (state.gameState === "menu") {
             state.menuHover = null;
@@ -389,6 +471,22 @@ export function setupInput() {
                         state.menuHover = "delete_" + i;
                     }
                 }
+            }
+            return;
+        }
+        if (state.gameState === "modeSelect") {
+            state.menuHover = null;
+            const sp = state.MENU_BUTTONS.modeSP;
+            if (sp && state.mouse.x >= sp.x && state.mouse.x <= sp.x + sp.w && state.mouse.y >= sp.y && state.mouse.y <= sp.y + sp.h) {
+                state.menuHover = "modeSP";
+            }
+            const mp = state.MENU_BUTTONS.modeMP;
+            if (mp && state.mouse.x >= mp.x && state.mouse.x <= mp.x + mp.w && state.mouse.y >= mp.y && state.mouse.y <= mp.y + mp.h) {
+                state.menuHover = "modeMP";
+            }
+            const bk = state.MENU_BUTTONS.modeBack;
+            if (bk && state.mouse.x >= bk.x && state.mouse.x <= bk.x + bk.w && state.mouse.y >= bk.y && state.mouse.y <= bk.y + bk.h) {
+                state.menuHover = "modeBack";
             }
             return;
         }
@@ -489,12 +587,58 @@ export function setupInput() {
 
     // Shared left-click / tap handler — called by both mousedown and touchstart
     function handleLeftClick(isTap = false) {
+        // Account create screen
+        if (state.gameState === "accountCreate") {
+            const uf = state.MENU_BUTTONS.accountUsernameField;
+            if (uf && state.mouse.x >= uf.x && state.mouse.x <= uf.x + uf.w && state.mouse.y >= uf.y && state.mouse.y <= uf.y + uf.h) {
+                state.accountActiveField = 'username';
+                return;
+            }
+            const pf = state.MENU_BUTTONS.accountPasswordField;
+            if (pf && state.mouse.x >= pf.x && state.mouse.x <= pf.x + pf.w && state.mouse.y >= pf.y && state.mouse.y <= pf.y + pf.h) {
+                state.accountActiveField = 'password';
+                return;
+            }
+            const b = state.MENU_BUTTONS.accountCreate;
+            if (b && state.mouse.x >= b.x && state.mouse.x <= b.x + b.w && state.mouse.y >= b.y && state.mouse.y <= b.y + b.h) {
+                const name = state.accountInput.trim();
+                if (name.length > 0 && state.accountPassword.length >= 6 && !state.accountLoading) {
+                    import('./auth.js').then(m => m.createAccount(name, state.accountPassword));
+                }
+            }
+            return;
+        }
+
+        // Account login screen
+        if (state.gameState === "accountLogin") {
+            const lb = state.MENU_BUTTONS.accountLogin;
+            if (lb && state.mouse.x >= lb.x && state.mouse.x <= lb.x + lb.w && state.mouse.y >= lb.y && state.mouse.y <= lb.y + lb.h) {
+                if (state.supabaseSession) {
+                    state.gameState = "menu";
+                } else if (state.accountPassword.length > 0 && !state.accountLoading) {
+                    import('./auth.js').then(m => m.loginAccount(state.playerAccount, state.accountPassword));
+                }
+                return;
+            }
+            const cb = state.MENU_BUTTONS.accountChange;
+            if (cb && state.mouse.x >= cb.x && state.mouse.x <= cb.x + cb.w && state.mouse.y >= cb.y && state.mouse.y <= cb.y + cb.h) {
+                state.accountInput = "";
+                state.accountPassword = "";
+                state.accountActiveField = 'username';
+                state.gameState = "accountCreate";
+                document.title = "Make an Account";
+                return;
+            }
+            return;
+        }
+
         // Title screen taps
         if (state.gameState === "menu") {
             const nb = state.MENU_BUTTONS.newWorld;
             if (nb && state.mouse.x >= nb.x && state.mouse.x <= nb.x + nb.w && state.mouse.y >= nb.y && state.mouse.y <= nb.y + nb.h) {
-                const name = "World " + (state.menuSaveList.length + 1);
-                fn.startNewWorld(name);
+                state.pendingWorldName = "World " + (state.menuSaveList.length + 1);
+                state.gameState = "modeSelect";
+                state.menuHover = null;
                 return;
             }
             if (state.MENU_BUTTONS.savedWorlds) {
@@ -511,6 +655,27 @@ export function setupInput() {
                         return;
                     }
                 }
+            }
+            return;
+        }
+
+        // Mode select screen taps
+        if (state.gameState === "modeSelect") {
+            const sp = state.MENU_BUTTONS.modeSP;
+            if (sp && state.mouse.x >= sp.x && state.mouse.x <= sp.x + sp.w && state.mouse.y >= sp.y && state.mouse.y <= sp.y + sp.h) {
+                fn.startNewWorld(state.pendingWorldName);
+                return;
+            }
+            const mp = state.MENU_BUTTONS.modeMP;
+            if (mp && state.mouse.x >= mp.x && state.mouse.x <= mp.x + mp.w && state.mouse.y >= mp.y && state.mouse.y <= mp.y + mp.h) {
+                fn.startMultiplayerWorld(state.pendingWorldName);
+                return;
+            }
+            const bk = state.MENU_BUTTONS.modeBack;
+            if (bk && state.mouse.x >= bk.x && state.mouse.x <= bk.x + bk.w && state.mouse.y >= bk.y && state.mouse.y <= bk.y + bk.h) {
+                state.gameState = "menu";
+                state.menuHover = null;
+                return;
             }
             return;
         }
@@ -670,7 +835,11 @@ export function setupInput() {
             return;
         }
 
-        handleLeftClick(true);
+        // In scrollable contexts (main menu, crafting), defer tap to touchend
+        // so the user can swipe to scroll without accidentally triggering buttons.
+        const isScrollable = state.gameState === "menu" ||
+            (state.gameState === "playing" && state.craftingOpen);
+        if (!isScrollable) handleLeftClick(true);
     }, { passive: false });
 
     state.canvas.addEventListener("touchmove", (e) => {
@@ -697,6 +866,10 @@ export function setupInput() {
             const cx = (t.clientX - rect.left) * (state.canvas.width / rect.width);
             const dx = cx - swipeStartX;
             const totalDy = Math.abs(swipeLastY - swipeStartY);
+            // Scrollable contexts: fire click only if it was a tap (barely moved)
+            if (state.gameState === "menu" || (state.gameState === "playing" && state.craftingOpen)) {
+                if (Math.abs(dx) < 18 && totalDy < 18) handleLeftClick(true);
+            }
             // Horizontal swipe → hotbar slot switch (only in-game with no menus)
             if (state.gameState === "playing" && !state.craftingOpen && !state.chestOpen && !state.tradingOpen && !state.blastFurnaceOpen && !state.gameOver) {
                 if (Math.abs(dx) > 60 && totalDy < 35) {

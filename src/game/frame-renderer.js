@@ -9,18 +9,55 @@
 import { state } from '../state.js';
 import { BLOCKS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, TORCH_LIGHT_RADIUS, ITEMS } from '../constants.js';
 import { drawSky, drawBackgroundTrees, drawBlock, drawAllMobs, drawProjectiles, drawParticles, drawPlayer } from '../rendering.js';
-import { drawFloatingTexts, drawHotbar, drawHealthBar, drawBlockHighlight, drawMiningProgress, drawCraftingMenu, drawChestMenu, drawBlastFurnaceMenu, drawTradingMenu, drawDeathScreen, drawHUD } from '../ui.js';
+import { drawFloatingTexts, drawHotbar, drawHealthBar, drawBlockHighlight, drawMiningProgress, drawCraftingMenu, drawChestMenu, drawBlastFurnaceMenu, drawTradingMenu, drawDeathScreen, drawHUD, drawChat } from '../ui.js';
 
 // SLEEP_DURATION must match the value in systems.js
+const PLAYER_COLORS = ['#e07040','#40a0e0','#e040a0','#40e080','#e0c040','#a040e0','#40e0c0'];
+
+function drawOtherPlayers() {
+    const players = Object.values(state.otherPlayers);
+    if (!players.length) return;
+    const camX = state.camera.x - state.screenShake.x;
+    const camY = state.camera.y - state.screenShake.y;
+    for (let pi = 0; pi < players.length; pi++) {
+        const p = players[pi];
+        const sx = p.x - camX;
+        const sy = p.y - camY;
+        const col = PLAYER_COLORS[pi % PLAYER_COLORS.length];
+        // Body
+        state.ctx.fillStyle = col;
+        state.ctx.fillRect(sx + 4, sy + 14, 16, 16);
+        // Head
+        state.ctx.fillStyle = "#c69c6d";
+        state.ctx.fillRect(sx + 4, sy, 16, 14);
+        // Eyes
+        state.ctx.fillStyle = "#4a3728";
+        if ((p.facing || 1) === 1) state.ctx.fillRect(sx + 15, sy + 4, 3, 4);
+        else                        state.ctx.fillRect(sx + 6,  sy + 4, 3, 4);
+        // Legs
+        state.ctx.fillStyle = col;
+        state.ctx.fillRect(sx + 4,  sy + 30, 7, 10);
+        state.ctx.fillRect(sx + 13, sy + 30, 7, 10);
+        // Name tag
+        state.ctx.save();
+        state.ctx.font = "bold 10px 'Courier New', monospace";
+        state.ctx.textAlign = "center";
+        state.ctx.fillStyle = "rgba(0,0,0,0.55)";
+        state.ctx.fillRect(sx + 12 - state.ctx.measureText(p.name || 'Player').width / 2 - 2, sy - 16, state.ctx.measureText(p.name || 'Player').width + 4, 13);
+        state.ctx.fillStyle = col;
+        state.ctx.fillText(p.name || 'Player', sx + 12, sy - 5);
+        state.ctx.restore();
+    }
+}
 const SLEEP_DURATION = 2000;
 
 export function drawGameFrame(timestamp) {
     const camX = state.camera.x - state.screenShake.x;
     const camY = state.camera.y - state.screenShake.y;
 
-    // Grayscale world when The Glitched is alive or inside the Void (CSS on canvas element — GPU composited, no render cost)
-    state.canvas.style.filter = (state.glitchedActive || state.inVoid) ? "grayscale(100%)" :
-                                 state.inPossum ? "saturate(140%) brightness(1.08)" : "";
+    // CSS filter on canvas — GPU composited, no render cost
+    state.canvas.style.filter = state.glitchedActive ? "grayscale(100%)" :
+                                 state.inPossum      ? "saturate(140%) brightness(1.08)" : "";
 
     // 1. Sky
     drawSky(state.cachedDayBrightness);
@@ -47,7 +84,7 @@ export function drawGameFrame(timestamp) {
         const nightAlpha = (0.7 - state.cachedDayBrightness) * 0.7;
         state.ctx.fillStyle = state.inNether    ? `rgba(10,0,0,${nightAlpha})`    :
                               state.inWasteland ? `rgba(5,15,0,${nightAlpha})`    :
-                              state.inVoid      ? `rgba(5,0,15,${nightAlpha})`    :
+                              state.inVoid      ? `rgba(0,0,20,${nightAlpha})`    :
                                                   `rgba(0,0,20,${nightAlpha})`;
         state.ctx.fillRect(0, 0, state.canvas.width, state.canvas.height);
 
@@ -110,7 +147,10 @@ export function drawGameFrame(timestamp) {
     // 8. Particles
     drawParticles();
 
-    // 9. Player
+    // 9. Other players (multiplayer)
+    drawOtherPlayers();
+
+    // 9.5. Local player
     drawPlayer();
 
     // 10. Floating texts
@@ -135,6 +175,9 @@ export function drawGameFrame(timestamp) {
 
     // 13. Death screen
     drawDeathScreen();
+
+    // 13.1. Chat overlay
+    drawChat();
 
 
     // 13.5. Radiation overlay (wasteland without full hazmat)
