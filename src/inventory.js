@@ -58,7 +58,8 @@ export function removeItems(itemId, amount) {
 }
 
 // Add items to inventory. Returns true if successful.
-export function addToInventory(itemId, count = 1) {
+// durabilityOverride: if provided, newly created stacks use this durability instead of the item default.
+export function addToInventory(itemId, count = 1, durabilityOverride = null) {
     if (itemId === 0 || itemId === null) return false;
     const stackable = isStackable(itemId);
     const max = maxStackSize(itemId);
@@ -84,7 +85,7 @@ export function addToInventory(itemId, count = 1) {
                 state.inventory.slots[i].itemId = itemId;
                 state.inventory.slots[i].count = add;
                 if (ITEM_INFO[itemId] && ITEM_INFO[itemId].durability) {
-                    state.inventory.slots[i].durability = ITEM_INFO[itemId].durability;
+                    state.inventory.slots[i].durability = durabilityOverride !== null ? durabilityOverride : ITEM_INFO[itemId].durability;
                 }
                 remaining -= add;
                 found = true;
@@ -123,7 +124,8 @@ export function craft(recipe) {
     for (const ing of recipe.ingredients) {
         removeItems(ing.id, ing.count);
     }
-    if (addToInventory(recipe.result, recipe.resultCount)) {
+    const dur = recipe.resultDurability !== undefined ? recipe.resultDurability : null;
+    if (addToInventory(recipe.result, recipe.resultCount, dur)) {
         addFloatingText(state.player.x, state.player.y - 30,
             `Crafted ${recipe.resultCount}x ${getItemName(recipe.result)}!`, "#4ade80");
         playCraft();

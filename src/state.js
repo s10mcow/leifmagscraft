@@ -30,6 +30,9 @@ export const state = {
     tradingOpen: false,
     tradingVillager: null,
     tradingHover: -1,
+    blastFurnaceOpen: false,
+    blastFurnacePos: null,
+    blastFurnaceHover: -1,
     chestOpen: false,
     chestPos: null,
     chestHover: -1,
@@ -41,6 +44,9 @@ export const state = {
         isBgBlock: false
     },
     gunCooldown: 0,
+    gunReloadTimer: 0,
+    gunReloadingSlot: -1,
+    glitchedActive: false,
 
     // World data
     world: [],
@@ -60,6 +66,32 @@ export const state = {
     bgWorld: [],
     netherBgWorld: [],
     activeBgWorld: null,
+    // Wasteland dimension
+    wastelandWorld: [],
+    wastelandBgWorld: [],
+    wastelandBiomeMap: [],
+    inWasteland: false,
+    wastelandPortalX: 0,
+    wastelandPortalY: 0,
+    wastelandReturnX: 0,
+    wastelandReturnY: 0,
+    radiationTimer: 3000,
+    // Void dimension
+    voidWorld: [],
+    voidBgWorld: [],
+    inVoid: false,
+    voidPortalX: 0,
+    voidPortalY: 0,
+    voidReturnX: 0,
+    voidReturnY: 0,
+    voidReturnDim: 'overworld',
+    // Possum Realm dimension
+    possumWorld: [],
+    possumBgWorld: [],
+    inPossum: false,
+    possumReturnX: 0,
+    possumReturnY: 0,
+    possumReturnDim: 'overworld',
 
     // Player
     player: {

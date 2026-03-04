@@ -20,6 +20,8 @@ export function createMob(type, x, y) {
         wanderDir: Math.random() < 0.5 ? -1 : 1,
         wanderTimer: 0,
         burnTimer: 0,
+        onFire: 0,
+        fireDamageCooldown: 0,
         dead: false,
         spawnX: x,
         equipment: null,
@@ -43,6 +45,17 @@ export function createMob(type, x, y) {
         const hasArmor = Math.random() < 0.3;
         mob.equipment = { armor: hasArmor, weapon: true, gold: true };
         if (hasArmor) mob.health += 5;
+    }
+    if (type === "raider") {
+        mob.shootCooldown = Math.random() * MOB_DEFS.raider.shootInterval;
+        mob.magAmmo = 24;
+        mob.reloadTimer = 0;
+        if (Math.random() < 0.25) { mob.equipment = { armor: true }; mob.health += 5; }
+    }
+    if (type === "companion") {
+        mob.hungerTimer = 0;
+        mob.askingForFood = false;
+        mob.foodAskTimer = 0;
     }
     return mob;
 }

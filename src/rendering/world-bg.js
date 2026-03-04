@@ -42,6 +42,58 @@ export function drawSky(dayBrightness) {
         state.ctx.fillRect(0, 0, state.canvas.width, state.canvas.height * 0.3);
         return;
     }
+    if (state.inPossum) {
+        // Soft pastel pink-to-lilac gradient sky
+        const w = state.canvas.width, h = state.canvas.height;
+        const grad = state.ctx.createLinearGradient(0, 0, 0, h);
+        grad.addColorStop(0, "#f7c8e8");
+        grad.addColorStop(0.5, "#ffe8f5");
+        grad.addColorStop(1, "#d4f5c0");
+        state.ctx.fillStyle = grad;
+        state.ctx.fillRect(0, 0, w, h);
+        // Cheerful sun with sparkle
+        const t = performance.now() * 0.001;
+        const sunX = w * 0.75, sunY = h * 0.18;
+        state.ctx.fillStyle = "rgba(255, 220, 80, 0.95)";
+        state.ctx.beginPath(); state.ctx.arc(sunX, sunY, 28, 0, Math.PI * 2); state.ctx.fill();
+        state.ctx.fillStyle = "rgba(255, 240, 160, 0.5)";
+        state.ctx.beginPath(); state.ctx.arc(sunX, sunY, 42, 0, Math.PI * 2); state.ctx.fill();
+        // Sparkle rays
+        state.ctx.strokeStyle = "rgba(255, 230, 100, 0.6)";
+        state.ctx.lineWidth = 2;
+        for (let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2 + t * 0.3;
+            const r1 = 48, r2 = 60 + Math.sin(t * 2 + i) * 6;
+            state.ctx.beginPath();
+            state.ctx.moveTo(sunX + Math.cos(angle) * r1, sunY + Math.sin(angle) * r1);
+            state.ctx.lineTo(sunX + Math.cos(angle) * r2, sunY + Math.sin(angle) * r2);
+            state.ctx.stroke();
+        }
+        // A few fluffy white clouds
+        state.ctx.fillStyle = "rgba(255,255,255,0.85)";
+        const clouds = [[w*0.1, h*0.1, 60, 22], [w*0.4, h*0.07, 80, 26], [w*0.6, h*0.13, 55, 20]];
+        for (const [cx, cy, cw, ch] of clouds) {
+            state.ctx.beginPath(); state.ctx.ellipse(cx, cy, cw, ch, 0, 0, Math.PI * 2); state.ctx.fill();
+            state.ctx.beginPath(); state.ctx.ellipse(cx - cw * 0.35, cy + 5, cw * 0.6, ch * 0.7, 0, 0, Math.PI * 2); state.ctx.fill();
+            state.ctx.beginPath(); state.ctx.ellipse(cx + cw * 0.35, cy + 4, cw * 0.55, ch * 0.65, 0, 0, Math.PI * 2); state.ctx.fill();
+        }
+        return;
+    }
+    if (state.inWasteland) {
+        // Dark orange-brown dusty haze
+        state.ctx.fillStyle = "#1e1005";
+        state.ctx.fillRect(0, 0, state.canvas.width, state.canvas.height);
+        // Toxic dust cloud at top
+        state.ctx.fillStyle = "rgba(160, 90, 10, 0.25)";
+        state.ctx.fillRect(0, 0, state.canvas.width, state.canvas.height * 0.45);
+        // Dim orange glow at horizon
+        state.ctx.fillStyle = "rgba(200, 110, 20, 0.12)";
+        state.ctx.fillRect(0, state.canvas.height * 0.35, state.canvas.width, state.canvas.height * 0.2);
+        // Faint green tint near ground (toxic atmosphere)
+        state.ctx.fillStyle = "rgba(20, 60, 0, 0.08)";
+        state.ctx.fillRect(0, state.canvas.height * 0.55, state.canvas.width, state.canvas.height * 0.45);
+        return;
+    }
     const r = Math.floor(10 + 125 * dayBrightness);
     const g = Math.floor(10 + 196 * dayBrightness);
     const b = Math.floor(40 + 195 * dayBrightness);

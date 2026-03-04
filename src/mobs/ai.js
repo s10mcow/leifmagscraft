@@ -7,16 +7,26 @@ import { BLOCKS, ITEMS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, GRAVITY, MAX_FALL
 import { isBlockSolid } from '../world.js';
 import { hurtPlayer } from '../player.js';
 import { addToInventory, addFloatingText } from '../inventory.js';
-import { playMobHit, playGruntureRoar } from '../audio.js';
+import { playMobHit, playGruntureRoar, speakPossumGod } from '../audio.js';
 import { createParticles } from './effects.js';
 import { creeperExplode } from './effects.js';
-import { createArrow, createFireball } from './projectiles.js';
+import { createArrow, createFireball, createBullet } from './projectiles.js';
+import { createMob } from './entities.js';
 
 // ============================================================
 // MOB PHYSICS
 // ============================================================
 
+const SAFE_FALL_BLOCKS = 3;
+
 function mobPhysics(mob, def) {
+    // Track fall start for fall damage
+    if (mob.onGround) {
+        mob.fallStartY = undefined;
+    } else if (mob.velY > 0 && mob.fallStartY === undefined) {
+        mob.fallStartY = mob.y;
+    }
+
     mob.velY += GRAVITY;
     if (mob.velY > MAX_FALL_SPEED) mob.velY = MAX_FALL_SPEED;
 
@@ -63,6 +73,15 @@ function mobPhysics(mob, def) {
             if (isBlockSolid(gx, gy)) {
                 mob.y = gy * BLOCK_SIZE - def.height;
                 mob.velY = 0;
+                // Fall damage on landing
+                if (mob.fallStartY !== undefined) {
+                    const fallBlocks = (mob.y - mob.fallStartY) / BLOCK_SIZE;
+                    if (fallBlocks > SAFE_FALL_BLOCKS) {
+                        mob.health -= Math.floor(fallBlocks - SAFE_FALL_BLOCKS);
+                        mob.hurtTimer = 200;
+                    }
+                    mob.fallStartY = undefined;
+                }
                 mob.onGround = true;
                 break;
             }
@@ -135,6 +154,38 @@ export function updateMobs(dt, dayBrightness) {
         // Death check
         if (mob.health <= 0 && !mob.dead) {
             mob.dead = true;
+            // Possum killed — summon the Possum Protector!
+            if (mob.type === "possum") {
+                const ppDef = MOB_DEFS.possum_protector;
+                const pp = createMob("possum_protector", mob.x - ppDef.width / 2, mob.y - ppDef.height);
+                state.mobs.push(pp);
+                addFloatingText(mob.x + def.width / 2, mob.y - 30, "POSSUM PROTECTOR AWAKENS!", "#ff44aa");
+                createParticles(mob.x + def.width / 2, mob.y + def.height / 2, 20, "#ff88cc", 6);
+            }
+            // Possum Protector killed — summon The Possum God!
+            if (mob.type === "possum_protector") {
+                const alreadyGod = state.mobs.some(m => m.type === "possum_god");
+                if (!alreadyGod) {
+                    const godDef = MOB_DEFS.possum_god;
+                    const god = createMob("possum_god", mob.x - godDef.width / 2, mob.y - godDef.height);
+                    god.aggroed = true;
+                    state.mobs.push(god);
+                    speakPossumGod();
+                    addFloatingText(mob.x + def.width / 2, mob.y - 40, "THE POSSUM GOD AWAKENS!", "#ffd700");
+                    createParticles(mob.x + def.width / 2, mob.y + def.height / 2, 30, "#ffd700", 8);
+                }
+            }
+            // Companion killed — rises as The Glitched
+            if (mob.type === "companion") {
+                createParticles(mob.x + def.width / 2, mob.y + def.height / 2, 20, "#220033", 5);
+                addFloatingText(mob.x + def.width / 2, mob.y - 20, "You let me die...", "#aa00ff");
+                mob.type = "glitched";
+                mob.health = MOB_DEFS.glitched.maxHealth;
+                mob.dead = false;
+                state.glitchedActive = true;
+                continue;
+            }
+            if (mob.type === "glitched") state.glitchedActive = false;
             createParticles(mob.x + def.width / 2, mob.y + def.height / 2, 12, "#aaaaaa", 4);
             for (const drop of def.drops) {
                 if (drop.chance !== undefined && Math.random() > drop.chance) continue;
@@ -148,14 +199,14 @@ export function updateMobs(dt, dayBrightness) {
             continue;
         }
 
-        // Despawn if too far (not villagers, iron golems, or tamed wolves - they're permanent)
-        if (mob.type !== "villager" && mob.type !== "iron_golem" && !mob.tamed && distToPlayer(mob) > 60 * BLOCK_SIZE) {
+        // Despawn if too far (not villagers, iron golems, tamed wolves, companion, glitched, or possum_protector — they're permanent)
+        if (mob.type !== "villager" && mob.type !== "iron_golem" && !mob.tamed && mob.type !== "companion" && mob.type !== "glitched" && mob.type !== "possum_protector" && mob.type !== "possum_god" && distToPlayer(mob) > 60 * BLOCK_SIZE) {
             state.mobs.splice(i, 1);
             continue;
         }
 
-        // Sunlight burning (zombies/skeletons, not creepers/husks/endermen/pigmen/ghasts/gruntures, not in Nether)
-        if (def.hostile && mob.type !== "creeper" && mob.type !== "husk" && mob.type !== "enderman" && mob.type !== "spider" && mob.type !== "pigman" && mob.type !== "ghast" && mob.type !== "grunture" && dayBrightness > 0.6 && !state.inNether) {
+        // Sunlight burning (zombies/skeletons, not creepers/husks/endermen/pigmen/ghasts/gruntures, not in Nether/Wasteland)
+        if (def.hostile && mob.type !== "creeper" && mob.type !== "husk" && mob.type !== "enderman" && mob.type !== "spider" && mob.type !== "pigman" && mob.type !== "ghast" && mob.type !== "grunture" && mob.type !== "possum_protector" && mob.type !== "possum_god" && dayBrightness > 0.6 && !state.inNether && !state.inWasteland) {
             if (isInSunlight(mob, def)) {
                 mob.burnTimer += dt;
                 if (mob.burnTimer >= 500) {
@@ -167,6 +218,19 @@ export function updateMobs(dt, dayBrightness) {
                 }
             } else {
                 mob.burnTimer = 0;
+            }
+        }
+
+        // Flamethrower fire damage (independent of sunlight)
+        if (mob.onFire > 0) {
+            mob.onFire -= dt;
+            mob.fireDamageCooldown -= dt;
+            if (mob.fireDamageCooldown <= 0) {
+                mob.health -= 2;
+                mob.hurtTimer = 150;
+                createParticles(mob.x + def.width / 2, mob.y + def.height / 4, 4, "#ff6600", 2);
+                createParticles(mob.x + def.width / 2, mob.y + def.height / 4, 2, "#ffcc00", 1.5);
+                mob.fireDamageCooldown = 500;
             }
         }
 
@@ -459,6 +523,99 @@ export function updateMobs(dt, dayBrightness) {
             if (mob.velY > 2) mob.velY = 2;
         }
 
+        else if (mob.type === "possum") {
+            // Cheerful wander — slightly faster direction changes
+            mob.wanderTimer -= dt;
+            if (mob.wanderTimer <= 0) {
+                mob.wanderDir = Math.random() < 0.35 ? 0 : (Math.random() < 0.5 ? -1 : 1);
+                mob.wanderTimer = 600 + Math.random() * 1800;
+            }
+            if (mob.hurtTimer > 0) {
+                // Flee when hurt
+                const fleeDir = nearestThreatX(mob) > mob.x ? -1 : 1;
+                mob.velX = fleeDir * def.speed * 2;
+                mob.facing = fleeDir;
+            } else {
+                mob.velX = mob.wanderDir * def.speed;
+                if (mob.wanderDir !== 0) mob.facing = mob.wanderDir;
+            }
+        }
+
+        else if (mob.type === "possum_protector") {
+            mob.wrapCooldown = (mob.wrapCooldown || 0) - dt;
+            mob.biteOutsideCooldown = (mob.biteOutsideCooldown || 0) - dt;
+            if (mob.wrapping) {
+                // Stay on the player while wrapping
+                mob.velX = dirToPlayer * def.speed * 0.5;
+                mob.wrapTimer -= dt;
+                mob.squeezeTimer = (mob.squeezeTimer || 0) - dt;
+                mob.biteTimer = (mob.biteTimer || 0) - dt;
+                // Squeeze damage every 400ms
+                if (mob.squeezeTimer <= 0) {
+                    hurtPlayer(2, mob.x + def.width / 2);
+                    mob.squeezeTimer = 400;
+                    createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 4, "#ff88cc", 3);
+                }
+                // Bite every 1500ms — 1/4 of player max health
+                if (mob.biteTimer <= 0) {
+                    const biteDmg = Math.floor(state.player.maxHealth / 4);
+                    hurtPlayer(biteDmg, mob.x + def.width / 2);
+                    mob.biteTimer = 1500;
+                    addFloatingText(state.player.x + state.player.width / 2, state.player.y - 20, `-${biteDmg} BITE!`, "#cc0000");
+                    createParticles(state.player.x + state.player.width / 2, state.player.y, 8, "#cc0000", 5);
+                }
+                if (mob.wrapTimer <= 0) {
+                    mob.wrapping = false;
+                    mob.wrapCooldown = 4000;
+                }
+            } else {
+                // Always pursue player relentlessly
+                mob.velX = dirToPlayer * def.speed;
+                mob.facing = dirToPlayer;
+                // Initiate tail wrap when close enough and cooldown done
+                if (dist < def.squeezeRange && mob.wrapCooldown <= 0) {
+                    mob.wrapping = true;
+                    mob.wrapTimer = 5000;
+                    mob.squeezeTimer = 400;
+                    mob.biteTimer = 800;
+                    addFloatingText(mob.x + def.width / 2, mob.y - 30, "TAIL WRAP!", "#ff44aa");
+                    createParticles(mob.x + def.width / 2, mob.y + def.height / 2, 12, "#ff88cc", 5);
+                }
+                // Standalone bite — 1/4 of player max health, 2s cooldown
+                if (dist < def.attackRange && mob.biteOutsideCooldown <= 0) {
+                    const biteDmg = Math.floor(state.player.maxHealth / 4);
+                    hurtPlayer(biteDmg, mob.x + def.width / 2);
+                    mob.biteOutsideCooldown = 2000;
+                    addFloatingText(state.player.x + state.player.width / 2, state.player.y - 20, `-${biteDmg} BITE!`, "#cc0000");
+                    createParticles(state.player.x + state.player.width / 2, state.player.y, 8, "#cc0000", 5);
+                }
+                // Melee slash when in range
+                if (dist < def.attackRange && mob.attackCooldown <= 0) {
+                    hurtPlayer(def.damage, mob.x + def.width / 2);
+                    mob.attackCooldown = 800;
+                    createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 8, "#ff4444", 5);
+                }
+            }
+        }
+
+        else if (mob.type === "possum_god") {
+            // The Possum God — relentless, super fast, does half player health per hit
+            mob.velX = dirToPlayer * def.speed;
+            mob.facing = dirToPlayer;
+            // Jump over obstacles
+            if (mob.onGround && isBlockSolid(Math.floor((mob.x + (dirToPlayer > 0 ? def.width : 0)) / BLOCK_SIZE), Math.floor((mob.y + def.height / 2) / BLOCK_SIZE))) {
+                mob.velY = -10;
+            }
+            if (dist < def.attackRange && mob.attackCooldown <= 0) {
+                const godDmg = Math.floor(state.player.maxHealth / 2);
+                hurtPlayer(godDmg, mob.x + def.width / 2);
+                mob.attackCooldown = 350;
+                createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 16, "#ffd700", 8);
+                createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 8, "#ffffff", 5);
+                addFloatingText(state.player.x + state.player.width / 2, state.player.y - 24, `-${godDmg} DIVINE WRATH`, "#ffd700");
+            }
+        }
+
         else if (mob.type === "wolf") {
             if (mob.tamed && mob.sitting) {
                 // Sitting: stay put, don't move
@@ -696,6 +853,155 @@ export function updateMobs(dt, dayBrightness) {
             } else {
                 mob.detectedPlayer = false;
                 mob.velX *= 0.8;
+            }
+        }
+
+        else if (mob.type === "raider") {
+            mob.shootCooldown -= dt;
+            // Reload timer
+            if (mob.reloadTimer > 0) {
+                mob.reloadTimer -= dt;
+                if (mob.reloadTimer <= 0) { mob.reloadTimer = 0; mob.magAmmo = 24; }
+            }
+            if (dist < def.detectRange * BLOCK_SIZE) {
+                mob.facing = dirToPlayer;
+                // Maintain ~5-12 block shooting distance
+                if (dist < 5 * BLOCK_SIZE)       mob.velX = -dirToPlayer * def.speed;
+                else if (dist > 12 * BLOCK_SIZE) mob.velX =  dirToPlayer * def.speed * 0.6;
+                else                              mob.velX *= 0.8;
+                // Shoot AK-47 bullets — respects mag size and reload
+                if (mob.reloadTimer <= 0 && mob.shootCooldown <= 0 && dist < def.attackRange) {
+                    if (mob.magAmmo <= 0) {
+                        mob.reloadTimer = 3000;
+                    } else {
+                        createBullet(
+                            mob.x + def.width / 2, mob.y + 12,
+                            state.player.x + state.player.width / 2,
+                            state.player.y + state.player.height / 2,
+                            def.damage, true
+                        );
+                        mob.magAmmo--;
+                        mob.shootCooldown = def.shootInterval;
+                    }
+                }
+                // Melee if very close
+                if (dist < 40 && mob.attackCooldown <= 0) {
+                    hurtPlayer(def.damage, mob.x + def.width / 2, "melee");
+                    mob.attackCooldown = 1200;
+                }
+            } else { mob.velX *= 0.9; }
+        }
+
+        else if (mob.type === "companion") {
+            // Hunger — counts up since last feeding
+            mob.hungerTimer += dt;
+
+            // Start asking for food when hungry (every ~60s)
+            if (!mob.askingForFood && mob.hungerTimer >= 60000) {
+                mob.askingForFood = true;
+                mob.foodAskTimer = 0;
+            }
+
+            // If player ignores for 25s, hunger worsens
+            if (mob.askingForFood) {
+                mob.foodAskTimer += dt;
+                if (mob.foodAskTimer >= 25000) {
+                    mob.hungerTimer += 60000;
+                    mob.askingForFood = false;
+                    mob.foodAskTimer = 0;
+                }
+            }
+
+            // Starved for too long → transform into The Glitched
+            if (mob.hungerTimer >= 180000) {
+                mob.type = "glitched";
+                mob.health = MOB_DEFS.glitched.maxHealth;
+                mob.maxHealth = MOB_DEFS.glitched.maxHealth;
+                mob.aggroed = true;
+                state.glitchedActive = true;
+                createParticles(mob.x + def.width / 2, mob.y + def.height / 2, 30, "#000000", 6);
+                createParticles(mob.x + def.width / 2, mob.y + def.height / 2, 15, "#440044", 4);
+                addFloatingText(mob.x + def.width / 2, mob.y - 30, "...i'm so hungry...", "#440044");
+                continue;
+            }
+
+            // Follow player
+            if (dist > 3 * BLOCK_SIZE) {
+                mob.velX = dirToPlayer * def.speed * (dist > 8 * BLOCK_SIZE ? 1.8 : 1.0);
+                mob.facing = dirToPlayer;
+            } else {
+                mob.velX *= 0.5;
+            }
+
+            // Attack nearby hostile mobs (stone sword)
+            let compTarget = null, compTargetDist = Infinity;
+            for (const m of state.mobs) {
+                if (m === mob) continue;
+                if (!MOB_DEFS[m.type].hostile) continue;
+                const mdx = (m.x + MOB_DEFS[m.type].width / 2) - (mob.x + def.width / 2);
+                const mdy = (m.y + MOB_DEFS[m.type].height / 2) - (mob.y + def.height / 2);
+                const md = Math.sqrt(mdx * mdx + mdy * mdy);
+                if (md < 10 * BLOCK_SIZE && md < compTargetDist) { compTarget = m; compTargetDist = md; }
+            }
+            if (compTarget) {
+                const tdef = MOB_DEFS[compTarget.type];
+                const tDir = compTarget.x > mob.x ? 1 : -1;
+                mob.velX = tDir * def.speed * 1.5;
+                mob.facing = tDir;
+                if (compTargetDist < def.attackRange && mob.attackCooldown <= 0) {
+                    compTarget.health -= def.damage;
+                    compTarget.hurtTimer = 300;
+                    compTarget.aggroed = true;
+                    mob.attackCooldown = 800;
+                    addFloatingText(compTarget.x + tdef.width / 2, compTarget.y - 10, `-${def.damage}`, "#ff8800");
+                }
+            }
+        }
+
+        else if (mob.type === "glitched") {
+            // Stuck detection — if barely moved while trying to chase, increment timer
+            const movedDist = Math.abs(mob.x - (mob.lastX !== undefined ? mob.lastX : mob.x));
+            if (movedDist < 0.5 && dist > def.attackRange) {
+                mob.stuckTimer = (mob.stuckTimer || 0) + dt;
+            } else {
+                mob.stuckTimer = 0;
+            }
+            mob.lastX = mob.x;
+
+            // Teleport near player when stuck for 1.5s
+            if (mob.stuckTimer >= 1500) {
+                mob.stuckTimer = 0;
+                const offsets = [-3, -2, -1, 1, 2, 3];
+                for (const off of offsets) {
+                    const tx = Math.floor(state.player.x / BLOCK_SIZE) + off;
+                    if (tx < 1 || tx >= WORLD_WIDTH - 1) continue;
+                    let ty = -1;
+                    for (let y = 1; y < WORLD_HEIGHT - 1; y++) {
+                        if (isBlockSolid(tx, y) && !isBlockSolid(tx, y - 1) && !isBlockSolid(tx, y - 2)) {
+                            ty = y - 2;
+                            break;
+                        }
+                    }
+                    if (ty < 0) continue;
+                    createParticles(mob.x + def.width / 2, mob.y + def.height / 2, 12, "#000000", 5);
+                    createParticles(mob.x + def.width / 2, mob.y + def.height / 2, 8, "#440044", 3);
+                    mob.x = tx * BLOCK_SIZE;
+                    mob.y = ty * BLOCK_SIZE;
+                    mob.velX = 0; mob.velY = 0;
+                    createParticles(mob.x + def.width / 2, mob.y + def.height / 2, 12, "#000000", 5);
+                    createParticles(mob.x + def.width / 2, mob.y + def.height / 2, 8, "#440044", 3);
+                    break;
+                }
+            }
+
+            // Relentless pursuit — always chases player, never gives up
+            mob.velX = dirToPlayer * def.speed;
+            mob.facing = dirToPlayer;
+            if (dist < def.attackRange && mob.attackCooldown <= 0) {
+                hurtPlayer(def.damage, mob.x + def.width / 2, "glitched");
+                mob.attackCooldown = 600;
+                createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 14, "#000000", 7);
+                createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 6, "#440044", 4);
             }
         }
 

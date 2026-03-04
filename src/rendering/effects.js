@@ -9,7 +9,16 @@ export function drawProjectiles() {
     for (const p of state.projectiles) {
         const sx = p.x - state.camera.x + state.screenShake.x;
         const sy = p.y - state.camera.y + state.screenShake.y;
-        if (p.isFireball) {
+        if (p.isFlame) {
+            // Flickering flame blob
+            const flicker = Math.random();
+            state.ctx.fillStyle = flicker > 0.5 ? "#ff4400" : "#ff6600";
+            state.ctx.fillRect(sx - 4, sy - 4, 8, 8);
+            state.ctx.fillStyle = flicker > 0.5 ? "#ffaa00" : "#ffcc00";
+            state.ctx.fillRect(sx - 2, sy - 2, 4, 4);
+            state.ctx.fillStyle = "rgba(255, 80, 0, 0.25)";
+            state.ctx.fillRect(sx - 7, sy - 7, 14, 14);
+        } else if (p.isFireball) {
             // Glowing orange fireball
             state.ctx.fillStyle = "#ff2200";
             state.ctx.fillRect(sx - 7, sy - 7, 14, 14);

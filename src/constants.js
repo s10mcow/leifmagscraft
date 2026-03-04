@@ -14,6 +14,12 @@ export const BLOCKS = {
   NETHER_BRICK: 36, COPPER: 37, PRESSURE_PLATE: 38,
   NETHER_WOOD: 39, NETHER_LEAVES: 40,
   WARPED_GRASS: 41, WARPED_WOOD: 42, WARPED_LEAVES: 43,
+  // Wasteland blocks
+  CRACKED_EARTH: 44, ASH: 45, DEAD_WOOD: 46, WASTELAND_STONE: 47, TOXIC_PUDDLE: 48,
+  // Industrial/new
+  BLAST_FURNACE: 49, RAW_STEEL_ORE: 50, TITANIUM_ORE: 51, URANIUM_ORE: 52,
+  // Possum Realm / Candy Land
+  CANDY_GROUND: 53, LOLLIPOP_TOP: 54, CANDY_CANE: 55,
 };
 
 // --- ITEM IDs (100+) ---
@@ -45,6 +51,21 @@ export const ITEMS = {
   NETHERITE_INGOT: 149,
   FLOWER: 150,
   WASTELAND_TELEPORTER: 155,
+  // Steel & Titanium
+  STEEL_INGOT: 156, TITANIUM_INGOT: 157,
+  // Riot armor
+  RIOT_HELMET: 158, RIOT_CHESTPLATE: 159, RIOT_LEGGINGS: 160, RIOT_BOOTS: 161,
+  // Buckets
+  BUCKET: 162, WATER_BUCKET: 163, LAVA_BUCKET: 164, TOXIC_BUCKET: 165,
+  // Flamethrower
+  FUEL_CANISTER: 166, FLAMETHROWER: 167,
+  // Void
+  VOID_TELEPORTER: 168,
+  // Possum Realm
+  POSSUM_TELEPORTER: 169,
+  POSSUM_TOOTH: 170,
+  POSSUM_TAIL: 171,
+  TOOTH_ROPE: 172,
 };
 
 // --- WORLD SETTINGS ---
@@ -84,6 +105,7 @@ export const MAX_SAVES = 10;
 // --- BIOME DEFINITIONS ---
 export const BIOMES = { FOREST: 0, DESERT: 1, SAVANNAH: 2, TUNDRA: 3 };
 export const NETHER_BIOMES = { CRIMSON: 0, WARPED: 1, WASTES: 2 };
+export const WASTELAND_BIOMES = { FLATS: 0, BADLANDS: 1, RUINS: 2 };
 
 export const BIOME_INFO = {
   [BIOMES.FOREST]: { name: "Forest", surfaceBlock: BLOCKS.GRASS, subSurfaceBlock: BLOCKS.DIRT, treeChance: 0.10, treeType: "oak", heightAmplitude: 1.0, heightOffset: 0 },
@@ -95,7 +117,7 @@ export const BIOME_INFO = {
 // --- HELPER FUNCTIONS ---
 export function isBlockId(id) { return id >= 0 && id < 100; }
 export function isTool(id) { return id >= 101 && id <= 115; }
-export function isArmor(id) { return (id >= 120 && id <= 131) || (id >= 151 && id <= 154); }
+export function isArmor(id) { return (id >= 120 && id <= 131) || (id >= 151 && id <= 154) || (id >= 158 && id <= 161); }
 export function isFood(id) {
   return id === ITEMS.RAW_PORKCHOP || id === ITEMS.ROTTEN_FLESH ||
          id === ITEMS.MUTTON || id === ITEMS.STEAK ||
@@ -175,6 +197,20 @@ export const BLOCK_INFO = {
   [BLOCKS.WARPED_GRASS]: { name: "Warped Grass", color: "#1e1a3a", topColor: "#1a8abf", breakable: true, mineTime: 300, toolType: "shovel", minTier: 0, drops: BLOCKS.NETHERRACK },
   [BLOCKS.WARPED_WOOD]: { name: "Warped Wood", color: "#4a1060", breakable: true, mineTime: 400, toolType: "axe", minTier: 0, drops: BLOCKS.WARPED_WOOD },
   [BLOCKS.WARPED_LEAVES]: { name: "Warped Leaves", color: "#0e5070", breakable: true, mineTime: 100, toolType: null, minTier: 0, drops: null },
+  // Wasteland blocks
+  [BLOCKS.CRACKED_EARTH]: { name: "Cracked Earth", color: "#7a5a2a", topColor: "#8a6535", breakable: true, mineTime: 200, toolType: "shovel", minTier: 0, drops: BLOCKS.CRACKED_EARTH },
+  [BLOCKS.ASH]: { name: "Ash", color: "#5a5555", topColor: "#6a6565", breakable: true, mineTime: 150, toolType: "shovel", minTier: 0, drops: BLOCKS.ASH },
+  [BLOCKS.DEAD_WOOD]: { name: "Dead Wood", color: "#5a4030", breakable: true, mineTime: 400, toolType: "axe", minTier: 0, drops: BLOCKS.DEAD_WOOD },
+  [BLOCKS.WASTELAND_STONE]: { name: "Wasteland Stone", color: "#4a4030", spots: "#6a7040", breakable: true, mineTime: 700, toolType: "pickaxe", minTier: 1, drops: BLOCKS.WASTELAND_STONE },
+  [BLOCKS.TOXIC_PUDDLE]:   { name: "Toxic Puddle",   color: "#1a7020", breakable: false, mineTime: 0,    toolType: null,      minTier: 0, drops: null },
+  [BLOCKS.BLAST_FURNACE]:  { name: "Blast Furnace",  color: "#5a5a5a", breakable: true,  mineTime: 1200, toolType: "pickaxe", minTier: 1, drops: BLOCKS.BLAST_FURNACE },
+  [BLOCKS.RAW_STEEL_ORE]:  { name: "Raw Steel Ore",  color: "#7a8a9a", spots: "#aabac8", breakable: true,  mineTime: 2000, toolType: "pickaxe", minTier: 4, drops: BLOCKS.RAW_STEEL_ORE },
+  [BLOCKS.TITANIUM_ORE]:   { name: "Titanium Ore",   color: "#111820", spots: "#1e3040", breakable: true,  mineTime: 2400, toolType: "pickaxe", minTier: 4, drops: BLOCKS.TITANIUM_ORE },
+  [BLOCKS.URANIUM_ORE]:    { name: "Uranium Ore",    color: "#0d0820", spots: "#3a1a70", breakable: true,  mineTime: 2800, toolType: "pickaxe", minTier: 4, drops: BLOCKS.URANIUM_ORE },
+  // Possum Realm / Candy Land
+  [BLOCKS.CANDY_GROUND]:  { name: "Candy Ground",  color: "#f9a8d4", topColor: "#fce7f3", breakable: true, mineTime: 200, toolType: "shovel", minTier: 0, drops: BLOCKS.CANDY_GROUND },
+  [BLOCKS.LOLLIPOP_TOP]:  { name: "Lollipop Top",  color: "#f472b6", breakable: true, mineTime: 100, toolType: null, minTier: 0, drops: null },
+  [BLOCKS.CANDY_CANE]:    { name: "Candy Cane",    color: "#ef4444", breakable: true, mineTime: 350, toolType: "axe", minTier: 0, drops: BLOCKS.CANDY_CANE },
 };
 
 // --- ITEM PROPERTIES ---
@@ -223,18 +259,41 @@ export const ITEM_INFO = {
   [ITEMS.FLINT]: { name: "Flint", stackable: true, maxStack: 64 },
   [ITEMS.FLINT_AND_STEEL]: { name: "Flint & Steel", stackable: false, toolType: "flint_steel", tier: 0, speed: 1, durability: 64, color: "#888888" },
   [ITEMS.BULLETS]: { name: "Bullets", stackable: true, maxStack: 64 },
-  [ITEMS.PISTOL]: { name: "Pistol", stackable: false, toolType: "gun", tier: 1, speed: 1, durability: 200, damage: 6, color: "#888888", fireRate: 600 },
-  [ITEMS.AK47]: { name: "AK-47", stackable: false, toolType: "gun", tier: 2, speed: 1, durability: 400, damage: 4, color: "#5a5a3a", fireRate: 150 },
+  [ITEMS.PISTOL]: { name: "Pistol", stackable: false, toolType: "gun", tier: 1, speed: 1, durability: 200, damage: 6, color: "#888888", fireRate: 600, magSize: 8, reloadTime: 1800 },
+  [ITEMS.AK47]: { name: "AK-47", stackable: false, toolType: "gun", tier: 2, speed: 1, durability: 400, damage: 4, color: "#5a5a3a", fireRate: 150, magSize: 24, reloadTime: 3000 },
   [ITEMS.ENDER_PEARL]: { name: "Ender Pearl", stackable: true, maxStack: 16 },
   [ITEMS.FEATHER]: { name: "Feather", stackable: true, maxStack: 64 },
   [ITEMS.RAW_CHICKEN]: { name: "Raw Chicken", stackable: true, maxStack: 64, food: true, healAmount: 3 },
-  [ITEMS.ROCKET_LAUNCHER]: { name: "Rocket Launcher", stackable: false, toolType: "gun", tier: 3, speed: 1, durability: 100, damage: 12, color: "#556b2f", fireRate: 1500, ammoType: "rocket" },
+  [ITEMS.ROCKET_LAUNCHER]: { name: "Rocket Launcher", stackable: false, toolType: "gun", tier: 3, speed: 1, durability: 100, damage: 12, color: "#556b2f", fireRate: 1500, ammoType: "rocket", magSize: 1, reloadTime: 3000 },
   [ITEMS.ROCKET]: { name: "Rocket", stackable: true, maxStack: 16 },
   [ITEMS.MINIATURE_NETHER_PORTAL]: { name: "Miniature Nether Portal", stackable: false, color: "#8800cc" },
   [ITEMS.SHIELD]: { name: "Shield", stackable: false, durability: 336, color: "#8b6c42" },
   [ITEMS.NETHERITE_INGOT]: { name: "Netherite Ingot", stackable: true, maxStack: 64, color: "#444455" },
   [ITEMS.FLOWER]: { name: "Flower", stackable: true, maxStack: 64, color: "#ff6688" },
   [ITEMS.WASTELAND_TELEPORTER]: { name: "Wasteland Teleporter", stackable: false, color: "#c8a030" },
+  // Steel & Titanium ingots
+  [ITEMS.STEEL_INGOT]:    { name: "Steel Ingot",    stackable: true, maxStack: 64, color: "#8a9aaa" },
+  [ITEMS.TITANIUM_INGOT]: { name: "Titanium Ingot", stackable: true, maxStack: 64, color: "#aac4e0" },
+  // Riot armor — heavy defense + 15% bullet resistance per piece (60% total for full set)
+  [ITEMS.RIOT_HELMET]:     { name: "Riot Helmet",     stackable: false, armorType: "helmet",     defense: 3, durability: 350, color: "#3a4a5a", bulletResistance: 0.15 },
+  [ITEMS.RIOT_CHESTPLATE]: { name: "Riot Chestplate", stackable: false, armorType: "chestplate", defense: 5, durability: 520, color: "#3a4a5a", bulletResistance: 0.15 },
+  [ITEMS.RIOT_LEGGINGS]:   { name: "Riot Leggings",   stackable: false, armorType: "leggings",   defense: 4, durability: 480, color: "#3a4a5a", bulletResistance: 0.15 },
+  [ITEMS.RIOT_BOOTS]:      { name: "Riot Boots",      stackable: false, armorType: "boots",      defense: 2, durability: 400, color: "#3a4a5a", bulletResistance: 0.15 },
+  // Buckets
+  [ITEMS.BUCKET]:       { name: "Bucket",       stackable: false, color: "#aaaaaa" },
+  [ITEMS.WATER_BUCKET]: { name: "Water Bucket", stackable: false, color: "#4488ff" },
+  [ITEMS.LAVA_BUCKET]:  { name: "Lava Bucket",  stackable: false, color: "#ff6600" },
+  [ITEMS.TOXIC_BUCKET]:  { name: "Toxic Bucket",  stackable: false, color: "#40cc40" },
+  // Flamethrower
+  [ITEMS.FUEL_CANISTER]: { name: "Fuel Canister", stackable: true, maxStack: 10, color: "#d4a820" },
+  [ITEMS.FLAMETHROWER]:  { name: "Flamethrower",  stackable: false, toolType: "gun", tier: 3, speed: 1, durability: 300, damage: 5, color: "#4a2a10", fireRate: 80, ammoType: "fuel", magSize: 60, reloadTime: 2500 },
+  // Void
+  [ITEMS.VOID_TELEPORTER]: { name: "Void Teleporter", stackable: false, color: "#5a20a0" },
+  // Possum Realm
+  [ITEMS.POSSUM_TELEPORTER]: { name: "Possum Teleporter", stackable: false, color: "#e8a0d0" },
+  [ITEMS.POSSUM_TOOTH]: { name: "Possum's Tooth", stackable: true, maxStack: 16, color: "#fffff0" },
+  [ITEMS.POSSUM_TAIL]: { name: "Possum's Tail", stackable: true, maxStack: 16, color: "#ccbbaa" },
+  [ITEMS.TOOTH_ROPE]:  { name: "Tooth Rope",    stackable: true, maxStack: 8,  color: "#c4a040", toolType: "thrown", damage: 40 },
 };
 
 // --- MOB DEFINITIONS ---
@@ -254,7 +313,13 @@ export const MOB_DEFS = {
   pigman: { name: "Pigman", width: 24, height: 46, maxHealth: 20, speed: 0.9, damage: 5, hostile: true, detectRange: 16, attackRange: 350, shootInterval: 2500, knockback: 5, drops: [{ id: BLOCKS.GOLD, min: 0, max: 2 }] },
   ghast: { name: "Ghast", width: 56, height: 56, maxHealth: 30, speed: 1.5, damage: 8, hostile: true, detectRange: 20, attackRange: 500, shootInterval: 3000, knockback: 0, drops: [{ id: BLOCKS.GLOWSTONE, min: 1, max: 2 }] },
   iron_golem: { name: "Iron Golem", width: 32, height: 54, maxHealth: 100, speed: 0.55, damage: 10, hostile: false, knockback: 10, detectRange: 16, attackRange: 55, drops: [{ id: BLOCKS.IRON, min: 1, max: 5 }, { id: ITEMS.FLOWER, min: 1, max: 1, chance: 0.1 }] },
-  grunture: { name: "Grunture", width: 48, height: 56, maxHealth: 200, speed: 4.4, damage: 7, fireDamage: 10, hostile: true, detectRange: 18, attackRange: 60, shootRange: 420, shootInterval: 2200, knockback: 12, drops: [{ id: BLOCKS.GLOWSTONE, min: 2, max: 5 }, { id: ITEMS.GUNPOWDER, min: 0, max: 2, chance: 0.7 }, { id: ITEMS.WASTELAND_TELEPORTER, min: 1, max: 1, chance: 0.35 }] },
+  grunture: { name: "Grunture", width: 48, height: 56, maxHealth: 160, speed: 3.2, damage: 5, fireDamage: 7, hostile: true, detectRange: 18, attackRange: 60, shootRange: 420, shootInterval: 2600, knockback: 10, drops: [{ id: BLOCKS.GLOWSTONE, min: 2, max: 5 }, { id: ITEMS.GUNPOWDER, min: 0, max: 2, chance: 0.7 }, { id: ITEMS.WASTELAND_TELEPORTER, min: 1, max: 1, chance: 0.35 }] },
+  raider:    { name: "Raider",        width: 24, height: 46, maxHealth: 30, speed: 1.2, damage: 4, hostile: true,  detectRange: 18,   attackRange: 380, shootInterval: 150, knockback: 5, drops: [{ id: ITEMS.GUNPOWDER, min: 0, max: 2 }, { id: ITEMS.BULLETS, min: 5, max: 15 }, { id: ITEMS.AK47, min: 1, max: 1, chance: 0.12 }] },
+  companion: { name: "The Companion", width: 24, height: 46, maxHealth: 60,  speed: 3.0, damage: 3, hostile: false, detectRange: 0,    attackRange: 36,  knockback: 4, drops: [] },
+  glitched:  { name: "The Glitched",  width: 24, height: 46, maxHealth: 200, speed: 5.5, damage: 8, hostile: true,  detectRange: 9999, attackRange: 40,  knockback: 6, drops: [] },
+  possum:    { name: "Possum",         width: 26, height: 16, maxHealth: 8,   speed: 1.0, damage: 0, hostile: false, knockback: 2, drops: [{ id: ITEMS.FLOWER, min: 1, max: 2 }] },
+  possum_protector: { name: "Possum Protector", width: 56, height: 66, maxHealth: 1280, speed: 2.5, damage: 12, hostile: true, detectRange: 9999, attackRange: 64, squeezeRange: 80, knockback: 8, drops: [{ id: ITEMS.FLOWER, min: 5, max: 10 }, { id: BLOCKS.DIAMOND, min: 1, max: 3, chance: 0.5 }, { id: ITEMS.POSSUM_TOOTH, min: 1, max: 1 }, { id: ITEMS.POSSUM_TAIL, min: 1, max: 1 }] },
+  possum_god: { name: "The Possum God", width: 80, height: 90, maxHealth: 64000, speed: 7.5, damage: 10, hostile: true, detectRange: 9999, attackRange: 80, knockback: 14, drops: [{ id: BLOCKS.DIAMOND, min: 10, max: 20 }, { id: ITEMS.POSSUM_TOOTH, min: 3, max: 5 }] },
 };
 
 // --- CRAFTING RECIPES ---
@@ -299,12 +364,35 @@ export const RECIPES = [
   { result: BLOCKS.PRESSURE_PLATE, resultCount: 1, ingredients: [{ id: BLOCKS.COBBLESTONE, count: 2 }] },
   { result: ITEMS.FLINT_AND_STEEL, resultCount: 1, ingredients: [{ id: ITEMS.FLINT, count: 1 }, { id: BLOCKS.IRON, count: 1 }] },
   { result: ITEMS.PISTOL, resultCount: 1, ingredients: [{ id: BLOCKS.IRON, count: 2 }, { id: BLOCKS.COPPER, count: 1 }, { id: ITEMS.GUNPOWDER, count: 1 }] },
-  { result: ITEMS.AK47, resultCount: 1, ingredients: [{ id: BLOCKS.IRON, count: 4 }, { id: BLOCKS.COPPER, count: 2 }, { id: ITEMS.GUNPOWDER, count: 1 }] },
+  { result: ITEMS.AK47, resultCount: 1, resultDurability: 80,   ingredients: [{ id: BLOCKS.IRON, count: 4 }, { id: BLOCKS.COPPER, count: 2 }, { id: ITEMS.GUNPOWDER, count: 1 }] },
+  { result: ITEMS.AK47, resultCount: 1, resultDurability: 2000, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 4 }, { id: BLOCKS.COPPER, count: 2 }, { id: ITEMS.GUNPOWDER, count: 1 }] },
   { result: ITEMS.BULLETS, resultCount: 24, ingredients: [{ id: BLOCKS.IRON, count: 1 }, { id: BLOCKS.COPPER, count: 1 }, { id: ITEMS.GUNPOWDER, count: 1 }] },
-  { result: ITEMS.ROCKET_LAUNCHER, resultCount: 1, ingredients: [{ id: BLOCKS.IRON, count: 2 }, { id: BLOCKS.COPPER, count: 2 }, { id: ITEMS.GUNPOWDER, count: 2 }] },
+  { result: ITEMS.ROCKET_LAUNCHER, resultCount: 1, resultDurability: 30,  ingredients: [{ id: BLOCKS.IRON,        count: 2 }, { id: BLOCKS.COPPER, count: 2 }, { id: ITEMS.GUNPOWDER, count: 2 }] },
+  { result: ITEMS.ROCKET_LAUNCHER, resultCount: 1, resultDurability: 800, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 2 }, { id: BLOCKS.COPPER, count: 2 }, { id: ITEMS.GUNPOWDER, count: 2 }] },
+  { result: ITEMS.FUEL_CANISTER,   resultCount: 1, ingredients: [{ id: BLOCKS.IRON, count: 1 }, { id: ITEMS.TOXIC_BUCKET, count: 1 }] },
+  { result: ITEMS.FLAMETHROWER,    resultCount: 1, ingredients: [{ id: ITEMS.GUNPOWDER, count: 1 }, { id: ITEMS.STEEL_INGOT, count: 4 }, { id: ITEMS.TITANIUM_INGOT, count: 2 }, { id: ITEMS.FUEL_CANISTER, count: 1 }] },
   { result: ITEMS.ROCKET, resultCount: 4, ingredients: [{ id: BLOCKS.IRON, count: 1 }, { id: ITEMS.GUNPOWDER, count: 1 }] },
   { result: ITEMS.MINIATURE_NETHER_PORTAL, resultCount: 1, ingredients: [{ id: BLOCKS.OBSIDIAN, count: 4 }, { id: ITEMS.FLINT_AND_STEEL, count: 1 }] },
+  { result: ITEMS.WASTELAND_TELEPORTER, resultCount: 1, ingredients: [{ id: BLOCKS.COBBLESTONE, count: 24 }, { id: BLOCKS.OBSIDIAN, count: 4 }] },
+  { result: ITEMS.VOID_TELEPORTER, resultCount: 1, ingredients: [{ id: ITEMS.TITANIUM_INGOT, count: 4 }, { id: BLOCKS.URANIUM_ORE, count: 1 }] },
+  { result: ITEMS.POSSUM_TELEPORTER, resultCount: 1, ingredients: [{ id: ITEMS.RAW_PORKCHOP, count: 10 }, { id: ITEMS.STEAK, count: 10 }, { id: BLOCKS.GLOWSTONE, count: 5 }] },
+  { result: ITEMS.TOOTH_ROPE, resultCount: 1, ingredients: [{ id: ITEMS.POSSUM_TOOTH, count: 1 }, { id: ITEMS.POSSUM_TAIL, count: 1 }] },
   { result: ITEMS.SHIELD, resultCount: 1, ingredients: [{ id: BLOCKS.PLANKS, count: 6 }, { id: BLOCKS.IRON, count: 1 }] },
+  // Blast furnace
+  { result: BLOCKS.BLAST_FURNACE, resultCount: 1, ingredients: [{ id: BLOCKS.IRON, count: 5 }, { id: BLOCKS.COBBLESTONE, count: 8 }] },
+  // Riot armor (steel ingots)
+  { result: ITEMS.RIOT_HELMET,     resultCount: 1, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 5 }] },
+  { result: ITEMS.RIOT_CHESTPLATE, resultCount: 1, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 8 }] },
+  { result: ITEMS.RIOT_LEGGINGS,   resultCount: 1, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 7 }] },
+  { result: ITEMS.RIOT_BOOTS,      resultCount: 1, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 4 }] },
+  // Bucket
+  { result: ITEMS.BUCKET, resultCount: 1, ingredients: [{ id: BLOCKS.IRON, count: 3 }] },
+];
+
+// --- SMELTING RECIPES (blast furnace) ---
+export const SMELTING_RECIPES = [
+  { input: BLOCKS.RAW_STEEL_ORE, output: ITEMS.STEEL_INGOT,    outputCount: 1 },
+  { input: BLOCKS.TITANIUM_ORE,  output: ITEMS.TITANIUM_INGOT, outputCount: 1 },
 ];
 
 // --- VILLAGER TRADES ---
@@ -378,5 +466,29 @@ export const LOOT_TABLES = {
     { id: BLOCKS.IRON, min: 4, max: 10, chance: 0.9 },
     { id: ITEMS.NETHERITE_INGOT, min: 1, max: 2, chance: 0.5 },
     { id: BLOCKS.GOLD, min: 3, max: 6, chance: 0.8 },
+  ],
+  wasteland_ruin: [
+    { id: ITEMS.GUNPOWDER, min: 1, max: 4, chance: 0.7 },
+    { id: ITEMS.BULLETS, min: 8, max: 24, chance: 0.6 },
+    { id: BLOCKS.WASTELAND_STONE, min: 4, max: 12, chance: 0.5 },
+    { id: ITEMS.BONE, min: 1, max: 5, chance: 0.6 },
+    { id: BLOCKS.GLOWSTONE, min: 1, max: 3, chance: 0.4 },
+    { id: ITEMS.WASTELAND_TELEPORTER, min: 1, max: 1, chance: 0.05 },
+  ],
+  void_cache: [
+    { id: BLOCKS.DIAMOND, min: 2, max: 6, chance: 0.8 },
+    { id: BLOCKS.OBSIDIAN, min: 4, max: 12, chance: 0.9 },
+    { id: ITEMS.TITANIUM_INGOT, min: 1, max: 3, chance: 0.6 },
+    { id: BLOCKS.URANIUM_ORE, min: 1, max: 2, chance: 0.4 },
+    { id: ITEMS.NETHERITE_INGOT, min: 1, max: 2, chance: 0.35 },
+    { id: ITEMS.DIAMOND_SWORD, min: 1, max: 1, chance: 0.25 },
+    { id: ITEMS.VOID_TELEPORTER, min: 1, max: 1, chance: 0.08 },
+  ],
+  possum_cache: [
+    { id: ITEMS.FLOWER, min: 4, max: 10, chance: 0.9 },
+    { id: ITEMS.WOOL, min: 2, max: 6, chance: 0.8 },
+    { id: ITEMS.STEAK, min: 2, max: 5, chance: 0.7 },
+    { id: BLOCKS.DIAMOND, min: 1, max: 3, chance: 0.4 },
+    { id: ITEMS.POSSUM_TELEPORTER, min: 1, max: 1, chance: 0.10 },
   ],
 };

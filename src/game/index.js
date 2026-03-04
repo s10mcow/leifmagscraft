@@ -28,4 +28,5 @@ export {
     updateSleep,
     executeTrade,
     teleportToOtherDimension,
+    teleportToWasteland,
 } from './systems.js';

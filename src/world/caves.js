@@ -151,8 +151,26 @@ export function placeOres(seed) {
             else if (depth > 5 && Math.random() < 0.01 * mult) state.world[x][y] = BLOCKS.COPPER;
             else if (depth > 10 && Math.random() < 0.018 * mult) state.world[x][y] = BLOCKS.IRON;
             else if (depth > 10 && Math.random() < 0.005 * mult) state.world[x][y] = BLOCKS.EMERALD;
-            else if (depth > 20 && Math.random() < 0.008 * mult) state.world[x][y] = BLOCKS.GOLD;
-            else if (depth > 40 && Math.random() < 0.0035 * mult) state.world[x][y] = BLOCKS.DIAMOND;
+            else if (depth > 20 && Math.random() < 0.008 * mult) {
+                // Gold — place as a small clump (seed the neighbour cells too)
+                state.world[x][y] = BLOCKS.GOLD;
+                for (const [ox, oy] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+                    const nx = x + ox, ny = y + oy;
+                    if (nx >= 1 && nx < WORLD_WIDTH - 1 && ny > SURFACE_LEVEL + 3 && ny < WORLD_HEIGHT - 1 && state.world[nx][ny] === BLOCKS.STONE && Math.random() < 0.45) {
+                        state.world[nx][ny] = BLOCKS.GOLD;
+                    }
+                }
+            } else if (depth > 40 && Math.random() < 0.0035 * mult) state.world[x][y] = BLOCKS.DIAMOND;
+            else if (depth > 30 && Math.random() < 0.008 * mult) {
+                // Obsidian clump — about as rare as gold, spawns in groups of ~3
+                state.world[x][y] = BLOCKS.OBSIDIAN;
+                for (const [ox, oy] of [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,1]]) {
+                    const nx = x + ox, ny = y + oy;
+                    if (nx >= 1 && nx < WORLD_WIDTH - 1 && ny > SURFACE_LEVEL + 3 && ny < WORLD_HEIGHT - 1 && state.world[nx][ny] === BLOCKS.STONE && Math.random() < 0.5) {
+                        state.world[nx][ny] = BLOCKS.OBSIDIAN;
+                    }
+                }
+            }
         }
     }
 }

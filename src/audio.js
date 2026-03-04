@@ -241,6 +241,26 @@ export function playSelect() {
     playTone(800, 0.03, "sine", 0.1);
 }
 
+// --- POSSUM GOD SPEECH ---
+export function speakPossumGod() {
+    if (!window.speechSynthesis) return;
+    // Cancel anything currently playing
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(
+        "You have killed too many possums. You shall die now."
+    );
+    utterance.pitch  = 0.1;  // as low as possible — god-like rumble
+    utterance.rate   = 0.55; // slow and deliberate
+    utterance.volume = 1.0;
+    // Try to pick the deepest available voice
+    const voices = window.speechSynthesis.getVoices();
+    const deepVoice = voices.find(v => v.name.toLowerCase().includes("male") ||
+                                       v.name.toLowerCase().includes("deep") ||
+                                       v.lang === "en-US") || voices[0];
+    if (deepVoice) utterance.voice = deepVoice;
+    window.speechSynthesis.speak(utterance);
+}
+
 // ============================================================
 // BACKGROUND MUSIC - Procedural chiptune soundtrack!
 // ============================================================

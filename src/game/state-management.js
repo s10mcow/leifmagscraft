@@ -7,7 +7,7 @@
 // ============================================================
 
 import { state } from '../state.js';
-import { BLOCKS, ITEMS, WORLD_WIDTH, WORLD_HEIGHT, BLOCK_SIZE, ITEM_INFO, MOB_DEFS, SAVE_KEY_PREFIX, SAVE_INDEX_KEY } from '../constants.js';
+import { BLOCKS, ITEMS, ITEM_INFO, WORLD_WIDTH, WORLD_HEIGHT, BLOCK_SIZE, MOB_DEFS, SAVE_KEY_PREFIX, SAVE_INDEX_KEY } from '../constants.js';
 import { ARMOR_SLOT_TYPES } from '../inventory.js';
 import { findSurfaceY, generateWorld, generateNetherWorld } from '../world.js';
 import { updateCamera } from '../player.js';
@@ -23,10 +23,17 @@ export function resetAllGameState() {
     // World data
     state.world.length = 0;
     state.netherWorld.length = 0;
+    state.wastelandWorld.length = 0;
+    state.voidWorld.length = 0;
+    state.possumWorld.length = 0;
     state.biomeMap.length = 0;
     state.netherBiomeMap.length = 0;
+    state.wastelandBiomeMap.length = 0;
     state.bgWorld.length = 0;
     state.netherBgWorld.length = 0;
+    state.wastelandBgWorld.length = 0;
+    state.voidBgWorld.length = 0;
+    state.possumBgWorld.length = 0;
     state.activeBgWorld = null;
     for (const key in state.chestData) delete state.chestData[key];
 
@@ -43,13 +50,10 @@ export function resetAllGameState() {
         state.inventory.slots[i] = { itemId: 0, count: 0, durability: 0 };
     }
     state.inventory.selectedSlot = 0;
-    state.inventory.slots[0] = { itemId: ITEMS.ROCKET_LAUNCHER, count: 1, durability: ITEM_INFO[ITEMS.ROCKET_LAUNCHER].durability };
-    state.inventory.slots[1] = { itemId: ITEMS.ROCKET, count: 64, durability: 0 };
-    state.inventory.slots[2] = { itemId: ITEMS.ROCKET, count: 64, durability: 0 };
-    state.inventory.slots[3] = { itemId: ITEMS.MINIATURE_NETHER_PORTAL, count: 1, durability: 0 };
-    for (const type of ARMOR_SLOT_TYPES) {
-        state.inventory.armor[type] = { itemId: 0, count: 0, durability: 0 };
-    }
+    state.inventory.armor["helmet"]     = { itemId: 0, count: 0, durability: 0 };
+    state.inventory.armor["chestplate"] = { itemId: 0, count: 0, durability: 0 };
+    state.inventory.armor["leggings"]   = { itemId: 0, count: 0, durability: 0 };
+    state.inventory.armor["boots"]      = { itemId: 0, count: 0, durability: 0 };
     state.cursorItem.itemId = 0; state.cursorItem.count = 0; state.cursorItem.durability = 0;
     state.offhand.itemId = 0; state.offhand.count = 0; state.offhand.durability = 0;
 
@@ -65,16 +69,32 @@ export function resetAllGameState() {
     state.craftingOpen = false; state.craftingHover = -1; state.craftingScroll = 0;
     state.tradingOpen = false; state.tradingVillager = null; state.tradingHover = -1;
     state.chestOpen = false; state.chestPos = null; state.chestHover = -1;
+    state.blastFurnaceOpen = false; state.blastFurnacePos = null; state.blastFurnaceHover = -1;
     state.sleeping = false; state.sleepTimer = 0;
     state.mining.active = false; state.mining.progress = 0;
     state.mining.blockX = -1; state.mining.blockY = -1;
     state.gunCooldown = 0;
+    state.gunReloadTimer = 0;
+    state.gunReloadingSlot = -1;
+    state.glitchedActive = false;
 
     // Dimension
     state.inNether = false;
+    state.inWasteland = false;
+    state.inVoid = false;
+    state.inPossum = false;
     state.activeWorld = state.world;
     state.overworldPortalX = 0; state.overworldPortalY = 0;
     state.netherPortalX = 0; state.netherPortalY = 0;
+    state.wastelandPortalX = 0; state.wastelandPortalY = 0;
+    state.wastelandReturnX = 0; state.wastelandReturnY = 0;
+    state.wastelandReturnDim = 'overworld';
+    state.radiationTimer = 3000;
+    state.voidPortalX = 0; state.voidPortalY = 0;
+    state.voidReturnX = 0; state.voidReturnY = 0;
+    state.voidReturnDim = 'overworld';
+    state.possumReturnX = 0; state.possumReturnY = 0;
+    state.possumReturnDim = 'overworld';
     state.portalCooldown = 0;
 
     // Time
@@ -145,10 +165,17 @@ export function saveWorld() {
         timestamp: Date.now(),
         world: rleEncode(state.world),
         netherWorld: state.netherWorld.length > 0 ? rleEncode(state.netherWorld) : null,
+        wastelandWorld: state.wastelandWorld.length > 0 ? rleEncode(state.wastelandWorld) : null,
+        voidWorld: state.voidWorld.length > 0 ? rleEncode(state.voidWorld) : null,
+        possumWorld: state.possumWorld.length > 0 ? rleEncode(state.possumWorld) : null,
         biomeMap: state.biomeMap.slice(),
         netherBiomeMap: state.netherBiomeMap.slice(),
+        wastelandBiomeMap: state.wastelandBiomeMap.slice(),
         bgWorld: state.bgWorld.length > 0 ? rleEncode(state.bgWorld) : null,
         netherBgWorld: state.netherBgWorld.length > 0 ? rleEncode(state.netherBgWorld) : null,
+        wastelandBgWorld: state.wastelandBgWorld.length > 0 ? rleEncode(state.wastelandBgWorld) : null,
+        voidBgWorld: state.voidBgWorld.length > 0 ? rleEncode(state.voidBgWorld) : null,
+        possumBgWorld: state.possumBgWorld.length > 0 ? rleEncode(state.possumBgWorld) : null,
         chestData: JSON.parse(JSON.stringify(state.chestData)),
         inventory: {
             slots: state.inventory.slots.map(function(s) { return { itemId: s.itemId, count: s.count, durability: s.durability }; }),
@@ -169,13 +196,30 @@ export function saveWorld() {
         },
         timeOfDay: state.timeOfDay,
         inNether: state.inNether,
+        inWasteland: state.inWasteland,
+        inVoid: state.inVoid,
+        inPossum: state.inPossum,
         overworldPortalX: state.overworldPortalX,
         overworldPortalY: state.overworldPortalY,
         netherPortalX: state.netherPortalX,
         netherPortalY: state.netherPortalY,
+        wastelandPortalX: state.wastelandPortalX,
+        wastelandPortalY: state.wastelandPortalY,
+        wastelandReturnX: state.wastelandReturnX,
+        wastelandReturnY: state.wastelandReturnY,
+        wastelandReturnDim: state.wastelandReturnDim || 'overworld',
+        voidPortalX: state.voidPortalX,
+        voidPortalY: state.voidPortalY,
+        voidReturnX: state.voidReturnX,
+        voidReturnY: state.voidReturnY,
+        voidReturnDim: state.voidReturnDim || 'overworld',
+        possumReturnX: state.possumReturnX,
+        possumReturnY: state.possumReturnY,
+        possumReturnDim: state.possumReturnDim || 'overworld',
         mobs: state.mobs.filter(function(m) { return !MOB_DEFS[m.type].hostile; }).map(function(m) {
             const md = { type: m.type, x: m.x, y: m.y, health: m.health, facing: m.facing };
             if (m.type === "wolf") { md.tamed = m.tamed; md.sitting = m.sitting; }
+            if (m.type === "companion") { md.hungerTimer = m.hungerTimer; md.askingForFood = m.askingForFood; md.foodAskTimer = m.foodAskTimer; }
             return md;
         })
     };
@@ -212,20 +256,46 @@ export function loadWorld(worldName) {
                 const nDecoded = rleDecode(data.netherWorld, WORLD_WIDTH, WORLD_HEIGHT);
                 for (let x = 0; x < WORLD_WIDTH; x++) state.netherWorld[x] = nDecoded[x];
             }
+            if (data.wastelandWorld) {
+                const wDecoded = rleDecode(data.wastelandWorld, WORLD_WIDTH, WORLD_HEIGHT);
+                for (let x = 0; x < WORLD_WIDTH; x++) state.wastelandWorld[x] = wDecoded[x];
+            }
+            if (data.voidWorld) {
+                const vDecoded = rleDecode(data.voidWorld, WORLD_WIDTH, WORLD_HEIGHT);
+                for (let x = 0; x < WORLD_WIDTH; x++) state.voidWorld[x] = vDecoded[x];
+            }
+            if (data.possumWorld) {
+                const pDecoded = rleDecode(data.possumWorld, WORLD_WIDTH, WORLD_HEIGHT);
+                for (let x = 0; x < WORLD_WIDTH; x++) state.possumWorld[x] = pDecoded[x];
+            }
 
             // BiomeMap
             for (let i = 0; i < data.biomeMap.length; i++) state.biomeMap[i] = data.biomeMap[i];
             if (data.netherBiomeMap) {
                 for (let i = 0; i < data.netherBiomeMap.length; i++) state.netherBiomeMap[i] = data.netherBiomeMap[i];
             }
+            if (data.wastelandBiomeMap) {
+                for (let i = 0; i < data.wastelandBiomeMap.length; i++) state.wastelandBiomeMap[i] = data.wastelandBiomeMap[i];
+            }
             if (data.bgWorld) {
                 const bgDecoded = rleDecode(data.bgWorld, WORLD_WIDTH, WORLD_HEIGHT);
                 for (let x = 0; x < WORLD_WIDTH; x++) state.bgWorld[x] = bgDecoded[x];
-                state.activeBgWorld = state.inNether ? state.netherBgWorld : state.bgWorld;
             }
             if (data.netherBgWorld) {
                 const nbgDecoded = rleDecode(data.netherBgWorld, WORLD_WIDTH, WORLD_HEIGHT);
                 for (let x = 0; x < WORLD_WIDTH; x++) state.netherBgWorld[x] = nbgDecoded[x];
+            }
+            if (data.wastelandBgWorld) {
+                const wbgDecoded = rleDecode(data.wastelandBgWorld, WORLD_WIDTH, WORLD_HEIGHT);
+                for (let x = 0; x < WORLD_WIDTH; x++) state.wastelandBgWorld[x] = wbgDecoded[x];
+            }
+            if (data.voidBgWorld) {
+                const vbgDecoded = rleDecode(data.voidBgWorld, WORLD_WIDTH, WORLD_HEIGHT);
+                for (let x = 0; x < WORLD_WIDTH; x++) state.voidBgWorld[x] = vbgDecoded[x];
+            }
+            if (data.possumBgWorld) {
+                const pbgDecoded = rleDecode(data.possumBgWorld, WORLD_WIDTH, WORLD_HEIGHT);
+                for (let x = 0; x < WORLD_WIDTH; x++) state.possumBgWorld[x] = pbgDecoded[x];
             }
 
             // Chests
@@ -260,12 +330,42 @@ export function loadWorld(worldName) {
             // Dimension
             state.timeOfDay = data.timeOfDay;
             state.inNether = data.inNether;
-            state.activeWorld = state.inNether ? state.netherWorld : state.world;
-            state.activeBgWorld = state.inNether ? state.netherBgWorld : state.bgWorld;
+            state.inWasteland = data.inWasteland || false;
+            state.inVoid = data.inVoid || false;
+            state.inPossum = data.inPossum || false;
+            if (state.inPossum) {
+                state.activeWorld   = state.possumWorld;
+                state.activeBgWorld = state.possumBgWorld;
+            } else if (state.inVoid) {
+                state.activeWorld   = state.voidWorld;
+                state.activeBgWorld = state.voidBgWorld;
+            } else if (state.inWasteland) {
+                state.activeWorld   = state.wastelandWorld;
+                state.activeBgWorld = state.wastelandBgWorld;
+            } else if (state.inNether) {
+                state.activeWorld   = state.netherWorld;
+                state.activeBgWorld = state.netherBgWorld;
+            } else {
+                state.activeWorld   = state.world;
+                state.activeBgWorld = state.bgWorld;
+            }
             state.overworldPortalX = data.overworldPortalX;
             state.overworldPortalY = data.overworldPortalY;
             state.netherPortalX = data.netherPortalX;
             state.netherPortalY = data.netherPortalY;
+            state.wastelandPortalX = data.wastelandPortalX || 0;
+            state.wastelandPortalY = data.wastelandPortalY || 0;
+            state.wastelandReturnX = data.wastelandReturnX || 0;
+            state.wastelandReturnY = data.wastelandReturnY || 0;
+            state.wastelandReturnDim = data.wastelandReturnDim || 'overworld';
+            state.voidPortalX = data.voidPortalX || 0;
+            state.voidPortalY = data.voidPortalY || 0;
+            state.voidReturnX = data.voidReturnX || 0;
+            state.voidReturnY = data.voidReturnY || 0;
+            state.voidReturnDim = data.voidReturnDim || 'overworld';
+            state.possumReturnX = data.possumReturnX || 0;
+            state.possumReturnY = data.possumReturnY || 0;
+            state.possumReturnDim = data.possumReturnDim || 'overworld';
 
             // Mobs (passive only, hostile will respawn)
             if (data.mobs) {
@@ -275,6 +375,9 @@ export function loadWorld(worldName) {
                     mob.facing = mData.facing;
                     if (mData.tamed !== undefined) mob.tamed = mData.tamed;
                     if (mData.sitting !== undefined) mob.sitting = mData.sitting;
+                    if (mData.hungerTimer !== undefined) mob.hungerTimer = mData.hungerTimer;
+                    if (mData.askingForFood !== undefined) mob.askingForFood = mData.askingForFood;
+                    if (mData.foodAskTimer !== undefined) mob.foodAskTimer = mData.foodAskTimer;
                     state.mobs.push(mob);
                 }
             }
@@ -312,6 +415,23 @@ export function startNewWorld(worldName) {
             state.player.x = startX * BLOCK_SIZE;
             state.player.y = (findSurfaceY(startX) - 2) * BLOCK_SIZE;
             console.log("Player placed at x:", startX, "y:", state.player.y / BLOCK_SIZE);
+
+            // Spawn loadout
+            const loadout = [
+                { itemId: ITEMS.VOID_TELEPORTER,       count: 1,  durability: 0 },
+                { itemId: ITEMS.WASTELAND_TELEPORTER,  count: 1,  durability: 0 },
+                { itemId: ITEMS.MINIATURE_NETHER_PORTAL, count: 1, durability: 0 },
+                { itemId: ITEMS.POSSUM_TELEPORTER,     count: 1,  durability: 0 },
+                { itemId: ITEMS.FLAMETHROWER,          count: 1,  durability: ITEM_INFO[ITEMS.FLAMETHROWER].durability },
+                { itemId: ITEMS.FUEL_CANISTER,         count: 10, durability: 0 },
+            ];
+            for (let i = 0; i < loadout.length; i++) {
+                state.inventory.slots[i] = { ...loadout[i] };
+            }
+            state.inventory.armor.helmet     = { itemId: ITEMS.RIOT_HELMET,     count: 1, durability: ITEM_INFO[ITEMS.RIOT_HELMET].durability };
+            state.inventory.armor.chestplate = { itemId: ITEMS.RIOT_CHESTPLATE, count: 1, durability: ITEM_INFO[ITEMS.RIOT_CHESTPLATE].durability };
+            state.inventory.armor.leggings   = { itemId: ITEMS.RIOT_LEGGINGS,   count: 1, durability: ITEM_INFO[ITEMS.RIOT_LEGGINGS].durability };
+            state.inventory.armor.boots      = { itemId: ITEMS.RIOT_BOOTS,      count: 1, durability: ITEM_INFO[ITEMS.RIOT_BOOTS].durability };
 
             state.currentWorldName = worldName || ("World " + Date.now());
             state.gameState = "playing";

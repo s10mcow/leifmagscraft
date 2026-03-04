@@ -9,6 +9,7 @@
 import { state } from './state.js';
 import { getHotbarLayout } from './ui.js';
 import { HOTBAR_SIZE } from './inventory.js';
+import { triggerManualReload } from './game/input-handlers.js';
 
 const isTouch = () => ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
 
@@ -50,8 +51,9 @@ function buildDOM() {
             <div id="vbtn-pause" class="vbtn vbtn-sm">⏸</div>
         </div>
         <div class="vbtn-row">
-            <div id="vbtn-inv"   class="vbtn vbtn-sm">INV</div>
-            <div id="vbtn-use"   class="vbtn vbtn-sm">USE</div>
+            <div id="vbtn-inv"    class="vbtn vbtn-sm">INV</div>
+            <div id="vbtn-use"    class="vbtn vbtn-sm">USE</div>
+            <div id="vbtn-reload" class="vbtn vbtn-sm">RLD</div>
         </div>
         <div class="vbtn-row">
             <div id="vbtn-place" class="vbtn">📦</div>
@@ -177,6 +179,10 @@ function initButtons() {
     const inv = document.getElementById('vbtn-inv');
     inv.addEventListener('touchstart', (e) => { e.preventDefault(); press('e');   }, { passive: false });
     inv.addEventListener('touchend',   (e) => { e.preventDefault(); release('e'); }, { passive: false });
+
+    // Reload gun
+    const reload = document.getElementById('vbtn-reload');
+    reload.addEventListener('touchstart', (e) => { e.preventDefault(); triggerManualReload(); }, { passive: false });
 
     // Pause (Escape key)
     const pauseBtn = document.getElementById('vbtn-pause');

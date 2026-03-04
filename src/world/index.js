@@ -14,5 +14,14 @@ export { generateWorld } from './generation.js';
 // Nether world generation
 export { generateNetherWorld } from './nether.js';
 
+// Wasteland world generation
+export { generateWastelandWorld } from './wasteland.js';
+
+// Void world generation
+export { generateVoidWorld } from './void.js';
+
+// Possum Realm world generation
+export { generatePossumWorld } from './possum.js';
+
 // Underground lava-water interaction (runtime)
 export { checkLavaWaterInteraction } from './caves.js';

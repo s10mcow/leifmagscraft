@@ -8,6 +8,196 @@ import { BLOCKS, ITEMS, BLOCK_INFO, ITEM_INFO, isBlockId } from '../constants.js
 export function drawItemIcon(itemId, x, y, size) {
     if (itemId === 0) return;
 
+    // Wasteland Teleporter icon — cobblestone frame with swirling black interior
+    if (itemId === ITEMS.WASTELAND_TELEPORTER) {
+        const fw = size * 0.75, fh = size * 0.9;
+        const fx = x + (size - fw) / 2, fy = y + (size - fh) / 2;
+        const border = Math.max(2, size * 0.12);
+        // Cobblestone frame — grey with darker spots
+        state.ctx.fillStyle = "#6b6b6b";
+        state.ctx.fillRect(fx, fy, fw, fh);
+        state.ctx.fillStyle = "#888888";
+        state.ctx.fillRect(fx + border * 0.3, fy + border * 0.3, border * 0.6, border * 0.6);
+        state.ctx.fillRect(fx + fw - border * 0.9, fy + fh - border * 0.9, border * 0.6, border * 0.6);
+        state.ctx.fillStyle = "#555555";
+        state.ctx.fillRect(fx + border * 0.1, fy + fh - border, border * 0.7, border * 0.7);
+        state.ctx.fillRect(fx + fw - border, fy + border * 0.1, border * 0.7, border * 0.7);
+        // Black void interior with dark shimmer
+        state.ctx.fillStyle = "#050508";
+        state.ctx.fillRect(fx + border, fy + border, fw - border * 2, fh - border * 2);
+        const t = performance.now() * 0.0015;
+        const si1x = Math.sin(t) * 2 + border + 1;
+        const si1y = Math.cos(t * 0.7) * 2 + border + 1;
+        state.ctx.fillStyle = "rgba(40, 0, 60, 0.6)";
+        state.ctx.fillRect(fx + si1x, fy + si1y, (fw - border * 2) * 0.5, fh - border * 2 - 2);
+        state.ctx.fillStyle = "rgba(80, 20, 100, 0.3)";
+        state.ctx.fillRect(fx + si1x, fy + si1y, (fw - border * 2) * 0.25, (fh - border * 2) * 0.4);
+        // Frame outline
+        state.ctx.fillStyle = "#4a4a4a";
+        state.ctx.fillRect(fx, fy, fw, border);
+        state.ctx.fillRect(fx, fy + fh - border, fw, border);
+        state.ctx.fillRect(fx, fy, border, fh);
+        state.ctx.fillRect(fx + fw - border, fy, border, fh);
+        return;
+    }
+
+    // Void Teleporter — portal with black frame, white interior, crackling black lightning
+    if (itemId === ITEMS.VOID_TELEPORTER) {
+        const ctx = state.ctx;
+        const t = performance.now() * 0.005;
+        const b = Math.max(3, Math.floor(size * 0.14)); // frame thickness
+        const p = Math.max(1, Math.floor(size * 0.04)); // pixel unit
+
+        // Black frame
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(x, y, size, size);
+
+        // White interior
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(x + b, y + b, size - b * 2, size - b * 2);
+
+        // Soft grey shimmer inside (animated)
+        const shimX = Math.sin(t * 1.3) * size * 0.08;
+        const shimY = Math.cos(t * 0.9) * size * 0.08;
+        ctx.fillStyle = "rgba(180,180,200,0.35)";
+        ctx.fillRect(x + b + size * 0.1 + shimX, y + b + size * 0.1 + shimY, size * 0.4, size * 0.5);
+        ctx.fillStyle = "rgba(210,210,230,0.25)";
+        ctx.fillRect(x + b + size * 0.35 - shimX, y + b + size * 0.3 - shimY, size * 0.3, size * 0.35);
+
+        // Helper: draw a jagged lightning bolt from (ax,ay) to (bx,by) with mid jags
+        function drawBolt(ax, ay, bx, by, jag) {
+            const mx = (ax + bx) / 2 + jag;
+            const my = (ay + by) / 2 - jag * 0.5;
+            ctx.fillStyle = "#000000";
+            // segment 1: ax,ay → mx,my
+            const dx1 = mx - ax, dy1 = my - ay;
+            const steps1 = Math.max(Math.abs(dx1), Math.abs(dy1)) / p;
+            for (let s = 0; s <= steps1; s++) {
+                const rx = Math.round(ax + dx1 * (s / steps1));
+                const ry = Math.round(ay + dy1 * (s / steps1));
+                ctx.fillRect(rx, ry, p + 1, p + 1);
+            }
+            // segment 2: mx,my → bx,by
+            const dx2 = bx - mx, dy2 = by - my;
+            const steps2 = Math.max(Math.abs(dx2), Math.abs(dy2)) / p;
+            for (let s = 0; s <= steps2; s++) {
+                const rx = Math.round(mx + dx2 * (s / steps2));
+                const ry = Math.round(my + dy2 * (s / steps2));
+                ctx.fillRect(rx, ry, p + 1, p + 1);
+            }
+        }
+
+        // Animate jag offsets using time
+        const j1 = Math.round(Math.sin(t * 2.1) * size * 0.10);
+        const j2 = Math.round(Math.cos(t * 1.7 + 1) * size * 0.10);
+        const j3 = Math.round(Math.sin(t * 2.5 + 2) * size * 0.09);
+        const j4 = Math.round(Math.cos(t * 1.3 + 3) * size * 0.10);
+
+        // Top-left corner bolt
+        drawBolt(
+            Math.round(x + size * 0.08), Math.round(y + size * 0.05),
+            Math.round(x + size * 0.45), Math.round(y + size * 0.28),
+            j1
+        );
+        // Top-right corner bolt
+        drawBolt(
+            Math.round(x + size * 0.55), Math.round(y + size * 0.05),
+            Math.round(x + size * 0.92), Math.round(y + size * 0.28),
+            j2
+        );
+        // Bottom-left bolt
+        drawBolt(
+            Math.round(x + size * 0.05), Math.round(y + size * 0.72),
+            Math.round(x + size * 0.40), Math.round(y + size * 0.92),
+            j3
+        );
+        // Bottom-right bolt
+        drawBolt(
+            Math.round(x + size * 0.60), Math.round(y + size * 0.72),
+            Math.round(x + size * 0.92), Math.round(y + size * 0.92),
+            j4
+        );
+        // Left-side bolt
+        drawBolt(
+            Math.round(x + size * 0.02), Math.round(y + size * 0.35),
+            Math.round(x + size * 0.02), Math.round(y + size * 0.65),
+            j1 * 0.5
+        );
+        // Right-side bolt
+        drawBolt(
+            Math.round(x + size * 0.97), Math.round(y + size * 0.35),
+            Math.round(x + size * 0.97), Math.round(y + size * 0.65),
+            -j2 * 0.5
+        );
+
+        return;
+    }
+
+    // Possum Teleporter — a cute pixel possum
+    if (itemId === ITEMS.POSSUM_TELEPORTER) {
+        const ctx = state.ctx;
+        const s = size;
+        // Scale to fit the icon slot
+        const cx = x, cy = y + Math.floor(s * 0.1);
+        const p = Math.max(1, Math.floor(s / 16)); // pixel size
+
+        // Body — grey
+        ctx.fillStyle = "#aaaaaa";
+        ctx.fillRect(cx + p*3, cy + p*5, p*9, p*6);
+        // Belly — cream
+        ctx.fillStyle = "#ede8e0";
+        ctx.fillRect(cx + p*5, cy + p*6, p*5, p*4);
+
+        // Head — white-faced
+        ctx.fillStyle = "#aaaaaa";
+        ctx.fillRect(cx + p*9, cy + p*3, p*6, p*6);
+        ctx.fillStyle = "#ede8e0";
+        ctx.fillRect(cx + p*10, cy + p*4, p*4, p*4);
+
+        // Snout (pointy)
+        ctx.fillStyle = "#ffaaaa";
+        ctx.fillRect(cx + p*14, cy + p*5, p*2, p*2);
+
+        // Eyes
+        ctx.fillStyle = "#111111";
+        ctx.fillRect(cx + p*11, cy + p*4, p*1, p*1);
+        ctx.fillRect(cx + p*13, cy + p*4, p*1, p*1);
+
+        // Ears
+        ctx.fillStyle = "#cc8899";
+        ctx.fillRect(cx + p*10, cy + p*2, p*2, p*2);
+        ctx.fillRect(cx + p*13, cy + p*2, p*2, p*2);
+        ctx.fillStyle = "#ffccdd";
+        ctx.fillRect(cx + p*10, cy + p*2, p*1, p*1);
+        ctx.fillRect(cx + p*13, cy + p*2, p*1, p*1);
+
+        // Legs
+        ctx.fillStyle = "#888888";
+        ctx.fillRect(cx + p*4, cy + p*11, p*2, p*3);
+        ctx.fillRect(cx + p*7, cy + p*11, p*2, p*3);
+        // Feet
+        ctx.fillStyle = "#777777";
+        ctx.fillRect(cx + p*3, cy + p*13, p*3, p*1);
+        ctx.fillRect(cx + p*6, cy + p*13, p*3, p*1);
+
+        // Tail (thin, curling to left)
+        ctx.fillStyle = "#ccbbaa";
+        ctx.fillRect(cx + p*1, cy + p*7, p*3, p*1);
+        ctx.fillRect(cx + p*0, cy + p*8, p*2, p*1);
+        ctx.fillRect(cx + p*0, cy + p*9, p*2, p*2);
+
+        // Tiny pink heart above possum (cheerful detail!)
+        const t = performance.now() * 0.003;
+        const heartBob = Math.round(Math.sin(t) * p);
+        ctx.fillStyle = "#ff88bb";
+        ctx.fillRect(cx + p*7, cy + p*0 + heartBob, p*1, p*1);
+        ctx.fillRect(cx + p*9, cy + p*0 + heartBob, p*1, p*1);
+        ctx.fillRect(cx + p*7, cy + p*1 + heartBob, p*3, p*1);
+        ctx.fillRect(cx + p*8, cy + p*2 + heartBob, p*1, p*1);
+
+        return;
+    }
+
     // Miniature Nether Portal icon
     if (itemId === ITEMS.MINIATURE_NETHER_PORTAL) {
         const fw = size * 0.75, fh = size * 0.9;
@@ -290,6 +480,36 @@ export function drawItemIcon(itemId, x, y, size) {
         // Darker shading
         state.ctx.fillStyle = "rgba(0,0,0,0.1)";
         state.ctx.fillRect(x + size * 0.2, y + size * 0.45, size * 0.6, size * 0.15);
+    } else if (itemId === ITEMS.FUEL_CANISTER) {
+        // Cylindrical canister — yellow-green body with cap
+        state.ctx.fillStyle = "#b8950a";
+        state.ctx.fillRect(x + size * 0.2, y + size * 0.15, size * 0.6, size * 0.7);
+        state.ctx.fillStyle = "#d4a820";
+        state.ctx.fillRect(x + size * 0.25, y + size * 0.18, size * 0.25, size * 0.64);
+        // Cap on top
+        state.ctx.fillStyle = "#888";
+        state.ctx.fillRect(x + size * 0.3, y + size * 0.08, size * 0.4, size * 0.1);
+        // Toxic green glow stripe
+        state.ctx.fillStyle = "#40cc40";
+        state.ctx.fillRect(x + size * 0.2, y + size * 0.45, size * 0.6, size * 0.08);
+    } else if (itemId === ITEMS.FLAMETHROWER) {
+        // Dark olive body / tank
+        state.ctx.fillStyle = "#3a3a1a";
+        state.ctx.fillRect(x + size * 0.1, y + size * 0.28, size * 0.75, size * 0.22);
+        // Fuel tank on back (round-ish)
+        state.ctx.fillStyle = "#b8950a";
+        state.ctx.fillRect(x + size * 0.62, y + size * 0.22, size * 0.28, size * 0.55);
+        state.ctx.fillStyle = "#d4a820";
+        state.ctx.fillRect(x + size * 0.65, y + size * 0.25, size * 0.1, size * 0.48);
+        // Nozzle barrel (darker)
+        state.ctx.fillStyle = "#222";
+        state.ctx.fillRect(x + size * 0.0, y + size * 0.34, size * 0.16, size * 0.12);
+        // Grip
+        state.ctx.fillStyle = "#4a3520";
+        state.ctx.fillRect(x + size * 0.38, y + size * 0.46, size * 0.14, size * 0.32);
+        // Orange flame tip glow
+        state.ctx.fillStyle = "#ff6600";
+        state.ctx.fillRect(x + size * 0.0, y + size * 0.35, size * 0.06, size * 0.1);
     } else if (itemId === ITEMS.ROCKET_LAUNCHER) {
         // Olive green launcher tube
         state.ctx.fillStyle = "#556b2f";
@@ -322,6 +542,117 @@ export function drawItemIcon(itemId, x, y, size) {
         // Exhaust
         state.ctx.fillStyle = "#ff8800";
         state.ctx.fillRect(x + size * 0.35, y + size * 0.7, size * 0.3, size * 0.15);
+    } else if (itemId === ITEMS.SHIELD) {
+        // Minecraft-style shield: wooden board with iron trim and boss
+        const cx = x + size / 2;
+        // Main wood body (tapers to point at bottom)
+        state.ctx.fillStyle = "#8b6c42";
+        state.ctx.beginPath();
+        state.ctx.moveTo(x + size * 0.15, y + size * 0.08);
+        state.ctx.lineTo(x + size * 0.85, y + size * 0.08);
+        state.ctx.lineTo(x + size * 0.85, y + size * 0.62);
+        state.ctx.lineTo(cx, y + size * 0.96);
+        state.ctx.lineTo(x + size * 0.15, y + size * 0.62);
+        state.ctx.closePath();
+        state.ctx.fill();
+        // Wood grain lines
+        state.ctx.fillStyle = "#7a5c32";
+        state.ctx.fillRect(x + size * 0.28, y + size * 0.12, size * 0.08, size * 0.48);
+        state.ctx.fillRect(x + size * 0.46, y + size * 0.12, size * 0.08, size * 0.52);
+        state.ctx.fillRect(x + size * 0.64, y + size * 0.12, size * 0.08, size * 0.48);
+        // Iron border (top, sides)
+        state.ctx.fillStyle = "#c0c0c0";
+        state.ctx.fillRect(x + size * 0.15, y + size * 0.08, size * 0.7, size * 0.07); // top bar
+        state.ctx.fillRect(x + size * 0.15, y + size * 0.08, size * 0.07, size * 0.54); // left bar
+        state.ctx.fillRect(x + size * 0.78, y + size * 0.08, size * 0.07, size * 0.54); // right bar
+        // Iron boss (cross in center)
+        state.ctx.fillStyle = "#d4d4d4";
+        state.ctx.fillRect(cx - size * 0.06, y + size * 0.25, size * 0.12, size * 0.28); // vertical
+        state.ctx.fillRect(cx - size * 0.16, y + size * 0.33, size * 0.32, size * 0.12); // horizontal
+        // Boss centre highlight
+        state.ctx.fillStyle = "#e8e8e8";
+        state.ctx.fillRect(cx - size * 0.04, y + size * 0.33, size * 0.08, size * 0.12);
+    } else if (itemId === ITEMS.STEEL_INGOT) {
+        // Silver-blue steel ingot bar
+        state.ctx.fillStyle = "#6a7a8a";
+        state.ctx.fillRect(x + size * 0.1, y + size * 0.22, size * 0.8, size * 0.56);
+        state.ctx.fillStyle = "#9ab0c0";
+        state.ctx.fillRect(x + size * 0.15, y + size * 0.27, size * 0.7, size * 0.18);
+        state.ctx.fillStyle = "#4a5a6a";
+        state.ctx.fillRect(x + size * 0.15, y + size * 0.62, size * 0.7, size * 0.1);
+    } else if (itemId === ITEMS.TITANIUM_INGOT) {
+        // Pale blue-white metallic ingot
+        state.ctx.fillStyle = "#7a90a8";
+        state.ctx.fillRect(x + size * 0.1, y + size * 0.22, size * 0.8, size * 0.56);
+        state.ctx.fillStyle = "#c0d8f0";
+        state.ctx.fillRect(x + size * 0.15, y + size * 0.27, size * 0.7, size * 0.18);
+        state.ctx.fillStyle = "#ddeeff";
+        state.ctx.fillRect(x + size * 0.3, y + size * 0.3, size * 0.1, size * 0.1);
+        state.ctx.fillStyle = "#5a6a7a";
+        state.ctx.fillRect(x + size * 0.15, y + size * 0.62, size * 0.7, size * 0.1);
+    } else if (itemId === ITEMS.RIOT_HELMET) {
+        // Dark navy tactical helmet with visor
+        state.ctx.fillStyle = "#2d3a4a";
+        state.ctx.fillRect(x + size * 0.1, y + size * 0.12, size * 0.8, size * 0.7);
+        state.ctx.fillStyle = "#1a2535";
+        state.ctx.fillRect(x + size * 0.2, y + size * 0.55, size * 0.6, size * 0.27);
+        // Visor slot
+        state.ctx.fillStyle = "#88aacc";
+        state.ctx.fillRect(x + size * 0.2, y + size * 0.38, size * 0.6, size * 0.16);
+    } else if (itemId === ITEMS.RIOT_CHESTPLATE) {
+        state.ctx.fillStyle = "#2d3a4a";
+        state.ctx.fillRect(x + size * 0.1, y + size * 0.05, size * 0.8, size * 0.9);
+        // Kevlar panel lines
+        state.ctx.fillStyle = "#1a2535";
+        state.ctx.fillRect(x + size * 0.3, y + size * 0.05, size * 0.4, size * 0.32);
+        state.ctx.fillRect(x + size * 0.35, y + size * 0.58, size * 0.3, size * 0.37);
+        state.ctx.fillStyle = "#3d5060";
+        state.ctx.fillRect(x + size * 0.1, y + size * 0.38, size * 0.8, size * 0.05);
+    } else if (itemId === ITEMS.RIOT_LEGGINGS) {
+        state.ctx.fillStyle = "#2d3a4a";
+        state.ctx.fillRect(x + size * 0.1, y + size * 0.05, size * 0.8, size * 0.4);
+        state.ctx.fillRect(x + size * 0.1, y + size * 0.05, size * 0.35, size * 0.9);
+        state.ctx.fillRect(x + size * 0.55, y + size * 0.05, size * 0.35, size * 0.9);
+        state.ctx.fillStyle = "#3d5060";
+        state.ctx.fillRect(x + size * 0.1, y + size * 0.44, size * 0.8, size * 0.04);
+    } else if (itemId === ITEMS.RIOT_BOOTS) {
+        state.ctx.fillStyle = "#2d3a4a";
+        state.ctx.fillRect(x + size * 0.05, y + size * 0.4, size * 0.35, size * 0.55);
+        state.ctx.fillRect(x + size * 0.6, y + size * 0.4, size * 0.35, size * 0.55);
+        state.ctx.fillRect(x + size * 0.0, y + size * 0.7, size * 0.45, size * 0.25);
+        state.ctx.fillRect(x + size * 0.55, y + size * 0.7, size * 0.45, size * 0.25);
+        // Toe reinforcement
+        state.ctx.fillStyle = "#3d5060";
+        state.ctx.fillRect(x + size * 0.0, y + size * 0.78, size * 0.2, size * 0.17);
+        state.ctx.fillRect(x + size * 0.8, y + size * 0.78, size * 0.2, size * 0.17);
+    } else if (itemId === ITEMS.BUCKET || itemId === ITEMS.WATER_BUCKET || itemId === ITEMS.LAVA_BUCKET || itemId === ITEMS.TOXIC_BUCKET) {
+        // Iron bucket body (wide top, narrow bottom)
+        state.ctx.fillStyle = "#aaaaaa";
+        state.ctx.beginPath();
+        state.ctx.moveTo(x + size * 0.15, y + size * 0.25);
+        state.ctx.lineTo(x + size * 0.85, y + size * 0.25);
+        state.ctx.lineTo(x + size * 0.75, y + size * 0.88);
+        state.ctx.lineTo(x + size * 0.25, y + size * 0.88);
+        state.ctx.closePath();
+        state.ctx.fill();
+        // Handle arc
+        state.ctx.strokeStyle = "#888888";
+        state.ctx.lineWidth = Math.max(2, size * 0.07);
+        state.ctx.beginPath();
+        state.ctx.arc(x + size / 2, y + size * 0.22, size * 0.22, Math.PI, 0, false);
+        state.ctx.stroke();
+        // Liquid fill if not empty
+        if (itemId === ITEMS.WATER_BUCKET) {
+            state.ctx.fillStyle = "#3366ee";
+            state.ctx.fillRect(x + size * 0.22, y + size * 0.58, size * 0.56, size * 0.26);
+        } else if (itemId === ITEMS.LAVA_BUCKET) {
+            state.ctx.fillStyle = "#dd4400";
+            state.ctx.fillRect(x + size * 0.22, y + size * 0.58, size * 0.56, size * 0.26);
+        } else if (itemId === ITEMS.TOXIC_BUCKET) {
+            state.ctx.fillStyle = "#22aa22";
+            state.ctx.fillRect(x + size * 0.22, y + size * 0.58, size * 0.56, size * 0.26);
+        }
+        state.ctx.lineWidth = 1;
     } else if (ITEM_INFO[itemId] && ITEM_INFO[itemId].armorType) {
         const ac = ITEM_INFO[itemId].color;
         const at = ITEM_INFO[itemId].armorType;

@@ -9,7 +9,7 @@
 import { state } from '../state.js';
 import { BLOCKS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, MOB_DEFS, getItemName } from '../constants.js';
 import { addFloatingText, countItem, addToInventory } from '../inventory.js';
-import { findSurfaceY, generateNetherWorld, switchDimension } from '../world.js';
+import { findSurfaceY, generateNetherWorld, generateWastelandWorld, generateVoidWorld, generatePossumWorld, switchDimension } from '../world.js';
 import { playCraft } from '../audio.js';
 
 // ============================================================
@@ -118,7 +118,7 @@ export function executeTrade(trade) {
 export function teleportToOtherDimension() {
     if (state.inNether) {
         // Return to overworld
-        switchDimension(false);
+        switchDimension('overworld');
         state.player.x = state.overworldPortalX * BLOCK_SIZE;
         state.player.y = (state.overworldPortalY - 2) * BLOCK_SIZE;
     } else {
@@ -131,7 +131,7 @@ export function teleportToOtherDimension() {
             generateNetherWorld();
         }
 
-        switchDimension(true);
+        switchDimension('nether');
 
         // Find safe spawn in Nether
         const spawnX = Math.floor(WORLD_WIDTH / 2);
@@ -148,4 +148,132 @@ export function teleportToOtherDimension() {
     state.player.velX = 0;
     state.player.velY = 0;
     addFloatingText(state.player.x, state.player.y - 30, state.inNether ? "Entered the Nether!" : "Returned to Overworld!", state.inNether ? "#ff4444" : "#4ade80");
+}
+
+export function teleportToWasteland() {
+    if (state.inWasteland) {
+        // Return to where we came from
+        switchDimension(state.wastelandReturnDim || 'overworld');
+        state.player.x = state.wastelandReturnX * BLOCK_SIZE;
+        state.player.y = (state.wastelandReturnY - 2) * BLOCK_SIZE;
+
+        state.mobs.length = 0;
+        state.portalCooldown = 3000;
+        state.player.velX = 0;
+        state.player.velY = 0;
+        addFloatingText(state.player.x, state.player.y - 30, "Escaped the Wasteland!", "#a0ff80");
+        return;
+    }
+
+    // Save current position and dimension for return trip
+    state.wastelandReturnX = Math.floor(state.player.x / BLOCK_SIZE);
+    state.wastelandReturnY = Math.floor(state.player.y / BLOCK_SIZE);
+    state.wastelandReturnDim = state.inNether ? 'nether' : 'overworld';
+
+    // Generate Wasteland if first time
+    if (state.wastelandWorld.length === 0) {
+        generateWastelandWorld();
+    }
+
+    switchDimension('wasteland');
+
+    // Spawn near the middle
+    const spawnX = Math.floor(WORLD_WIDTH / 2);
+    const surfY = findSurfaceY(spawnX);
+    state.wastelandPortalX = spawnX;
+    state.wastelandPortalY = surfY;
+    state.player.x = spawnX * BLOCK_SIZE;
+    state.player.y = (surfY - 2) * BLOCK_SIZE;
+
+    state.mobs.length = 0;
+    state.portalCooldown = 3000;
+    state.player.velX = 0;
+    state.player.velY = 0;
+    addFloatingText(state.player.x, state.player.y - 30, "Entered the Wasteland!", "#c8a030");
+}
+
+export function teleportToVoid() {
+    if (state.inVoid) {
+        // Return to where we came from
+        switchDimension(state.voidReturnDim || 'overworld');
+        state.player.x = state.voidReturnX * BLOCK_SIZE;
+        state.player.y = (state.voidReturnY - 2) * BLOCK_SIZE;
+
+        state.mobs.length = 0;
+        state.portalCooldown = 3000;
+        state.player.velX = 0;
+        state.player.velY = 0;
+        addFloatingText(state.player.x, state.player.y - 30, "Escaped the Void!", "#a060ff");
+        return;
+    }
+
+    // Save current position and dimension for return
+    state.voidReturnX = Math.floor(state.player.x / BLOCK_SIZE);
+    state.voidReturnY = Math.floor(state.player.y / BLOCK_SIZE);
+    state.voidReturnDim = state.inNether ? 'nether' : state.inWasteland ? 'wasteland' : 'overworld';
+
+    // Generate Void if first time
+    if (state.voidWorld.length === 0) {
+        generateVoidWorld();
+    }
+
+    switchDimension('void');
+
+    // Spawn on the central platform
+    const spawnX = Math.floor(WORLD_WIDTH / 2);
+    let spawnY = Math.floor(WORLD_HEIGHT / 2);
+    // Find top of spawn island
+    for (let y = 0; y < WORLD_HEIGHT; y++) {
+        if (state.voidWorld[spawnX] && state.voidWorld[spawnX][y] !== 0) { spawnY = y - 2; break; }
+    }
+    state.voidPortalX = spawnX;
+    state.voidPortalY = spawnY;
+    state.player.x = spawnX * BLOCK_SIZE;
+    state.player.y = Math.max(0, spawnY) * BLOCK_SIZE;
+
+    state.mobs.length = 0;
+    state.portalCooldown = 3000;
+    state.player.velX = 0;
+    state.player.velY = 0;
+    addFloatingText(state.player.x, state.player.y - 30, "Entered the Void!", "#8840ff");
+}
+
+export function teleportToPossum() {
+    if (state.inPossum) {
+        // Return to where we came from
+        switchDimension(state.possumReturnDim || 'overworld');
+        state.player.x = state.possumReturnX * BLOCK_SIZE;
+        state.player.y = (state.possumReturnY - 2) * BLOCK_SIZE;
+
+        state.mobs.length = 0;
+        state.portalCooldown = 3000;
+        state.player.velX = 0;
+        state.player.velY = 0;
+        addFloatingText(state.player.x, state.player.y - 30, "Farewell, possum pals!", "#ff88cc");
+        return;
+    }
+
+    // Save return position
+    state.possumReturnX = Math.floor(state.player.x / BLOCK_SIZE);
+    state.possumReturnY = Math.floor(state.player.y / BLOCK_SIZE);
+    state.possumReturnDim = state.inNether ? 'nether' : state.inWasteland ? 'wasteland' : state.inVoid ? 'void' : 'overworld';
+
+    // Generate Possum Realm if first time
+    if (state.possumWorld.length === 0) {
+        generatePossumWorld();
+    }
+
+    switchDimension('possum');
+
+    // Spawn near middle on surface
+    const spawnX = Math.floor(WORLD_WIDTH / 2);
+    const surfY = findSurfaceY(spawnX);
+    state.player.x = spawnX * BLOCK_SIZE;
+    state.player.y = (surfY - 2) * BLOCK_SIZE;
+
+    state.mobs.length = 0;
+    state.portalCooldown = 3000;
+    state.player.velX = 0;
+    state.player.velY = 0;
+    addFloatingText(state.player.x, state.player.y - 30, "Welcome to Possum Realm! :D", "#ff88cc");
 }

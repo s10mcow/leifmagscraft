@@ -33,8 +33,11 @@ export function updatePlayer(dt) {
     // Crouching (Shift key)
     state.player.crouching = !!state.keys["Shift"];
 
-    // Movement (disabled during crafting)
-    if (!state.craftingOpen && !state.chestOpen) {
+    // Immobilized by Possum Protector tail wrap
+    const isWrapped = state.mobs.some(m => m.type === 'possum_protector' && m.wrapping);
+
+    // Movement (disabled during crafting or when wrapped)
+    if (!state.craftingOpen && !state.chestOpen && !isWrapped) {
         const moveSpeed = state.player.crouching ? state.player.speed * 0.4 : state.player.speed;
         if (state.keys["ArrowLeft"] || state.keys["a"] || state.keys["A"]) {
             state.player.velX = -moveSpeed;
@@ -54,6 +57,9 @@ export function updatePlayer(dt) {
         if (state.player.onGround && Math.abs(state.player.velX) > 1) {
             playFootstep();
         }
+    } else if (isWrapped) {
+        state.player.velX = 0;
+        state.player.velY = Math.min(state.player.velY, 0); // no launching up, but still fall
     }
 
     // Gravity
@@ -140,6 +146,16 @@ export function updatePlayer(dt) {
                 playHurt();
                 addFloatingText(state.player.x, state.player.y - 20, "-2 Lava!", "#ff4444");
                 createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height, 4, "#ff6600");
+            }
+        }
+        // Toxic puddle damage
+        if (standBlock === BLOCKS.TOXIC_PUDDLE) {
+            if (state.player.invincibleTimer <= 0) {
+                state.player.health = Math.max(0, state.player.health - 1);
+                state.player.invincibleTimer = 800;
+                playHurt();
+                addFloatingText(state.player.x, state.player.y - 20, "Nuclear Waste!", "#1ad04a");
+                createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height, 3, "#30d040");
             }
         }
         // Soul sand slowdown
@@ -243,7 +259,7 @@ export function respawnPlayer() {
 // COMBAT
 // ============================================================
 
-export function hurtPlayer(damage, knockFromX) {
+export function hurtPlayer(damage, knockFromX, damageType = "melee") {
     if (state.player.invincibleTimer > 0 || state.gameOver) return;
 
     // Shield block: crouching + shield in offhand + attack from the facing side
@@ -261,6 +277,29 @@ export function hurtPlayer(damage, knockFromX) {
             }
             state.screenShake.intensity = 3;
             return;
+        }
+    }
+
+    // Bullet resistance from riot armor (or any armor with bulletResistance property)
+    if (damageType === "bullet") {
+        let bulletResist = 0;
+        for (const type of ["helmet", "chestplate", "leggings", "boots"]) {
+            const slot = state.inventory.armor[type];
+            if (slot.itemId !== 0 && ITEM_INFO[slot.itemId]?.bulletResistance)
+                bulletResist += ITEM_INFO[slot.itemId].bulletResistance;
+        }
+        damage = Math.ceil(damage * (1 - Math.min(bulletResist, 0.85)));
+    }
+
+    // Riot armor is highly effective against The Glitched — each piece reduces 20% damage
+    if (damageType === "glitched") {
+        let riotPieces = 0;
+        const riotIds = new Set([ITEMS.RIOT_HELMET, ITEMS.RIOT_CHESTPLATE, ITEMS.RIOT_LEGGINGS, ITEMS.RIOT_BOOTS]);
+        for (const type of ["helmet", "chestplate", "leggings", "boots"]) {
+            if (riotIds.has(state.inventory.armor[type].itemId)) riotPieces++;
+        }
+        if (riotPieces > 0) {
+            damage = Math.max(1, Math.ceil(damage * (1 - riotPieces * 0.20)));
         }
     }
 

@@ -748,6 +748,439 @@ function drawMob(mob) {
             }
         }
     }
+    else if (mob.type === "companion") {
+        // Body — green shirt
+        state.ctx.fillStyle = isHurt ? "#ff8888" : "#4a8a5a";
+        state.ctx.fillRect(sx + 4, sy + 14, 16, 16);
+        // Head — skin tone
+        state.ctx.fillStyle = isHurt ? "#ffaaaa" : "#c69c6d";
+        state.ctx.fillRect(sx + 4, sy, 16, 14);
+        // Eyes
+        state.ctx.fillStyle = "#ffffff";
+        if (mob.facing === 1) {
+            state.ctx.fillRect(sx + 12, sy + 4, 6, 4);
+            state.ctx.fillStyle = "#4a3728"; state.ctx.fillRect(sx + 15, sy + 4, 3, 4);
+        } else {
+            state.ctx.fillRect(sx + 6, sy + 4, 6, 4);
+            state.ctx.fillStyle = "#4a3728"; state.ctx.fillRect(sx + 6, sy + 4, 3, 4);
+        }
+        // Dark hair
+        state.ctx.fillStyle = "#2a1808";
+        state.ctx.fillRect(sx + 4, sy, 16, 3);
+        // Brown pants
+        state.ctx.fillStyle = isHurt ? "#cc6644" : "#5a3a1a";
+        state.ctx.fillRect(sx + 4, sy + 30, 7, 16); state.ctx.fillRect(sx + 13, sy + 30, 7, 16);
+        // Boots
+        state.ctx.fillStyle = "#4a3a2a";
+        state.ctx.fillRect(sx + 4, sy + 42, 7, 4); state.ctx.fillRect(sx + 13, sy + 42, 7, 4);
+        // Arms
+        state.ctx.fillStyle = isHurt ? "#ff8888" : "#4a8a5a";
+        state.ctx.fillRect(sx - 2, sy + 14, 6, 14); state.ctx.fillRect(sx + 20, sy + 14, 6, 14);
+        // Hands
+        state.ctx.fillStyle = "#c69c6d";
+        state.ctx.fillRect(sx - 2, sy + 26, 6, 4); state.ctx.fillRect(sx + 20, sy + 26, 6, 4);
+        // Stone sword in weapon hand
+        const swx = mob.facing === 1 ? sx + 22 : sx - 8;
+        state.ctx.fillStyle = "#888888";
+        state.ctx.fillRect(swx + 1, sy + 8, 3, 18);
+        state.ctx.fillStyle = "#5a4a38"; // crossguard
+        state.ctx.fillRect(swx - 2, sy + 18, 9, 3);
+
+        // Speech bubble when asking for food
+        if (mob.askingForFood) {
+            const text = "Can I have some food?";
+            state.ctx.save();
+            state.ctx.font = "bold 8px monospace";
+            const tw = state.ctx.measureText(text).width;
+            const bx2 = sx + def.width / 2 - tw / 2 - 5;
+            const by2 = sy - 34;
+            state.ctx.fillStyle = "rgba(255,255,255,0.93)";
+            state.ctx.fillRect(bx2, by2, tw + 10, 16);
+            state.ctx.strokeStyle = "#444444";
+            state.ctx.lineWidth = 1;
+            state.ctx.strokeRect(bx2, by2, tw + 10, 16);
+            // Bubble tail
+            state.ctx.fillStyle = "rgba(255,255,255,0.93)";
+            state.ctx.fillRect(sx + def.width / 2 - 3, by2 + 16, 6, 5);
+            state.ctx.fillStyle = "#222222";
+            state.ctx.fillText(text, bx2 + 5, by2 + 11);
+            state.ctx.restore();
+        }
+    }
+
+    else if (mob.type === "glitched") {
+        // Random glitch offset applied to body parts
+        const gx = Math.random() < 0.3 ? Math.floor((Math.random() - 0.5) * 8) : 0;
+        const gy = Math.random() < 0.3 ? Math.floor((Math.random() - 0.5) * 4) : 0;
+
+        state.ctx.fillStyle = "#000000";
+        // Body
+        state.ctx.fillRect(sx + 4 + gx, sy + 14 + gy, 16, 16);
+        // Head
+        state.ctx.fillRect(sx + 4, sy, 16, 14);
+        // Legs
+        state.ctx.fillRect(sx + 4, sy + 30, 7, 16); state.ctx.fillRect(sx + 13, sy + 30, 7, 16);
+        // Arms
+        state.ctx.fillStyle = "#0a0a0a";
+        state.ctx.fillRect(sx - 2, sy + 14, 6, 14); state.ctx.fillRect(sx + 20, sy + 14, 6, 14);
+        // Glowing purple eyes
+        state.ctx.fillStyle = isHurt ? "#ff0000" : "#cc00ff";
+        if (mob.facing === 1) {
+            state.ctx.fillRect(sx + 13, sy + 4, 5, 3);
+        } else {
+            state.ctx.fillRect(sx + 6, sy + 4, 5, 3);
+        }
+        // Glitch noise strips (random colored horizontal bands)
+        if (Math.random() < 0.45) {
+            state.ctx.fillStyle = `rgba(${Math.floor(Math.random() * 200)},0,${Math.floor(Math.random() * 255)},0.65)`;
+            const stripY = sy + Math.floor(Math.random() * def.height);
+            state.ctx.fillRect(sx - 2, stripY, def.width + 4, 1 + Math.floor(Math.random() * 3));
+        }
+    }
+
+    else if (mob.type === "possum") {
+        // A small grey-and-white quadruped opossum facing left or right
+        const f = mob.facing;
+        const bodyCol  = isHurt ? "#ff9999" : "#b0b0b0"; // grey body
+        const bellyCol = isHurt ? "#ffcccc" : "#e8e0d8"; // cream belly
+        const noseCol  = "#ff9999";                       // pink nose
+        const earCol   = "#cc8899";                       // pink-tinged ears
+
+        // Body
+        state.ctx.fillStyle = bodyCol;
+        state.ctx.fillRect(sx + 4, sy + 2, 18, 10);
+        // Belly stripe
+        state.ctx.fillStyle = bellyCol;
+        state.ctx.fillRect(sx + 7, sy + 5, 12, 5);
+
+        // Head
+        const hx = f === 1 ? sx + 20 : sx;
+        state.ctx.fillStyle = bodyCol;
+        state.ctx.fillRect(hx, sy, 10, 9);
+        // White face mask
+        state.ctx.fillStyle = bellyCol;
+        state.ctx.fillRect(hx + 1, sy + 1, 8, 7);
+        // Nose (pointy pink snout tip)
+        state.ctx.fillStyle = noseCol;
+        if (f === 1) {
+            state.ctx.fillRect(hx + 9, sy + 4, 3, 2);
+        } else {
+            state.ctx.fillRect(hx - 2, sy + 4, 3, 2);
+        }
+        // Eyes (tiny dark)
+        state.ctx.fillStyle = "#222222";
+        if (f === 1) {
+            state.ctx.fillRect(hx + 5, sy + 2, 2, 2);
+        } else {
+            state.ctx.fillRect(hx + 3, sy + 2, 2, 2);
+        }
+        // Ears (two small upright ears)
+        state.ctx.fillStyle = earCol;
+        state.ctx.fillRect(hx + 1, sy - 3, 3, 4);
+        state.ctx.fillRect(hx + 5, sy - 3, 3, 4);
+        state.ctx.fillStyle = "#ffbbcc";
+        state.ctx.fillRect(hx + 2, sy - 2, 1, 3);
+        state.ctx.fillRect(hx + 6, sy - 2, 1, 3);
+
+        // Four stubby legs
+        state.ctx.fillStyle = bodyCol;
+        state.ctx.fillRect(sx + 5,  sy + 12, 4, 5);
+        state.ctx.fillRect(sx + 11, sy + 12, 4, 5);
+        // Tiny feet
+        state.ctx.fillStyle = "#888888";
+        state.ctx.fillRect(sx + 4,  sy + 15, 5, 2);
+        state.ctx.fillRect(sx + 10, sy + 15, 5, 2);
+
+        // Thin curling tail
+        state.ctx.fillStyle = "#ccbbaa";
+        const tx = f === 1 ? sx : sx + 22;
+        state.ctx.fillRect(tx, sy + 6, 3, 2);
+        state.ctx.fillRect(tx + (f === 1 ? -2 : 3), sy + 8, 2, 2);
+        state.ctx.fillRect(tx + (f === 1 ? -3 : 4), sy + 10, 2, 3);
+    }
+
+    else if (mob.type === "possum_protector") {
+        // Giant enraged possum — same palette but huge and terrifying
+        const f = mob.facing;
+        const bodyCol  = isHurt ? "#ff9999" : "#888888"; // darker grey than regular possum
+        const bellyCol = isHurt ? "#ffcccc" : "#d4ccc4";
+        const noseCol  = "#ff5577";
+        const earCol   = "#cc4466";
+        const t = performance.now() * 0.004;
+
+        // Body (56×66)
+        state.ctx.fillStyle = bodyCol;
+        state.ctx.fillRect(sx + 6, sy + 10, 44, 36);
+        // Belly
+        state.ctx.fillStyle = bellyCol;
+        state.ctx.fillRect(sx + 14, sy + 16, 28, 22);
+        // Rage markings — jagged dark stripes on back
+        state.ctx.fillStyle = "#444444";
+        state.ctx.fillRect(sx + 10, sy + 12, 6, 30);
+        state.ctx.fillRect(sx + 20, sy + 10, 4, 34);
+        state.ctx.fillRect(sx + 35, sy + 12, 6, 30);
+
+        // Head
+        const hx2 = f === 1 ? sx + 38 : sx + 0;
+        state.ctx.fillStyle = bodyCol;
+        state.ctx.fillRect(hx2, sy, 22, 20);
+        // White face
+        state.ctx.fillStyle = bellyCol;
+        state.ctx.fillRect(hx2 + 2, sy + 2, 18, 16);
+        // Big angry eyes (red glow)
+        state.ctx.fillStyle = "#ff0000";
+        if (f === 1) {
+            state.ctx.fillRect(hx2 + 4, sy + 4, 5, 5);
+            state.ctx.fillRect(hx2 + 12, sy + 4, 5, 5);
+        } else {
+            state.ctx.fillRect(hx2 + 4, sy + 4, 5, 5);
+            state.ctx.fillRect(hx2 + 12, sy + 4, 5, 5);
+        }
+        state.ctx.fillStyle = "#660000";
+        if (f === 1) {
+            state.ctx.fillRect(hx2 + 5, sy + 5, 3, 3);
+            state.ctx.fillRect(hx2 + 13, sy + 5, 3, 3);
+        } else {
+            state.ctx.fillRect(hx2 + 5, sy + 5, 3, 3);
+            state.ctx.fillRect(hx2 + 13, sy + 5, 3, 3);
+        }
+        // Big pink nose/snout
+        state.ctx.fillStyle = noseCol;
+        if (f === 1) state.ctx.fillRect(hx2 + 18, sy + 10, 6, 4);
+        else         state.ctx.fillRect(hx2 - 2, sy + 10, 6, 4);
+        // Big ears
+        state.ctx.fillStyle = earCol;
+        state.ctx.fillRect(hx2 + 2, sy - 8, 7, 10);
+        state.ctx.fillRect(hx2 + 12, sy - 8, 7, 10);
+        state.ctx.fillStyle = "#ffbbcc";
+        state.ctx.fillRect(hx2 + 4, sy - 6, 3, 7);
+        state.ctx.fillRect(hx2 + 14, sy - 6, 3, 7);
+        // Mouth (open snarl)
+        state.ctx.fillStyle = "#330000";
+        const mouthX = f === 1 ? hx2 + 10 : hx2 + 4;
+        state.ctx.fillRect(mouthX, sy + 14, 10, 4);
+        // Fangs
+        state.ctx.fillStyle = "#ffffff";
+        state.ctx.fillRect(mouthX + 1, sy + 14, 2, 5);
+        state.ctx.fillRect(mouthX + 5, sy + 14, 2, 5);
+        state.ctx.fillRect(mouthX + 7, sy + 14, 2, 5);
+
+        // Four big legs
+        state.ctx.fillStyle = bodyCol;
+        state.ctx.fillRect(sx + 8,  sy + 46, 10, 16);
+        state.ctx.fillRect(sx + 22, sy + 46, 10, 16);
+        state.ctx.fillRect(sx + 36, sy + 46, 10, 16);
+        // Claws
+        state.ctx.fillStyle = "#aaaaaa";
+        state.ctx.fillRect(sx + 6,  sy + 60, 14, 4);
+        state.ctx.fillRect(sx + 20, sy + 60, 14, 4);
+        state.ctx.fillRect(sx + 34, sy + 60, 14, 4);
+
+        // THICK wrapping tail — animated curl
+        const tailBaseX = f === 1 ? sx - 4 : sx + def.width + 4;
+        state.ctx.fillStyle = "#b8a898";
+        // Tail segments that curl around player when wrapping
+        if (mob.wrapping) {
+            // Animated constricting tail spirals around player area
+            const wt = performance.now() * 0.006;
+            state.ctx.lineWidth = 10;
+            state.ctx.strokeStyle = isHurt ? "#ff9999" : "#b8a898";
+            state.ctx.beginPath();
+            const px2 = state.player.x + state.player.width / 2 - state.camera.x + state.screenShake.x;
+            const py2 = state.player.y + state.player.height / 2 - state.camera.y + state.screenShake.y;
+            // Spiral wrap around player
+            for (let seg = 0; seg < 3; seg++) {
+                const angle = wt + seg * Math.PI * 0.7;
+                const radius = 18 + seg * 6;
+                const wx = px2 + Math.cos(angle) * radius;
+                const wy = py2 + Math.sin(angle) * radius * 0.5;
+                if (seg === 0) state.ctx.moveTo(wx, wy);
+                else state.ctx.lineTo(wx, wy);
+            }
+            state.ctx.stroke();
+            // Squeeze visual effect on player
+            const psx = state.player.x - state.camera.x + state.screenShake.x;
+            const psy = state.player.y - state.camera.y + state.screenShake.y;
+            state.ctx.fillStyle = "rgba(180, 100, 130, 0.35)";
+            state.ctx.fillRect(psx - 4, psy - 4, state.player.width + 8, state.player.height + 8);
+            // "SQUEEZED" text pulse
+            if (Math.sin(wt * 3) > 0) {
+                state.ctx.save();
+                state.ctx.font = "bold 10px monospace";
+                state.ctx.fillStyle = "#ff44aa";
+                state.ctx.fillText("SQUEEZED!", psx - 10, psy - 10);
+                state.ctx.restore();
+            }
+        } else {
+            // Resting tail — thick curling shape behind body
+            const tx2 = f === 1 ? sx - 2 : sx + 52;
+            state.ctx.fillRect(tx2 + (f === 1 ? 0 : -6), sy + 20, 8, 4);
+            state.ctx.fillRect(tx2 + (f === 1 ? -4 : -8), sy + 24, 6, 4);
+            state.ctx.fillRect(tx2 + (f === 1 ? -8 : -10), sy + 28, 5, 6);
+            state.ctx.fillRect(tx2 + (f === 1 ? -10 : -8), sy + 34, 4, 8);
+        }
+
+        // Health bar above (because it's a boss-tier mob)
+        const hpFrac = mob.health / def.maxHealth;
+        state.ctx.fillStyle = "rgba(0,0,0,0.7)";
+        state.ctx.fillRect(sx - 4, sy - 14, def.width + 8, 8);
+        state.ctx.fillStyle = hpFrac > 0.5 ? "#22cc44" : hpFrac > 0.25 ? "#ffaa00" : "#ee2222";
+        state.ctx.fillRect(sx - 2, sy - 12, (def.width + 4) * hpFrac, 4);
+    }
+
+    else if (mob.type === "possum_god") {
+        // The Possum God — divine massive possum, golden aura, crown, glowing eyes
+        const f = mob.facing;
+        const t = performance.now() * 0.003;
+        const bodyCol = isHurt ? "#ffeeaa" : "#d4af37"; // golden
+
+        // Divine aura (pulsing glow behind body)
+        const aura = 0.18 + Math.sin(t * 2) * 0.08;
+        state.ctx.fillStyle = `rgba(255, 220, 60, ${aura})`;
+        state.ctx.beginPath();
+        state.ctx.ellipse(sx + def.width / 2, sy + def.height / 2, def.width * 0.75, def.height * 0.65, 0, 0, Math.PI * 2);
+        state.ctx.fill();
+
+        // Body (80×90)
+        state.ctx.fillStyle = bodyCol;
+        state.ctx.fillRect(sx + 8, sy + 14, 64, 50);
+        // Belly — cream/ivory
+        state.ctx.fillStyle = isHurt ? "#fff5cc" : "#fffff0";
+        state.ctx.fillRect(sx + 20, sy + 20, 40, 34);
+        // Divine markings — golden glyphs on body
+        state.ctx.fillStyle = "#c8960c";
+        state.ctx.fillRect(sx + 14, sy + 16, 4, 44);
+        state.ctx.fillRect(sx + 62, sy + 16, 4, 44);
+        state.ctx.fillRect(sx + 34, sy + 14, 12, 6);
+        state.ctx.fillRect(sx + 34, sy + 52, 12, 6);
+
+        // Head (80×24 wide, 28 tall)
+        const hxG = f === 1 ? sx + 52 : sx + 0;
+        state.ctx.fillStyle = bodyCol;
+        state.ctx.fillRect(hxG, sy - 4, 32, 28);
+        // White face
+        state.ctx.fillStyle = isHurt ? "#fff5cc" : "#fffff0";
+        state.ctx.fillRect(hxG + 3, sy - 1, 26, 22);
+        // Glowing divine eyes (bright gold with inner light)
+        state.ctx.fillStyle = "#ffee00";
+        state.ctx.fillRect(hxG + 5, sy + 3, 8, 8);
+        state.ctx.fillRect(hxG + 18, sy + 3, 8, 8);
+        state.ctx.fillStyle = "#ffffff";
+        state.ctx.fillRect(hxG + 7, sy + 5, 4, 4);
+        state.ctx.fillRect(hxG + 20, sy + 5, 4, 4);
+        // Glowing pupils
+        const pulseEye = Math.sin(t * 4) > 0 ? "#ffdd00" : "#ff8800";
+        state.ctx.fillStyle = pulseEye;
+        state.ctx.fillRect(hxG + 8, sy + 6, 2, 2);
+        state.ctx.fillRect(hxG + 21, sy + 6, 2, 2);
+        // Nose
+        state.ctx.fillStyle = "#ff9944";
+        if (f === 1) state.ctx.fillRect(hxG + 26, sy + 13, 8, 5);
+        else         state.ctx.fillRect(hxG - 2, sy + 13, 8, 5);
+        // Mouth (serene / divine)
+        state.ctx.fillStyle = "#8b6c00";
+        const mxG = f === 1 ? hxG + 14 : hxG + 8;
+        state.ctx.fillRect(mxG, sy + 19, 10, 3);
+        // Big divine ears
+        state.ctx.fillStyle = bodyCol;
+        state.ctx.fillRect(hxG + 3, sy - 16, 10, 14);
+        state.ctx.fillRect(hxG + 18, sy - 16, 10, 14);
+        state.ctx.fillStyle = "#ff9944";
+        state.ctx.fillRect(hxG + 5, sy - 13, 6, 9);
+        state.ctx.fillRect(hxG + 20, sy - 13, 6, 9);
+
+        // CROWN — three golden spikes
+        state.ctx.fillStyle = "#ffd700";
+        const crownX = hxG + 2;
+        const crownY = sy - 18;
+        state.ctx.fillRect(crownX, crownY + 6, 28, 6);       // crown band
+        state.ctx.fillRect(crownX + 2,  crownY, 6, 10);      // left spike
+        state.ctx.fillRect(crownX + 11, crownY - 4, 6, 14);  // center tall spike
+        state.ctx.fillRect(crownX + 20, crownY, 6, 10);      // right spike
+        // Jewels on crown
+        state.ctx.fillStyle = "#ff2244";
+        state.ctx.fillRect(crownX + 4,  crownY + 7, 2, 2);
+        state.ctx.fillStyle = "#00aaff";
+        state.ctx.fillRect(crownX + 13, crownY + 7, 2, 2);
+        state.ctx.fillStyle = "#44ff44";
+        state.ctx.fillRect(crownX + 22, crownY + 7, 2, 2);
+
+        // Four massive legs
+        state.ctx.fillStyle = bodyCol;
+        state.ctx.fillRect(sx + 10,  sy + 64, 14, 22);
+        state.ctx.fillRect(sx + 30,  sy + 64, 14, 22);
+        state.ctx.fillRect(sx + 50,  sy + 64, 14, 22);
+        // Claws
+        state.ctx.fillStyle = "#c8960c";
+        state.ctx.fillRect(sx + 8,   sy + 84, 18, 5);
+        state.ctx.fillRect(sx + 28,  sy + 84, 18, 5);
+        state.ctx.fillRect(sx + 48,  sy + 84, 18, 5);
+
+        // Long elegant tail — golden with glowing tip
+        const tGodBase = f === 1 ? sx - 6 : sx + def.width + 6;
+        state.ctx.fillStyle = bodyCol;
+        state.ctx.fillRect(tGodBase + (f === 1 ? 0 : -10), sy + 26, 12, 5);
+        state.ctx.fillRect(tGodBase + (f === 1 ? -6 : -12), sy + 31, 10, 5);
+        state.ctx.fillRect(tGodBase + (f === 1 ? -12 : -14), sy + 36, 8, 6);
+        state.ctx.fillRect(tGodBase + (f === 1 ? -16 : -12), sy + 42, 6, 8);
+        // Glowing tail tip
+        state.ctx.fillStyle = `rgba(255, 230, 80, ${0.7 + Math.sin(t * 3) * 0.3})`;
+        state.ctx.fillRect(tGodBase + (f === 1 ? -18 : -10), sy + 46, 8, 8);
+
+        // Health bar (boss-tier)
+        const hpFracG = mob.health / def.maxHealth;
+        state.ctx.fillStyle = "rgba(0,0,0,0.75)";
+        state.ctx.fillRect(sx - 6, sy - 32, def.width + 12, 10);
+        state.ctx.fillStyle = hpFracG > 0.5 ? "#ffd700" : hpFracG > 0.25 ? "#ff8800" : "#ee2222";
+        state.ctx.fillRect(sx - 4, sy - 30, (def.width + 8) * hpFracG, 6);
+        // Name label
+        state.ctx.save();
+        state.ctx.font = "bold 9px monospace";
+        state.ctx.fillStyle = "#ffd700";
+        state.ctx.textAlign = "center";
+        state.ctx.fillText("THE POSSUM GOD", sx + def.width / 2, sy - 34);
+        state.ctx.restore();
+    }
+
+    else if (mob.type === "raider") {
+        // Body — dark kevlar vest
+        state.ctx.fillStyle = isHurt ? "#8899aa" : "#2d3a4a";
+        state.ctx.fillRect(sx + 4, sy + 14, 16, 16);
+        // Head — tanned skin
+        state.ctx.fillStyle = isHurt ? "#ffccaa" : "#b8916a";
+        state.ctx.fillRect(sx + 4, sy, 16, 14);
+        // Balaclava band across mid-face
+        state.ctx.fillStyle = isHurt ? "#888888" : "#333333";
+        state.ctx.fillRect(sx + 4, sy + 6, 16, 4);
+        // Eyes (narrow, menacing)
+        state.ctx.fillStyle = "#cc4400";
+        if (mob.facing === 1) {
+            state.ctx.fillRect(sx + 14, sy + 4, 3, 2);
+        } else {
+            state.ctx.fillRect(sx + 7, sy + 4, 3, 2);
+        }
+        // Legs — dark tactical pants
+        state.ctx.fillStyle = isHurt ? "#889977" : "#3a4030";
+        state.ctx.fillRect(sx + 4,  sy + 30, 7, 16);
+        state.ctx.fillRect(sx + 13, sy + 30, 7, 16);
+        // Arms — skin-colored, extended in gun stance
+        state.ctx.fillStyle = isHurt ? "#ffccaa" : "#b8916a";
+        if (mob.facing === 1) {
+            state.ctx.fillRect(sx + 19, sy + 16, 8, 5);
+        } else {
+            state.ctx.fillRect(sx - 3, sy + 16, 8, 5);
+        }
+        // AK-47 barrel
+        state.ctx.fillStyle = "#222222";
+        if (mob.facing === 1) {
+            state.ctx.fillRect(sx + 22, sy + 14, 10, 3);
+            state.ctx.fillRect(sx + 20, sy + 17, 6, 3);
+        } else {
+            state.ctx.fillRect(sx - 8, sy + 14, 10, 3);
+            state.ctx.fillRect(sx - 2, sy + 17, 6, 3);
+        }
+    }
+
     // Mob equipment overlay (non-pigman)
     if (mob.equipment && mob.type !== "pigman") {
         if (mob.equipment.armor) {

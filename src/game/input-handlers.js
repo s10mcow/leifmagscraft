@@ -11,15 +11,15 @@ import { BLOCKS, ITEMS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, BLOCK_INFO, ITEM_
 import { addToInventory, addFloatingText, getEquippedTool, getEquippedTier, damageEquippedTool, eatFood } from '../inventory.js';
 import { isBlockSolid, initChestData, removeChestData, checkLavaWaterInteraction } from '../world.js';
 import { playMineHit, playBlockBreak, playBlockPlace, playPickup } from '../audio.js';
-import { createBullet, createRocket, createParticles } from '../mobs.js';
-import { scheduleLeafDecay, WOOD_BLOCKS, TREE_BLOCKS, teleportToOtherDimension } from './systems.js';
+import { createBullet, createRocket, createFlame, createParticles, createToothRope } from '../mobs.js';
+import { scheduleLeafDecay, WOOD_BLOCKS, TREE_BLOCKS, teleportToOtherDimension, teleportToWasteland, teleportToVoid, teleportToPossum } from './systems.js';
 
 // ============================================================
 // MINING LOGIC
 // ============================================================
 
 export function updateMining(dt) {
-    if (state.craftingOpen || state.tradingOpen || state.chestOpen || state.gameOver) return;
+    if (state.craftingOpen || state.tradingOpen || state.chestOpen || state.blastFurnaceOpen || state.gameOver) return;
     // Don't mine when holding a gun
     const gunSlot = state.inventory.slots[state.inventory.selectedSlot];
     const gunInfo = gunSlot.count > 0 ? ITEM_INFO[gunSlot.itemId] : null;
@@ -135,7 +135,29 @@ export function updateMining(dt) {
 
 export function placeBlock() {
     const slot = state.inventory.slots[state.inventory.selectedSlot];
-    if (slot.count === 0 || !isBlockId(slot.itemId)) return;
+    if (slot.count === 0) return;
+
+    // Bucket fill / empty logic (before block-placement check)
+    const wmxB = Math.floor((state.mouse.x + state.camera.x) / BLOCK_SIZE);
+    const wmyB = Math.floor((state.mouse.y + state.camera.y) / BLOCK_SIZE);
+    if (wmxB >= 0 && wmxB < WORLD_WIDTH && wmyB >= 0 && wmyB < WORLD_HEIGHT) {
+        const targetBlock = state.activeWorld[wmxB][wmyB];
+        const FILL_MAP = { [BLOCKS.WATER]: ITEMS.WATER_BUCKET, [BLOCKS.LAVA]: ITEMS.LAVA_BUCKET, [BLOCKS.TOXIC_PUDDLE]: ITEMS.TOXIC_BUCKET };
+        const EMPTY_MAP = { [ITEMS.WATER_BUCKET]: BLOCKS.WATER, [ITEMS.LAVA_BUCKET]: BLOCKS.LAVA, [ITEMS.TOXIC_BUCKET]: BLOCKS.TOXIC_PUDDLE };
+        if (slot.itemId === ITEMS.BUCKET && FILL_MAP[targetBlock] !== undefined) {
+            state.activeWorld[wmxB][wmyB] = BLOCKS.AIR;
+            slot.itemId = FILL_MAP[targetBlock];
+            return;
+        }
+        if (EMPTY_MAP[slot.itemId] !== undefined && targetBlock === BLOCKS.AIR) {
+            state.activeWorld[wmxB][wmyB] = EMPTY_MAP[slot.itemId];
+            slot.itemId = ITEMS.BUCKET;
+            playBlockPlace();
+            return;
+        }
+    }
+
+    if (!isBlockId(slot.itemId)) return;
 
     const wmx = Math.floor((state.mouse.x + state.camera.x) / BLOCK_SIZE);
     const wmy = Math.floor((state.mouse.y + state.camera.y) / BLOCK_SIZE);
@@ -183,13 +205,91 @@ export function placeBlock() {
 // ============================================================
 
 export function interact() {
-    if (state.gameOver || state.craftingOpen || state.sleeping || state.tradingOpen || state.chestOpen) return;
+    if (state.gameOver || state.craftingOpen || state.sleeping || state.tradingOpen || state.chestOpen || state.blastFurnaceOpen) return;
+
+    // Bucket: pick up liquid at cursor
+    const heldSlot = state.inventory.slots[state.inventory.selectedSlot];
+    if (heldSlot.itemId === ITEMS.BUCKET) {
+        const bx = Math.floor((state.mouse.x + state.camera.x) / BLOCK_SIZE);
+        const by = Math.floor((state.mouse.y + state.camera.y) / BLOCK_SIZE);
+        const pcx = state.player.x + state.player.width / 2;
+        const pcy = state.player.y + state.player.height / 2;
+        const blockCx = bx * BLOCK_SIZE + BLOCK_SIZE / 2;
+        const blockCy = by * BLOCK_SIZE + BLOCK_SIZE / 2;
+        if (Math.sqrt((pcx - blockCx) ** 2 + (pcy - blockCy) ** 2) < BLOCK_SIZE * 6 &&
+            bx >= 0 && bx < WORLD_WIDTH && by >= 0 && by < WORLD_HEIGHT) {
+            const block = state.activeWorld[bx][by];
+            if (block === BLOCKS.TOXIC_PUDDLE) {
+                state.activeWorld[bx][by] = BLOCKS.AIR;
+                heldSlot.itemId = ITEMS.TOXIC_BUCKET;
+                addFloatingText(state.player.x, state.player.y - 20, "Collected toxic waste!", "#40cc40");
+                return;
+            } else if (block === BLOCKS.WATER) {
+                state.activeWorld[bx][by] = BLOCKS.AIR;
+                heldSlot.itemId = ITEMS.WATER_BUCKET;
+                addFloatingText(state.player.x, state.player.y - 20, "Collected water!", "#4488ff");
+                return;
+            } else if (block === BLOCKS.LAVA) {
+                state.activeWorld[bx][by] = BLOCKS.AIR;
+                heldSlot.itemId = ITEMS.LAVA_BUCKET;
+                addFloatingText(state.player.x, state.player.y - 20, "Collected lava!", "#ff6600");
+                return;
+            }
+        }
+    }
 
     // Miniature Nether Portal: teleport to/from Nether
-    const heldSlot = state.inventory.slots[state.inventory.selectedSlot];
     if (heldSlot.itemId === ITEMS.MINIATURE_NETHER_PORTAL && state.portalCooldown <= 0) {
         teleportToOtherDimension();
         return;
+    }
+    // Wasteland Teleporter: teleport to/from Wasteland
+    if (heldSlot.itemId === ITEMS.WASTELAND_TELEPORTER && state.portalCooldown <= 0) {
+        teleportToWasteland();
+        return;
+    }
+    // Void Teleporter: teleport to/from Void
+    if (heldSlot.itemId === ITEMS.VOID_TELEPORTER && state.portalCooldown <= 0) {
+        teleportToVoid();
+        return;
+    }
+    // Possum Teleporter: teleport to/from Possum Realm
+    if (heldSlot.itemId === ITEMS.POSSUM_TELEPORTER && state.portalCooldown <= 0) {
+        teleportToPossum();
+        return;
+    }
+
+    // Check for companion asking for food
+    for (const mob of state.mobs) {
+        if (mob.type !== "companion") continue;
+        const compDef = MOB_DEFS.companion;
+        const pcx = state.player.x + state.player.width / 2;
+        const mcx = mob.x + compDef.width / 2;
+        if (Math.abs(pcx - mcx) < BLOCK_SIZE * 4) {
+            if (mob.askingForFood) {
+                // Find any food in inventory
+                for (let si = 0; si < state.inventory.slots.length; si++) {
+                    const fSlot = state.inventory.slots[si];
+                    if (fSlot.count > 0 && isFood(fSlot.itemId)) {
+                        const foodName = getItemName(fSlot.itemId);
+                        fSlot.count--;
+                        if (fSlot.count === 0) { fSlot.itemId = 0; fSlot.durability = 0; }
+                        mob.hungerTimer = 0;
+                        mob.askingForFood = false;
+                        mob.foodAskTimer = 0;
+                        mob.health = Math.min(compDef.maxHealth, mob.health + 4);
+                        addFloatingText(mob.x + compDef.width / 2, mob.y - 20, `Thanks for the ${foodName}!`, "#ffd700");
+                        addFloatingText(mob.x + compDef.width / 2, mob.y - 34, "+4 HP", "#4ade80");
+                        return;
+                    }
+                }
+                addFloatingText(mob.x + compDef.width / 2, mob.y - 20, "I need food!", "#ff8888");
+            } else {
+                addFloatingText(mob.x + compDef.width / 2, mob.y - 20, "I'm good for now!", "#aaffaa");
+            }
+            return;
+        }
+        break;
     }
 
     // Check for nearby wolf
@@ -248,21 +348,26 @@ export function interact() {
         }
     }
 
-    // Check if pointing at a chest within reach
+    // Check if pointing at a chest or blast furnace within reach
     const wmx_c = Math.floor((state.mouse.x + state.camera.x) / BLOCK_SIZE);
     const wmy_c = Math.floor((state.mouse.y + state.camera.y) / BLOCK_SIZE);
     if (wmx_c >= 0 && wmx_c < WORLD_WIDTH && wmy_c >= 0 && wmy_c < WORLD_HEIGHT) {
-        if (state.activeWorld[wmx_c][wmy_c] === BLOCKS.CHEST) {
-            const pcx = state.player.x + state.player.width / 2, pcy = state.player.y + state.player.height / 2;
-            const bcx = wmx_c * BLOCK_SIZE + BLOCK_SIZE / 2, bcy = wmy_c * BLOCK_SIZE + BLOCK_SIZE / 2;
-            if (Math.sqrt((pcx - bcx) ** 2 + (pcy - bcy) ** 2) < BLOCK_SIZE * 5) {
-                const key = `${wmx_c},${wmy_c}`;
-                if (!state.chestData[key]) initChestData(wmx_c, wmy_c);
-                state.chestOpen = true;
-                state.chestPos = { x: wmx_c, y: wmy_c };
-                state.chestHover = -1;
-                return;
-            }
+        const pcx = state.player.x + state.player.width / 2, pcy = state.player.y + state.player.height / 2;
+        const bcx = wmx_c * BLOCK_SIZE + BLOCK_SIZE / 2, bcy = wmy_c * BLOCK_SIZE + BLOCK_SIZE / 2;
+        const blockDist = Math.sqrt((pcx - bcx) ** 2 + (pcy - bcy) ** 2);
+        if (state.activeWorld[wmx_c][wmy_c] === BLOCKS.CHEST && blockDist < BLOCK_SIZE * 5) {
+            const key = `${wmx_c},${wmy_c}`;
+            if (!state.chestData[key]) initChestData(wmx_c, wmy_c);
+            state.chestOpen = true;
+            state.chestPos = { x: wmx_c, y: wmy_c };
+            state.chestHover = -1;
+            return;
+        }
+        if (state.activeWorld[wmx_c][wmy_c] === BLOCKS.BLAST_FURNACE && blockDist < BLOCK_SIZE * 5) {
+            state.blastFurnaceOpen = true;
+            state.blastFurnacePos = { x: wmx_c, y: wmy_c };
+            state.blastFurnaceHover = -1;
+            return;
         }
     }
 
@@ -336,29 +441,111 @@ export function toggleDoor(x, y) {
 // GUN FIRING
 // ============================================================
 
+function ammoItemForGun(itemInfo) {
+    if (itemInfo.ammoType === "rocket") return ITEMS.ROCKET;
+    if (itemInfo.ammoType === "fuel")   return ITEMS.FUEL_CANISTER;
+    return ITEMS.BULLETS;
+}
+
+function noAmmoText(itemInfo) {
+    if (itemInfo.ammoType === "rocket") return "No rockets!";
+    if (itemInfo.ammoType === "fuel")   return "No fuel!";
+    return "No ammo!";
+}
+
+function startReload(slot, itemInfo, selectedSlot) {
+    const ammoItemId = ammoItemForGun(itemInfo);
+    const ammoSlot = state.inventory.slots.findIndex((s, i) => i !== selectedSlot && s.itemId === ammoItemId && s.count > 0);
+    if (ammoSlot === -1) {
+        addFloatingText(state.player.x, state.player.y - 20, noAmmoText(itemInfo), "#ef4444");
+        return false;
+    }
+    state.gunReloadTimer = itemInfo.reloadTime;
+    state.gunReloadingSlot = selectedSlot;
+    addFloatingText(state.player.x, state.player.y - 20, "Reloading...", "#facc15");
+    return true;
+}
+
+function finishReload() {
+    const slotIdx = state.gunReloadingSlot;
+    const slot = state.inventory.slots[slotIdx];
+    if (!slot || slot.count === 0) { state.gunReloadingSlot = -1; return; }
+    const itemInfo = ITEM_INFO[slot.itemId];
+    if (!itemInfo) { state.gunReloadingSlot = -1; return; }
+    const isFuel = itemInfo.ammoType === "fuel";
+    const ammoItemId = ammoItemForGun(itemInfo);
+    const ammoSlot = state.inventory.slots.findIndex((s, i) => i !== slotIdx && s.itemId === ammoItemId && s.count > 0);
+    if (ammoSlot !== -1) {
+        if (isFuel) {
+            // 1 fuel canister = full mag
+            slot.magAmmo = itemInfo.magSize;
+            state.inventory.slots[ammoSlot].count--;
+        } else {
+            const needed = itemInfo.magSize - (slot.magAmmo || 0);
+            const take = Math.min(needed, state.inventory.slots[ammoSlot].count);
+            slot.magAmmo = (slot.magAmmo || 0) + take;
+            state.inventory.slots[ammoSlot].count -= take;
+        }
+        if (state.inventory.slots[ammoSlot].count <= 0) {
+            state.inventory.slots[ammoSlot].itemId = 0;
+            state.inventory.slots[ammoSlot].count = 0;
+        }
+    }
+    state.gunReloadingSlot = -1;
+}
+
 export function handleGunFire(dt) {
     if (state.gunCooldown > 0) state.gunCooldown -= dt;
-    if (state.craftingOpen || state.tradingOpen || state.chestOpen || state.gameOver || state.sleeping) return;
-    if (!state.mouse.leftDown) return;
 
-    const slot = state.inventory.slots[state.inventory.selectedSlot];
+    // Tick reload timer
+    if (state.gunReloadTimer > 0) {
+        state.gunReloadTimer -= dt;
+        if (state.gunReloadTimer <= 0) {
+            state.gunReloadTimer = 0;
+            finishReload();
+        }
+    }
+
+    if (state.craftingOpen || state.tradingOpen || state.chestOpen || state.gameOver || state.sleeping) return;
+
+    const selectedSlot = state.inventory.selectedSlot;
+    const slot = state.inventory.slots[selectedSlot];
     if (slot.count === 0 || slot.itemId === 0) return;
     const itemInfo = ITEM_INFO[slot.itemId];
-    if (!itemInfo || itemInfo.toolType !== "gun") return;
-    if (state.gunCooldown > 0) return;
 
-    // Determine ammo type
-    const isRocket = itemInfo.ammoType === "rocket";
-    const ammoItemId = isRocket ? ITEMS.ROCKET : ITEMS.BULLETS;
-    const ammoName = isRocket ? "No rockets!" : "No ammo!";
-
-    // Check for ammo in inventory
-    const ammoSlot = state.inventory.slots.findIndex(s => s.itemId === ammoItemId && s.count > 0);
-    if (ammoSlot === -1) {
-        addFloatingText(state.player.x, state.player.y - 20, ammoName, "#ef4444");
-        state.gunCooldown = 500;
+    // Thrown items (e.g. Tooth Rope)
+    if (itemInfo && itemInfo.toolType === "thrown") {
+        if (!state.mouse.leftDown) return;
+        if (state.gunCooldown > 0) return;
+        if (slot.count <= 0) return;
+        const px = state.player.x + state.player.width / 2;
+        const py = state.player.y + state.player.height / 3;
+        const targetX = state.mouse.x + state.camera.x;
+        const targetY = state.mouse.y + state.camera.y;
+        createToothRope(px, py, targetX, targetY, itemInfo.damage);
+        slot.count--;
+        if (slot.count <= 0) { slot.itemId = 0; slot.count = 0; }
+        state.gunCooldown = 600;
         return;
     }
+
+    if (!itemInfo || itemInfo.toolType !== "gun") return;
+
+    // Switching guns cancels reload
+    if (state.gunReloadTimer > 0 && state.gunReloadingSlot !== selectedSlot) {
+        state.gunReloadTimer = 0;
+        state.gunReloadingSlot = -1;
+    }
+
+    // Lazy-init mag ammo
+    if (slot.magAmmo === undefined) slot.magAmmo = itemInfo.magSize;
+
+    // Still reloading
+    if (state.gunReloadTimer > 0) return;
+
+    if (!state.mouse.leftDown) return;
+    if (state.gunCooldown > 0) return;
+    if (slot.magAmmo <= 0) return; // waiting for auto-reload to finish
 
     // Fire!
     const px = state.player.x + state.player.width / 2;
@@ -366,26 +553,48 @@ export function handleGunFire(dt) {
     const targetX = state.mouse.x + state.camera.x;
     const targetY = state.mouse.y + state.camera.y;
 
-    if (isRocket) {
+    if (itemInfo.ammoType === "rocket") {
         createRocket(px, py, targetX, targetY, itemInfo.damage);
+    } else if (itemInfo.ammoType === "fuel") {
+        createFlame(px, py, targetX, targetY, itemInfo.damage);
     } else {
         createBullet(px, py, targetX, targetY, itemInfo.damage);
     }
+    slot.magAmmo--;
     state.gunCooldown = itemInfo.fireRate;
 
-    // Consume 1 ammo
-    state.inventory.slots[ammoSlot].count--;
-    if (state.inventory.slots[ammoSlot].count <= 0) {
-        state.inventory.slots[ammoSlot].itemId = 0;
-        state.inventory.slots[ammoSlot].count = 0;
-    }
+    // Auto-reload immediately when mag empties
+    if (slot.magAmmo <= 0) startReload(slot, itemInfo, selectedSlot);
 
     // Damage gun durability
     if (slot.durability !== undefined) {
         slot.durability--;
         if (slot.durability <= 0) {
-            slot.itemId = 0; slot.count = 0; slot.durability = 0;
+            slot.itemId = 0; slot.count = 0; slot.durability = 0; slot.magAmmo = undefined;
             addFloatingText(state.player.x, state.player.y - 30, "Gun broke!", "#ef4444");
         }
     }
+}
+
+// Manual reload — callable from R key or mobile reload button
+export function triggerManualReload() {
+    if (state.craftingOpen || state.tradingOpen || state.chestOpen || state.gameOver || state.sleeping) return;
+    const selectedSlot = state.inventory.selectedSlot;
+    const slot = state.inventory.slots[selectedSlot];
+    if (!slot || slot.count === 0) return;
+    const itemInfo = ITEM_INFO[slot.itemId];
+    if (!itemInfo || itemInfo.toolType !== "gun") return;
+    if (state.gunReloadTimer > 0) return; // already reloading
+    if (slot.magAmmo === undefined) slot.magAmmo = itemInfo.magSize;
+    if (slot.magAmmo >= itemInfo.magSize) return; // mag already full
+    const isRocket = itemInfo.ammoType === "rocket";
+    const ammoItemId = isRocket ? ITEMS.ROCKET : ITEMS.BULLETS;
+    const ammoSlot = state.inventory.slots.findIndex((s, i) => i !== selectedSlot && s.itemId === ammoItemId && s.count > 0);
+    if (ammoSlot === -1) {
+        addFloatingText(state.player.x, state.player.y - 20, isRocket ? "No rockets!" : "No ammo!", "#ef4444");
+        return;
+    }
+    state.gunReloadTimer = itemInfo.reloadTime;
+    state.gunReloadingSlot = selectedSlot;
+    addFloatingText(state.player.x, state.player.y - 20, "Reloading...", "#facc15");
 }

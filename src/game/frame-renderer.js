@@ -7,9 +7,9 @@
 // ============================================================
 
 import { state } from '../state.js';
-import { BLOCKS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, TORCH_LIGHT_RADIUS } from '../constants.js';
+import { BLOCKS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, TORCH_LIGHT_RADIUS, ITEMS } from '../constants.js';
 import { drawSky, drawBackgroundTrees, drawBlock, drawAllMobs, drawProjectiles, drawParticles, drawPlayer } from '../rendering.js';
-import { drawFloatingTexts, drawHotbar, drawHealthBar, drawBlockHighlight, drawMiningProgress, drawCraftingMenu, drawChestMenu, drawTradingMenu, drawDeathScreen, drawHUD } from '../ui.js';
+import { drawFloatingTexts, drawHotbar, drawHealthBar, drawBlockHighlight, drawMiningProgress, drawCraftingMenu, drawChestMenu, drawBlastFurnaceMenu, drawTradingMenu, drawDeathScreen, drawHUD } from '../ui.js';
 
 // SLEEP_DURATION must match the value in systems.js
 const SLEEP_DURATION = 2000;
@@ -17,6 +17,10 @@ const SLEEP_DURATION = 2000;
 export function drawGameFrame(timestamp) {
     const camX = state.camera.x - state.screenShake.x;
     const camY = state.camera.y - state.screenShake.y;
+
+    // Grayscale world when The Glitched is alive or inside the Void (CSS on canvas element — GPU composited, no render cost)
+    state.canvas.style.filter = (state.glitchedActive || state.inVoid) ? "grayscale(100%)" :
+                                 state.inPossum ? "saturate(140%) brightness(1.08)" : "";
 
     // 1. Sky
     drawSky(state.cachedDayBrightness);
@@ -41,7 +45,10 @@ export function drawGameFrame(timestamp) {
     // 3. Night overlay with torch lighting
     if (state.cachedDayBrightness < 0.7) {
         const nightAlpha = (0.7 - state.cachedDayBrightness) * 0.7;
-        state.ctx.fillStyle = state.inNether ? `rgba(10,0,0,${nightAlpha})` : `rgba(0,0,20,${nightAlpha})`;
+        state.ctx.fillStyle = state.inNether    ? `rgba(10,0,0,${nightAlpha})`    :
+                              state.inWasteland ? `rgba(5,15,0,${nightAlpha})`    :
+                              state.inVoid      ? `rgba(5,0,15,${nightAlpha})`    :
+                                                  `rgba(0,0,20,${nightAlpha})`;
         state.ctx.fillRect(0, 0, state.canvas.width, state.canvas.height);
 
         if (nightAlpha > 0.05) {
@@ -61,6 +68,10 @@ export function drawGameFrame(timestamp) {
                         glowColor = [255, 100, 20];
                         glowRadius = lightPx * 0.7;
                         glowStrength = 0.6;
+                    } else if (block === BLOCKS.TOXIC_PUDDLE) {
+                        glowColor = [40, 200, 60];
+                        glowRadius = lightPx * 0.6;
+                        glowStrength = 0.5;
                     }
                     if (glowColor) {
                         const tx = x * BLOCK_SIZE - state.camera.x + state.screenShake.x + BLOCK_SIZE / 2;
@@ -116,11 +127,34 @@ export function drawGameFrame(timestamp) {
     // 12.5. Chest overlay
     drawChestMenu();
 
+    // 12.55. Blast furnace overlay
+    drawBlastFurnaceMenu();
+
     // 12.6. Trading overlay
     drawTradingMenu();
 
     // 13. Death screen
     drawDeathScreen();
+
+
+    // 13.5. Radiation overlay (wasteland without full hazmat)
+    if (state.inWasteland) {
+        const armor = state.inventory.armor;
+        const fullHazmat =
+            armor.helmet.itemId    === ITEMS.HAZMAT_HELMET &&
+            armor.chestplate.itemId === ITEMS.HAZMAT_CHESTPLATE &&
+            armor.leggings.itemId   === ITEMS.HAZMAT_LEGGINGS &&
+            armor.boots.itemId      === ITEMS.HAZMAT_BOOTS;
+        if (!fullHazmat) {
+            const pulse = 0.06 + Math.sin(timestamp * 0.003) * 0.04;
+            const w = state.canvas.width, h = state.canvas.height;
+            const grad = state.ctx.createRadialGradient(w / 2, h / 2, h * 0.25, w / 2, h / 2, h * 0.75);
+            grad.addColorStop(0, `rgba(0,200,0,0)`);
+            grad.addColorStop(1, `rgba(0,200,0,${pulse})`);
+            state.ctx.fillStyle = grad;
+            state.ctx.fillRect(0, 0, w, h);
+        }
+    }
 
     // 14. Sleep overlay
     if (state.sleeping) {

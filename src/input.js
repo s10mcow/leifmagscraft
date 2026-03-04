@@ -7,10 +7,11 @@
 // ============================================================
 
 import { state } from './state.js';
-import { BLOCKS, ITEMS, UI, RECIPES, TRADES, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, ITEM_INFO, isBlockId } from './constants.js';
-import { HOTBAR_SIZE, BACKPACK_SIZE, TOTAL_SLOTS, clickInventorySlot, rightClickInventorySlot, returnCursorItem, clickArmorSlot, clickOffhandSlot, countItem, addFloatingText, craft } from './inventory.js';
+import { BLOCKS, ITEMS, UI, RECIPES, TRADES, SMELTING_RECIPES, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, ITEM_INFO, isBlockId, getItemName } from './constants.js';
+import { HOTBAR_SIZE, BACKPACK_SIZE, TOTAL_SLOTS, clickInventorySlot, rightClickInventorySlot, returnCursorItem, clickArmorSlot, clickOffhandSlot, countItem, addFloatingText, craft, addToInventory, removeItems } from './inventory.js';
 import { playSelect } from './audio.js';
-import { createParticles } from './mobs.js';
+import { createParticles, createMob } from './mobs.js';
+import { triggerManualReload } from './game/input-handlers.js';
 
 // Late-bound function references (set by main.js to avoid circular imports)
 const fn = {};
@@ -245,6 +246,9 @@ export function setupInput() {
                     state.chestOpen = false;
                     state.chestPos = null;
                     returnCursorItem();
+                } else if (state.blastFurnaceOpen) {
+                    state.blastFurnaceOpen = false;
+                    state.blastFurnacePos = null;
                 } else if (state.tradingOpen) {
                     state.tradingOpen = false;
                     state.tradingVillager = null;
@@ -272,6 +276,9 @@ export function setupInput() {
                 state.chestOpen = false;
                 state.chestPos = null;
                 returnCursorItem();
+            } else if (state.blastFurnaceOpen) {
+                state.blastFurnaceOpen = false;
+                state.blastFurnacePos = null;
             } else if (state.tradingOpen) {
                 state.tradingOpen = false;
                 state.tradingVillager = null;
@@ -289,6 +296,9 @@ export function setupInput() {
                 state.chestOpen = false;
                 state.chestPos = null;
                 returnCursorItem();
+            } else if (state.blastFurnaceOpen) {
+                state.blastFurnaceOpen = false;
+                state.blastFurnacePos = null;
             } else if (state.tradingOpen) {
                 state.tradingOpen = false;
                 state.tradingVillager = null;
@@ -313,14 +323,38 @@ export function setupInput() {
             }
         }
 
-        // M = toggle music
+        // M = spawn The Companion (fed form)
         if (e.key === "m" || e.key === "M") {
-            state.musicEnabled = !state.musicEnabled;
-            addFloatingText(state.player.x, state.player.y - 30, state.musicEnabled ? "Music ON" : "Music OFF", "#ffd700");
+            if (state.gameState === "playing" && !state.gameOver) {
+                // Only spawn if no companion or glitched already exists
+                const alreadyExists = state.mobs.some(function(m) { return m.type === "companion" || m.type === "glitched"; });
+                if (!alreadyExists) {
+                    const c = createMob("companion", state.player.x + 3 * BLOCK_SIZE, state.player.y);
+                    state.mobs.push(c);
+                    addFloatingText(state.player.x, state.player.y - 30, "The Companion has arrived!", "#88ff88");
+                }
+            }
         }
 
-        // R = respawn when dead
-        if ((e.key === "r" || e.key === "R") && state.gameOver) fn.respawnPlayer();
+        // N = spawn The Glitched
+        if (e.key === "n" || e.key === "N") {
+            if (state.gameState === "playing" && !state.gameOver) {
+                const alreadyGlitched = state.mobs.some(function(m) { return m.type === "glitched"; });
+                if (!alreadyGlitched) {
+                    const g = createMob("glitched", state.player.x + 4 * BLOCK_SIZE, state.player.y);
+                    g.aggroed = true;
+                    state.mobs.push(g);
+                    state.glitchedActive = true;
+                    addFloatingText(state.player.x, state.player.y - 30, "The Glitched has arrived!", "#aa00ff");
+                }
+            }
+        }
+
+        // R = respawn when dead, or manual reload when alive
+        if (e.key === "r" || e.key === "R") {
+            if (state.gameOver) fn.respawnPlayer();
+            else triggerManualReload();
+        }
 
         // 1-9 = select hotbar slot
         const num = parseInt(e.key);
@@ -412,6 +446,22 @@ export function setupInput() {
                 }
             }
         }
+
+        // Update blast furnace recipe hover
+        if (state.blastFurnaceOpen) {
+            const pw = 500, ph = 380;
+            const { x: mx, y: my } = scaledMouse(pw, ph);
+            const px = (state.canvas.width - pw) / 2, py = (state.canvas.height - ph) / 2;
+            const rowH = 56, margin = 24, startY = py + 72;
+            state.blastFurnaceHover = -1;
+            for (let i = 0; i < SMELTING_RECIPES.length; i++) {
+                const ry = startY + i * rowH;
+                if (mx >= px + margin && mx <= px + pw - margin && my >= ry && my <= ry + rowH - 6) {
+                    state.blastFurnaceHover = i;
+                    break;
+                }
+            }
+        }
     });
 
     // Hold-to-mine timer (mobile only)
@@ -419,6 +469,23 @@ export function setupInput() {
 
     // Double-tap tracking for respawn (mobile only)
     let lastTapTime = 0;
+
+    // Swipe tracking (mobile scroll + hotbar switch)
+    let swipeTouchId = null;
+    let swipeStartX = 0, swipeStartY = 0, swipeLastY = 0;
+
+    function applySwipeScroll(dy) {
+        if (state.gameState === "menu") {
+            const rowH = 60;
+            const maxScroll = Math.max(0, state.menuSaveList.length * rowH - (state.canvas.height - 420));
+            state.menuScrollOffset = Math.max(0, Math.min(state.menuScrollOffset + dy, maxScroll));
+        } else if (state.gameState === "playing" && state.craftingOpen) {
+            state.craftingScroll += dy;
+            const recipeAreaH = UI.CRAFTING_PANEL_H - UI.RECIPE_START_Y - UI.INV_BOTTOM_MARGIN;
+            const maxScroll = Math.max(0, Math.ceil(RECIPES.length / UI.RECIPE_COLS) * 58 - recipeAreaH);
+            state.craftingScroll = Math.max(0, Math.min(state.craftingScroll, maxScroll));
+        }
+    }
 
     // Shared left-click / tap handler — called by both mousedown and touchstart
     function handleLeftClick(isTap = false) {
@@ -472,6 +539,18 @@ export function setupInput() {
             const activeTrades = (state.tradingVillager && state.tradingVillager.tradeList) || TRADES;
             if (state.tradingHover >= 0 && state.tradingHover < activeTrades.length) {
                 fn.executeTrade(activeTrades[state.tradingHover]);
+            }
+            return;
+        }
+        if (state.blastFurnaceOpen) {
+            if (state.blastFurnaceHover >= 0 && state.blastFurnaceHover < SMELTING_RECIPES.length) {
+                const recipe = SMELTING_RECIPES[state.blastFurnaceHover];
+                if (countItem(recipe.input) >= 1) {
+                    removeItems(recipe.input, 1);
+                    addToInventory(recipe.output, recipe.outputCount);
+                    addFloatingText(state.player.x, state.player.y - 30,
+                        `Smelted 1x ${getItemName(recipe.output)}!`, "#c86000");
+                }
             }
             return;
         }
@@ -561,7 +640,7 @@ export function setupInput() {
 
     state.canvas.addEventListener("contextmenu", (e) => e.preventDefault());
 
-    // Touch support — tap acts as left click
+    // Touch support — tap acts as left click; swipe scrolls menus / switches hotbar
     state.canvas.addEventListener("touchstart", (e) => {
         e.preventDefault();
         const rect = state.canvas.getBoundingClientRect();
@@ -570,6 +649,14 @@ export function setupInput() {
         state.mouse.y = (t.clientY - rect.top)  * (state.canvas.height / rect.height);
         // Synthesise mousemove so tradingHover / craftingHover / menuHover are up-to-date
         state.canvas.dispatchEvent(new MouseEvent("mousemove", { clientX: t.clientX, clientY: t.clientY, bubbles: false }));
+
+        // Track for swipe gestures
+        if (swipeTouchId === null) {
+            swipeTouchId = t.identifier;
+            swipeStartX  = state.mouse.x;
+            swipeStartY  = state.mouse.y;
+            swipeLastY   = state.mouse.y;
+        }
 
         // Double-tap to respawn when game over
         if (state.gameOver) {
@@ -586,22 +673,50 @@ export function setupInput() {
         handleLeftClick(true);
     }, { passive: false });
 
+    state.canvas.addEventListener("touchmove", (e) => {
+        e.preventDefault();
+        for (const t of e.changedTouches) {
+            if (t.identifier !== swipeTouchId) continue;
+            const rect = state.canvas.getBoundingClientRect();
+            const cy = (t.clientY - rect.top) * (state.canvas.height / rect.height);
+            const dy = swipeLastY - cy; // positive = finger moved up = scroll content down
+            swipeLastY = cy;
+            applySwipeScroll(dy);
+            break;
+        }
+    }, { passive: false });
+
     state.canvas.addEventListener("touchend", (e) => {
         e.preventDefault();
         clearTimeout(miningHoldTimer);
         miningHoldTimer = null;
+
+        for (const t of e.changedTouches) {
+            if (t.identifier !== swipeTouchId) continue;
+            const rect = state.canvas.getBoundingClientRect();
+            const cx = (t.clientX - rect.left) * (state.canvas.width / rect.width);
+            const dx = cx - swipeStartX;
+            const totalDy = Math.abs(swipeLastY - swipeStartY);
+            // Horizontal swipe → hotbar slot switch (only in-game with no menus)
+            if (state.gameState === "playing" && !state.craftingOpen && !state.chestOpen && !state.tradingOpen && !state.blastFurnaceOpen && !state.gameOver) {
+                if (Math.abs(dx) > 60 && totalDy < 35) {
+                    if (dx > 0) state.inventory.selectedSlot = (state.inventory.selectedSlot + 1) % HOTBAR_SIZE;
+                    else        state.inventory.selectedSlot = (state.inventory.selectedSlot - 1 + HOTBAR_SIZE) % HOTBAR_SIZE;
+                    playSelect();
+                }
+            }
+            swipeTouchId = null;
+            break;
+        }
+
         state.mouse.leftDown  = false;
         state.mouse.rightDown = false;
     }, { passive: false });
 
-    // Scroll wheel for crafting menu recipe list
+    // Scroll wheel — crafting recipes and main menu world list
     state.canvas.addEventListener("wheel", (e) => {
-        if (state.craftingOpen) {
-            e.preventDefault();
-            state.craftingScroll += e.deltaY > 0 ? 58 : -58;
-            const recipeAreaH = UI.CRAFTING_PANEL_H - UI.RECIPE_START_Y - UI.INV_BOTTOM_MARGIN;
-            const maxScroll = Math.max(0, Math.ceil(RECIPES.length / UI.RECIPE_COLS) * 58 - recipeAreaH);
-            state.craftingScroll = Math.max(0, Math.min(state.craftingScroll, maxScroll));
-        }
+        e.preventDefault();
+        const dy = e.deltaY > 0 ? 58 : -58;
+        applySwipeScroll(dy);
     }, { passive: false });
 }

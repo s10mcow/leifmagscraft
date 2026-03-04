@@ -7,7 +7,7 @@
 // ============================================================
 
 import { state } from '../state.js';
-import { BLOCK_SIZE } from '../constants.js';
+import { BLOCK_SIZE, ITEMS } from '../constants.js';
 import { updatePlayer, updateCamera, updatePlateTimers, hurtPlayer } from '../player.js';
 import { updateMobs, updateProjectiles, updateParticles, spawnMobs } from '../mobs.js';
 import { addFloatingText } from '../inventory.js';
@@ -54,6 +54,9 @@ export function gameLoop(timestamp) {
             case "playing":
                 state.cachedDayBrightness = Math.cos(state.timeOfDay * Math.PI * 2) * 0.5 + 0.5;
                 if (state.inNether) state.cachedDayBrightness = 0.3;
+                if (state.inWasteland) state.cachedDayBrightness = 0.25;
+                if (state.inVoid) state.cachedDayBrightness = 0.0;
+                if (state.inPossum) state.cachedDayBrightness = 1.0;
 
                 if (state.portalCooldown > 0) state.portalCooldown -= dt;
 
@@ -63,6 +66,26 @@ export function gameLoop(timestamp) {
                     if (Math.floor(state.player.burnTimer / 500) < Math.floor((state.player.burnTimer + dt) / 500)) {
                         hurtPlayer(1, state.player.x);
                         addFloatingText(state.player.x, state.player.y - 30, "Burning!", "#ff6600");
+                    }
+                }
+
+                // Radiation damage in Wasteland (requires full hazmat suit)
+                if (state.inWasteland) {
+                    const armor = state.inventory.armor;
+                    const fullHazmat =
+                        armor.helmet.itemId    === ITEMS.HAZMAT_HELMET &&
+                        armor.chestplate.itemId === ITEMS.HAZMAT_CHESTPLATE &&
+                        armor.leggings.itemId   === ITEMS.HAZMAT_LEGGINGS &&
+                        armor.boots.itemId      === ITEMS.HAZMAT_BOOTS;
+                    if (!fullHazmat) {
+                        state.radiationTimer -= dt;
+                        if (state.radiationTimer <= 0) {
+                            state.radiationTimer = 3000;
+                            hurtPlayer(1, state.player.x);
+                            addFloatingText(state.player.x, state.player.y - 30, "☢ Radiation!", "#80ff40");
+                        }
+                    } else {
+                        state.radiationTimer = 3000;
                     }
                 }
 
@@ -80,7 +103,7 @@ export function gameLoop(timestamp) {
                     spawnMobs(dt, state.cachedDayBrightness);
                 }
                 updateMusic(dt, state.cachedDayBrightness);
-                if (!state.inNether) state.timeOfDay = (state.timeOfDay + DAY_CYCLE_SPEED) % 1;
+                if (!state.inNether && !state.inWasteland && !state.inVoid && !state.inPossum) state.timeOfDay = (state.timeOfDay + DAY_CYCLE_SPEED) % 1;
 
                 drawGameFrame(timestamp);
                 break;

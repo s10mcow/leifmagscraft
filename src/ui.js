@@ -6,8 +6,8 @@
 // ============================================================
 
 import { state } from './state.js';
-import { BLOCKS, ITEMS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, UI, RECIPES, TRADES, BLOCK_INFO, ITEM_INFO, MOB_DEFS, getItemName, isStackable, maxStackSize, isFood, PLAYER_REACH } from './constants.js';
-import { countItem, getArmorDefense, HOTBAR_SIZE, BACKPACK_SIZE, canCraft } from './inventory.js';
+import { BLOCKS, ITEMS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, UI, RECIPES, TRADES, BLOCK_INFO, ITEM_INFO, MOB_DEFS, getItemName, isStackable, maxStackSize, isFood, PLAYER_REACH, SMELTING_RECIPES } from './constants.js';
+import { countItem, getArmorDefense, HOTBAR_SIZE, BACKPACK_SIZE, canCraft, addToInventory, removeItems } from './inventory.js';
 import { drawItemIcon } from './rendering.js';
 import { getInventorySlotAtMouse, getArmorSlotAtMouse, getChestSlotAtMouse, getChestInventorySlotAtMouse, getOffhandSlotAtMouse } from './input.js';
 
@@ -87,11 +87,17 @@ export function drawHotbar() {
     if (held.count > 0 && held.itemId !== 0) {
         const heldInfo = ITEM_INFO[held.itemId];
         let name = getItemName(held.itemId);
-        // Gun: show damage and ammo count
+        // Gun: show mag / reserve ammo and reload status
         if (heldInfo && heldInfo.toolType === "gun") {
-            const ammoId = heldInfo.ammoType === "rocket" ? ITEMS.ROCKET : ITEMS.BULLETS;
-            const ammo = countItem(ammoId);
-            name += ` | DMG:${heldInfo.damage} | Ammo:${ammo}`;
+            const ammoId = heldInfo.ammoType === "rocket" ? ITEMS.ROCKET : heldInfo.ammoType === "fuel" ? ITEMS.FUEL_CANISTER : ITEMS.BULLETS;
+            const reserve = countItem(ammoId);
+            const mag = held.magAmmo !== undefined ? held.magAmmo : heldInfo.magSize;
+            if (state.gunReloadTimer > 0 && state.gunReloadingSlot === state.inventory.selectedSlot) {
+                const secs = Math.ceil(state.gunReloadTimer / 1000);
+                name += ` | RELOADING ${secs}s | Reserve:${reserve}`;
+            } else {
+                name += ` | DMG:${heldInfo.damage} | Mag:${mag}/${heldInfo.magSize} | Reserve:${reserve}`;
+            }
         }
         state.ctx.font = "14px 'Courier New', monospace"; state.ctx.textAlign = "center";
         const tw = state.ctx.measureText(name).width;
@@ -438,6 +444,62 @@ export function drawChestMenu() {
     }
 }
 
+// --- BLAST FURNACE MENU ---
+export function drawBlastFurnaceMenu() {
+    if (!state.blastFurnaceOpen) return;
+
+    state.ctx.fillStyle = "rgba(0,0,0,0.75)";
+    state.ctx.fillRect(0, 0, state.canvas.width, state.canvas.height);
+
+    const pw = 500, ph = 380;
+    const px = (state.canvas.width - pw) / 2, py = (state.canvas.height - ph) / 2;
+    state.ctx.save();
+    applyPanelScale(pw, ph);
+    state.ctx.fillStyle = "#2a2a3e"; state.ctx.fillRect(px, py, pw, ph);
+    state.ctx.strokeStyle = "#c86000"; state.ctx.lineWidth = 3; state.ctx.strokeRect(px, py, pw, ph); state.ctx.lineWidth = 1;
+
+    state.ctx.fillStyle = "#c86000"; state.ctx.font = "bold 24px 'Courier New', monospace"; state.ctx.textAlign = "center";
+    state.ctx.fillText("BLAST FURNACE", state.canvas.width / 2, py + 35);
+    state.ctx.fillStyle = "#9ca3af"; state.ctx.font = "12px 'Courier New', monospace";
+    state.ctx.fillText("Click a recipe to smelt!  Press F/E/Escape to close", state.canvas.width / 2, py + 55);
+
+    const rowH = 56, margin = 24;
+    const startY = py + 72;
+
+    for (let i = 0; i < SMELTING_RECIPES.length; i++) {
+        const recipe = SMELTING_RECIPES[i];
+        const ry = startY + i * rowH;
+        const haveCount = countItem(recipe.input);
+        const canSmelt = haveCount >= 1;
+        const hover = state.blastFurnaceHover === i;
+
+        state.ctx.fillStyle = hover ? (canSmelt ? "rgba(200,96,0,0.3)" : "rgba(255,255,255,0.1)")
+                               : (canSmelt ? "rgba(200,96,0,0.12)" : "rgba(255,255,255,0.04)");
+        state.ctx.fillRect(px + margin, ry, pw - margin * 2, rowH - 6);
+        state.ctx.strokeStyle = canSmelt ? "#c86000" : "#555"; state.ctx.lineWidth = hover ? 2 : 1;
+        state.ctx.strokeRect(px + margin, ry, pw - margin * 2, rowH - 6); state.ctx.lineWidth = 1;
+
+        // Input icon
+        drawItemIcon(recipe.input, px + margin + 10, ry + 6, 36);
+        state.ctx.fillStyle = canSmelt ? "#fff" : "#666";
+        state.ctx.font = "bold 13px 'Courier New', monospace"; state.ctx.textAlign = "left";
+        state.ctx.fillText(getItemName(recipe.input) + " x" + haveCount, px + margin + 52, ry + 20);
+
+        // Arrow
+        state.ctx.fillStyle = canSmelt ? "#c86000" : "#555";
+        state.ctx.font = "bold 22px 'Courier New', monospace"; state.ctx.textAlign = "center";
+        state.ctx.fillText("\u2192", state.canvas.width / 2, ry + 26);
+
+        // Output icon (right half of panel)
+        const outX = px + pw / 2 + 30;
+        drawItemIcon(recipe.output, outX, ry + 6, 36);
+        state.ctx.fillStyle = canSmelt ? "#fff" : "#666";
+        state.ctx.font = "bold 13px 'Courier New', monospace"; state.ctx.textAlign = "left";
+        state.ctx.fillText(getItemName(recipe.output) + " x" + recipe.outputCount, outX + 42, ry + 20);
+    }
+    state.ctx.restore();
+}
+
 // --- TRADING MENU ---
 export function drawTradingMenu() {
     if (!state.tradingOpen) return;
@@ -558,8 +620,10 @@ export function drawHUD() {
 
     // Dimension indicator
     state.ctx.fillStyle = "rgba(0,0,0,0.4)"; state.ctx.fillRect(state.canvas.width - 150, 76, 145, 20);
-    state.ctx.fillStyle = state.inNether ? "#ff4444" : "#4ade80"; state.ctx.font = "bold 11px 'Courier New', monospace";
-    state.ctx.fillText(state.inNether ? "NETHER" : "Overworld", state.canvas.width - 10, 90);
+    const dimColor = state.inNether ? "#ff4444" : state.inWasteland ? "#c8a030" : state.inVoid ? "#8840ff" : state.inPossum ? "#ff88cc" : "#4ade80";
+    const dimName  = state.inNether ? "NETHER"  : state.inWasteland ? "WASTELAND" : state.inVoid ? "THE VOID" : state.inPossum ? "POSSUM REALM" : "Overworld";
+    state.ctx.fillStyle = dimColor; state.ctx.font = "bold 11px 'Courier New', monospace";
+    state.ctx.fillText(dimName, state.canvas.width - 10, 90);
 }
 
 // --- TITLE SCREEN ---

@@ -51,7 +51,62 @@ export function spawnMobs(dt, dayBrightness) {
     let hostileCount = 0, passiveCount = 0;
     for (const m of state.mobs) {
         if (MOB_DEFS[m.type].hostile) hostileCount++;
-        else if (m.type !== "villager" && m.type !== "iron_golem") passiveCount++;
+        else if (m.type !== "villager" && m.type !== "iron_golem" && m.type !== "companion") passiveCount++;
+    }
+
+    if (state.inVoid) {
+        if (hostileCount < MAX_HOSTILE_MOBS) {
+            const pos = findSpawnPosition();
+            if (pos) {
+                const g = createMob("glitched", pos.x, pos.y);
+                state.mobs.push(g);
+                state.glitchedActive = true;
+            }
+        }
+        return;
+    }
+
+    if (state.inPossum) {
+        // Possum realm: only friendly possums spawn, no hostiles
+        if (passiveCount < MAX_PASSIVE_MOBS + 4) {
+            const pos = findSpawnPosition();
+            if (pos) {
+                state.mobs.push(createMob("possum", pos.x, pos.y));
+                // Possums often spawn in little groups
+                if (Math.random() < 0.6 && passiveCount + 1 < MAX_PASSIVE_MOBS + 4) {
+                    const offset = (Math.random() - 0.5) * 4 * BLOCK_SIZE;
+                    state.mobs.push(createMob("possum", pos.x + offset, pos.y));
+                }
+            }
+        }
+        return;
+    }
+
+    if (state.inWasteland) {
+        if (hostileCount < MAX_HOSTILE_MOBS) {
+            const pos = findSpawnPosition();
+            if (pos) {
+                // Wasteland hostile mobs: mostly raiders with some husks/skeletons
+                const types = ["husk", "skeleton", "raider", "raider", "raider", "raider"];
+                const type = types[Math.floor(Math.random() * types.length)];
+                state.mobs.push(createMob(type, pos.x, pos.y));
+                // Husks sometimes spawn in groups of 2
+                if (type === "husk" && Math.random() < 0.4 && hostileCount + 1 < MAX_HOSTILE_MOBS) {
+                    const offset = (Math.random() - 0.5) * 4 * BLOCK_SIZE;
+                    state.mobs.push(createMob("husk", pos.x + offset, pos.y));
+                }
+                // Raiders spawn in groups of 2-3
+                if (type === "raider" && hostileCount + 1 < MAX_HOSTILE_MOBS) {
+                    const offset = (Math.random() - 0.5) * 4 * BLOCK_SIZE;
+                    state.mobs.push(createMob("raider", pos.x + offset, pos.y));
+                    if (Math.random() < 0.4 && hostileCount + 2 < MAX_HOSTILE_MOBS) {
+                        const offset2 = (Math.random() - 0.5) * 6 * BLOCK_SIZE;
+                        state.mobs.push(createMob("raider", pos.x + offset2, pos.y));
+                    }
+                }
+            }
+        }
+        return;
     }
 
     if (state.inNether) {
@@ -67,7 +122,7 @@ export function spawnMobs(dt, dayBrightness) {
                     type = types[Math.floor(Math.random() * types.length)];
                 } else {
                     // Crimson biome: skeletons, pigmen, ghasts — grunture is rare (8% chance)
-                    if (Math.random() < 0.08) {
+                    if (Math.random() < 0.04) {
                         type = "grunture";
                     } else {
                         const types = ["skeleton", "pigman", "pigman", "pigman", "ghast", "ghast"];
