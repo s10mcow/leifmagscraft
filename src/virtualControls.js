@@ -10,6 +10,7 @@ import { state } from './state.js';
 import { getHotbarLayout } from './ui.js';
 import { HOTBAR_SIZE } from './inventory.js';
 import { triggerManualReload } from './game/input-handlers.js';
+import { openMobileKeyboard, closeMobileKeyboard } from './input.js';
 
 const isTouch = () => ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
 
@@ -57,6 +58,7 @@ function buildDOM() {
             <div id="vbtn-inv"    class="vbtn vbtn-sm">INV</div>
             <div id="vbtn-use"    class="vbtn vbtn-sm">USE</div>
             <div id="vbtn-reload" class="vbtn vbtn-sm">RLD</div>
+            <div id="vbtn-chat"   class="vbtn vbtn-sm">💬</div>
         </div>
         <div class="vbtn-row">
             <div id="vbtn-place" class="vbtn">📦</div>
@@ -186,6 +188,17 @@ function initButtons() {
     // Reload gun
     const reload = document.getElementById('vbtn-reload');
     reload.addEventListener('touchstart', (e) => { e.preventDefault(); triggerManualReload(); }, { passive: false });
+
+    // Chat
+    const chat = document.getElementById('vbtn-chat');
+    chat.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (state.gameState === 'playing' && !state.gameOver) {
+            state.chatOpen = true;
+            state.chatInput = '';
+            openMobileKeyboard('text', '');
+        }
+    }, { passive: false });
 
     // Pause (Escape key)
     const pauseBtn = document.getElementById('vbtn-pause');
