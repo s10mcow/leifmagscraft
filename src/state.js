@@ -124,6 +124,7 @@ export const state = {
     projectiles: [],
     particles: [],
     mobSpawnTimer: 0,
+    isMobHost: true,
 
     // Input
     keys: {},

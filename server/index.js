@@ -20,6 +20,7 @@ const clients = new Map();   // id -> { ws, name, x, y }
 const blockChanges = [];     // all block edits since server start
 
 let nextId = 1;
+let mobHostId = null;
 
 function decodeJWT(token) {
     if (!token) return null;
@@ -34,8 +35,10 @@ wss.on('connection', (ws) => {
     const client = { ws, name: 'Player' + id, x: 0, y: 0 };
     clients.set(id, client);
 
+    // First client becomes mob host
+    if (mobHostId === null) mobHostId = id;
     // Send current world state to the new player
-    ws.send(JSON.stringify({ type: 'init', id, blockChanges }));
+    ws.send(JSON.stringify({ type: 'init', id, blockChanges, isMobHost: mobHostId === id }));
 
     ws.on('message', (raw) => {
         let msg;
@@ -60,6 +63,9 @@ wss.on('connection', (ws) => {
             else blockChanges.push(msg);
             broadcast(msg, ws);
 
+        } else if (msg.type === 'mob_sync') {
+            if (id === mobHostId) broadcast(msg, ws);
+
         } else if (msg.type === 'chat') {
             msg.name = client.name;
             broadcastAll(msg);    // include sender so they see their own message
@@ -69,6 +75,15 @@ wss.on('connection', (ws) => {
     ws.on('close', () => {
         broadcast({ type: 'player_leave', id, name: client.name });
         clients.delete(id);
+        // Reassign mob host if the host left
+        if (id === mobHostId) {
+            mobHostId = null;
+            for (const [cid, c] of clients) {
+                mobHostId = cid;
+                c.ws.send(JSON.stringify({ type: 'become_mob_host' }));
+                break;
+            }
+        }
     });
 });
 

@@ -4,9 +4,12 @@
 
 import { MOB_DEFS, ITEMS } from '../constants.js';
 
+let _nextMobId = 1;
+
 export function createMob(type, x, y) {
     const def = MOB_DEFS[type];
     const mob = {
+        id: _nextMobId++,
         type, x, y,
         velX: 0, velY: 0,
         health: def.maxHealth, maxHealth: def.maxHealth,

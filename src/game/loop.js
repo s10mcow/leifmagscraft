@@ -115,7 +115,7 @@ export function gameLoop(timestamp) {
                     updateProjectiles(dt);
                     updateParticles(dt);
                     updateLeafDecay(dt);
-                    spawnMobs(dt, state.cachedDayBrightness);
+                    if (state.isMobHost || !state.multiplayerMode) spawnMobs(dt, state.cachedDayBrightness);
                 }
                 updateMusic(dt, state.cachedDayBrightness);
                 if (!state.inNether && !state.inWasteland && !state.inVoid && !state.inPossum) state.timeOfDay = (state.timeOfDay + DAY_CYCLE_SPEED) % 1;

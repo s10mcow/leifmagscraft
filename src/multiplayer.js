@@ -14,6 +14,7 @@ export const WS_URL = (typeof import.meta !== 'undefined' && import.meta.env && 
 
 let ws = null;
 let posInterval = null;
+let mobInterval = null;
 
 // Seeded PRNG — mulberry32. Used so all multiplayer players generate
 // the same world from the same fixed seed.
@@ -34,9 +35,10 @@ export function connectMultiplayer() {
 
     ws.onopen = () => {
         state.multiplayerConnected = true;
+        state.isMobHost = false; // server will promote us if we're first
         ws.send(JSON.stringify({ type: 'join', name: state.multiplayerName, token: state.supabaseSession?.access_token || null }));
         pushChat('Connected to server!', '#4ade80');
-        // Send position every 100 ms
+        // Send position every 100ms
         posInterval = setInterval(() => {
             if (ws && ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({
@@ -49,6 +51,21 @@ export function connectMultiplayer() {
                 }));
             }
         }, 100);
+        // Send mob states every 500ms (host only)
+        mobInterval = setInterval(() => {
+            if (ws && ws.readyState === WebSocket.OPEN && state.isMobHost) {
+                ws.send(JSON.stringify({
+                    type: 'mob_sync',
+                    mobs: state.mobs.map(m => ({
+                        id: m.id, type: m.type,
+                        x: m.x, y: m.y,
+                        health: m.health,
+                        facing: m.facing,
+                        aggroed: m.aggroed,
+                    })),
+                }));
+            }
+        }, 500);
     };
 
     ws.onerror = () => pushChat('Cannot reach server — playing solo.', '#f87171');
@@ -56,7 +73,9 @@ export function connectMultiplayer() {
     ws.onclose = () => {
         state.multiplayerConnected = false;
         state.otherPlayers = {};
+        state.isMobHost = true;
         if (posInterval) { clearInterval(posInterval); posInterval = null; }
+        if (mobInterval) { clearInterval(mobInterval); mobInterval = null; }
         pushChat('Disconnected.', '#9ca3af');
     };
 
@@ -66,11 +85,41 @@ export function connectMultiplayer() {
         switch (msg.type) {
             case 'init':
                 state.myPlayerId = msg.id;
+                if (msg.isMobHost) state.isMobHost = true;
                 // Apply server-side block changes on top of local world
                 for (const b of (msg.blockChanges || [])) {
                     if (state.activeWorld[b.x]) state.activeWorld[b.x][b.y] = b.blockId;
                 }
                 break;
+            case 'become_mob_host':
+                state.isMobHost = true;
+                pushChat('You are now the mob host.', '#9ca3af');
+                break;
+            case 'mob_sync': {
+                const hostIds = new Set(msg.mobs.map(m => m.id));
+                // Remove mobs that no longer exist on host
+                state.mobs = state.mobs.filter(m => hostIds.has(m.id));
+                for (const rm of msg.mobs) {
+                    const local = state.mobs.find(m => m.id === rm.id);
+                    if (local) {
+                        local.x = rm.x; local.y = rm.y;
+                        local.health = rm.health;
+                        local.facing = rm.facing;
+                        local.aggroed = rm.aggroed;
+                    } else {
+                        // New mob from host — create it locally
+                        import('./mobs.js').then(m => {
+                            const newMob = m.createMob(rm.type, rm.x, rm.y);
+                            newMob.id = rm.id;
+                            newMob.health = rm.health;
+                            newMob.facing = rm.facing;
+                            newMob.aggroed = rm.aggroed;
+                            state.mobs.push(newMob);
+                        });
+                    }
+                }
+                break;
+            }
             case 'player_update':
                 if (msg.id === state.myPlayerId) break;
                 state.otherPlayers[msg.id] = {
@@ -99,9 +148,11 @@ export function connectMultiplayer() {
 
 export function disconnectMultiplayer() {
     if (posInterval) { clearInterval(posInterval); posInterval = null; }
+    if (mobInterval) { clearInterval(mobInterval); mobInterval = null; }
     if (ws) { ws.close(); ws = null; }
     state.multiplayerConnected = false;
     state.otherPlayers = {};
+    state.isMobHost = true;
 }
 
 export function sendBlockUpdate(x, y, blockId) {
