@@ -12,7 +12,8 @@
 import { WebSocketServer } from 'ws';
 
 const PORT = process.env.PORT || 8080;
-const wss = new WebSocketServer({ port: PORT });
+const HOST = '0.0.0.0';
+const wss = new WebSocketServer({ port: PORT, host: HOST });
 
 // Persistent state (lives until server restarts)
 const clients = new Map();   // id -> { ws, name, x, y }
@@ -85,4 +86,6 @@ function broadcastAll(msg) {
     }
 }
 
-console.log(`Multiplayer server running on ws://localhost:${PORT}`);
+console.log(`Multiplayer server running on ws://${HOST}:${PORT}`);
+console.log(`PORT env: ${process.env.PORT}`);
+console.log(`Node version: ${process.version}`);
