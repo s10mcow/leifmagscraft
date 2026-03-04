@@ -33,6 +33,35 @@ export function setupVirtualControls() {
     initJoystick();
     initButtons();
     initCanvasTouch();
+    setInterval(syncButtons, 200);
+}
+
+// Show/hide controls based on current game state
+function syncButtons() {
+    const playing  = state.gameState === 'playing' && !state.gameOver;
+    const inMenu   = state.craftingOpen || state.chestOpen || state.tradingOpen || state.blastFurnaceOpen;
+
+    // Joystick: only during active gameplay with no overlay menu
+    const joy = document.getElementById('joy-base');
+    if (joy) joy.style.visibility = (playing && !inMenu) ? '' : 'hidden';
+
+    // Action buttons (movement/combat): hide during menus
+    for (const id of ['vbtn-jump', 'vbtn-mine', 'vbtn-place', 'vbtn-crouch', 'vbtn-reload']) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.style.visibility  = (playing && !inMenu) ? '' : 'hidden';
+            el.style.pointerEvents = (playing && !inMenu) ? '' : 'none';
+        }
+    }
+
+    // Utility buttons: show whenever playing
+    for (const id of ['vbtn-inv', 'vbtn-use', 'vbtn-chat']) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.style.visibility  = playing ? '' : 'hidden';
+            el.style.pointerEvents = playing ? '' : 'none';
+        }
+    }
 }
 
 // ---- DOM -------------------------------------------------------
@@ -214,6 +243,13 @@ function initButtons() {
 
     // Prevent long-press context menu on all virtual buttons
     document.addEventListener('contextmenu', (e) => { e.preventDefault(); }, { passive: false });
+
+    // Blanket visual feedback: add/remove vbtn-held on every button
+    document.querySelectorAll('.vbtn').forEach(btn => {
+        btn.addEventListener('touchstart',  () => btn.classList.add('vbtn-held'),    { passive: true });
+        btn.addEventListener('touchend',    () => btn.classList.remove('vbtn-held'), { passive: true });
+        btn.addEventListener('touchcancel', () => btn.classList.remove('vbtn-held'), { passive: true });
+    });
 }
 
 // ---- Fullscreen / orientation ----------------------------------

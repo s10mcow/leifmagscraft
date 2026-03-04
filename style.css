@@ -173,6 +173,14 @@ html, body {
         user-select: none;
         -webkit-tap-highlight-color: transparent;
         -webkit-touch-callout: none;
+        transition: transform 0.07s, background 0.07s, border-color 0.07s;
+    }
+
+    /* Pressed / held state — applied via JS class */
+    .vbtn-held {
+        transform: scale(0.86) !important;
+        background: rgba(255, 255, 255, 0.28) !important;
+        border-color: rgba(255, 255, 255, 0.75) !important;
     }
 
     /* Small label buttons (INV / USE) */
@@ -192,6 +200,24 @@ html, body {
         font-size: 26px;
         background: rgba(74, 222, 128, 0.18);
         border-color: rgba(74, 222, 128, 0.52);
+    }
+
+    /* Mine — orange tint */
+    #vbtn-mine {
+        background: rgba(249, 115, 22, 0.15);
+        border-color: rgba(249, 115, 22, 0.45);
+    }
+
+    /* Place — purple tint */
+    #vbtn-place {
+        background: rgba(139, 92, 246, 0.15);
+        border-color: rgba(139, 92, 246, 0.45);
+    }
+
+    /* Crouch — blue tint */
+    #vbtn-crouch {
+        background: rgba(59, 130, 246, 0.15);
+        border-color: rgba(59, 130, 246, 0.45);
     }
 }
 

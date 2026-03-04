@@ -234,8 +234,38 @@ function handleRightClickAction() {
     }
 }
 
+// Hidden input element — focusing it triggers the native mobile keyboard
+const mobileInput = document.createElement('input');
+mobileInput.setAttribute('autocomplete', 'off');
+mobileInput.setAttribute('autocorrect', 'off');
+mobileInput.setAttribute('autocapitalize', 'off');
+mobileInput.setAttribute('spellcheck', 'false');
+mobileInput.style.cssText = 'position:fixed;opacity:0;top:-200px;left:0;width:1px;height:1px;border:none;outline:none;';
+document.body.appendChild(mobileInput);
+
+export function openMobileKeyboard(type, value) {
+    mobileInput.type = type === 'password' ? 'password' : 'text';
+    mobileInput.value = value || '';
+    mobileInput.focus();
+}
+
+export function closeMobileKeyboard() {
+    mobileInput.blur();
+}
+
 // Wrap all event listener setup into a single function
 export function setupInput() {
+    // Sync mobile keyboard input back to game state
+    mobileInput.addEventListener('input', () => {
+        const val = mobileInput.value;
+        if (state.gameState === 'accountCreate' || state.gameState === 'accountLogin') {
+            if (state.accountActiveField === 'password') state.accountPassword = val;
+            else state.accountInput = val;
+        } else if (state.chatOpen) {
+            state.chatInput = val;
+        }
+    });
+
     document.addEventListener("keydown", (e) => {
         // Account screens — intercept ALL keys while typing
         if (state.gameState === "accountCreate" || state.gameState === "accountLogin") {
@@ -244,6 +274,7 @@ export function setupInput() {
             if (e.key === "Tab") {
                 state.accountActiveField = field === 'username' ? 'password' : 'username';
             } else if (e.key === "Enter") {
+                closeMobileKeyboard();
                 if (state.gameState === "accountCreate") {
                     const name = state.accountInput.trim();
                     if (name.length > 0 && state.accountPassword.length >= 6 && !state.accountLoading) {
@@ -282,9 +313,11 @@ export function setupInput() {
                 }
                 state.chatInput = '';
                 state.chatOpen = false;
+                closeMobileKeyboard();
             } else if (e.key === 'Escape') {
                 state.chatInput = '';
                 state.chatOpen = false;
+                closeMobileKeyboard();
             } else if (e.key === 'Backspace') {
                 state.chatInput = state.chatInput.slice(0, -1);
             } else if (e.key.length === 1 && state.chatInput.length < 120) {
@@ -299,6 +332,7 @@ export function setupInput() {
         if ((e.key === 't' || e.key === 'T') && state.gameState === 'playing' && !state.gameOver) {
             state.chatOpen = true;
             state.chatInput = '';
+            openMobileKeyboard('text', '');
             return;
         }
 
@@ -572,6 +606,9 @@ export function setupInput() {
     // Hold-to-mine timer (mobile only)
     let miningHoldTimer = null;
 
+    // Long-press right-click timer — fires right-click in inventory/crafting after 450ms hold
+    let longPressTimer = null;
+
     // Double-tap tracking for respawn (mobile only)
     let lastTapTime = 0;
 
@@ -599,11 +636,13 @@ export function setupInput() {
             const uf = state.MENU_BUTTONS.accountUsernameField;
             if (uf && state.mouse.x >= uf.x && state.mouse.x <= uf.x + uf.w && state.mouse.y >= uf.y && state.mouse.y <= uf.y + uf.h) {
                 state.accountActiveField = 'username';
+                openMobileKeyboard('text', state.accountInput);
                 return;
             }
             const pf = state.MENU_BUTTONS.accountPasswordField;
             if (pf && state.mouse.x >= pf.x && state.mouse.x <= pf.x + pf.w && state.mouse.y >= pf.y && state.mouse.y <= pf.y + pf.h) {
                 state.accountActiveField = 'password';
+                openMobileKeyboard('password', state.accountPassword);
                 return;
             }
             const b = state.MENU_BUTTONS.accountCreate;
@@ -630,11 +669,13 @@ export function setupInput() {
             const uf = state.MENU_BUTTONS.accountUsernameField;
             if (uf && state.mouse.x >= uf.x && state.mouse.x <= uf.x + uf.w && state.mouse.y >= uf.y && state.mouse.y <= uf.y + uf.h) {
                 state.accountActiveField = 'username';
+                openMobileKeyboard('text', state.accountInput);
                 return;
             }
             const pf = state.MENU_BUTTONS.accountPasswordField;
             if (pf && state.mouse.x >= pf.x && state.mouse.x <= pf.x + pf.w && state.mouse.y >= pf.y && state.mouse.y <= pf.y + pf.h) {
                 state.accountActiveField = 'password';
+                openMobileKeyboard('password', state.accountPassword);
                 return;
             }
             const lb = state.MENU_BUTTONS.accountLogin;
@@ -864,6 +905,20 @@ export function setupInput() {
             return;
         }
 
+        // Long-press = right-click in crafting/chest (split stacks)
+        if (state.craftingOpen || state.chestOpen) {
+            longPressTimer = setTimeout(() => {
+                longPressTimer = null;
+                if (state.craftingOpen) {
+                    const slotIdx = getInventorySlotAtMouse();
+                    if (slotIdx >= 0) rightClickInventorySlot(slotIdx);
+                } else if (state.chestOpen) {
+                    const invSlot = getChestInventorySlotAtMouse();
+                    if (invSlot >= 0) rightClickInventorySlot(invSlot);
+                }
+            }, 450);
+        }
+
         // In scrollable contexts (main menu, crafting), defer tap to touchend
         // so the user can swipe to scroll without accidentally triggering buttons.
         const isScrollable = state.gameState === "menu" ||
@@ -873,6 +928,7 @@ export function setupInput() {
 
     state.canvas.addEventListener("touchmove", (e) => {
         e.preventDefault();
+        if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
         for (const t of e.changedTouches) {
             if (t.identifier !== swipeTouchId) continue;
             const rect = state.canvas.getBoundingClientRect();
@@ -886,8 +942,8 @@ export function setupInput() {
 
     state.canvas.addEventListener("touchend", (e) => {
         e.preventDefault();
-        clearTimeout(miningHoldTimer);
-        miningHoldTimer = null;
+        clearTimeout(miningHoldTimer); miningHoldTimer = null;
+        clearTimeout(longPressTimer);  longPressTimer  = null;
 
         for (const t of e.changedTouches) {
             if (t.identifier !== swipeTouchId) continue;
