@@ -923,19 +923,18 @@ export function drawAccountLoginScreen() {
     const { w, h } = drawAccountBg();
     const ctx = state.ctx;
     const hasSession = !!state.supabaseSession;
+    const btnW = 280, btnH = 50, btnX = w / 2 - 140;
 
     ctx.textAlign = "center";
-    ctx.fillStyle = "#9ca3af";
-    ctx.font = "13px 'Courier New', monospace";
-    ctx.fillText("WELCOME BACK", w / 2, h * 0.24);
-    ctx.fillStyle = "#facc15";
-    ctx.font = "bold 34px 'Courier New', monospace";
-    ctx.fillText(state.playerAccount || "Player", w / 2, h * 0.24 + 44);
-
-    const btnW = 280, btnH = 50, btnX = w / 2 - 140;
 
     if (hasSession) {
         // Session still valid — just a continue button, no password needed
+        ctx.fillStyle = "#9ca3af";
+        ctx.font = "13px 'Courier New', monospace";
+        ctx.fillText("WELCOME BACK", w / 2, h * 0.24);
+        ctx.fillStyle = "#facc15";
+        ctx.font = "bold 34px 'Courier New', monospace";
+        ctx.fillText(state.playerAccount || "Player", w / 2, h * 0.24 + 44);
         ctx.fillStyle = "#6b7280";
         ctx.font = "13px 'Courier New', monospace";
         ctx.fillText("Your session is still active.", w / 2, h * 0.24 + 74);
@@ -964,14 +963,24 @@ export function drawAccountLoginScreen() {
         ctx.fillText("Change Account", w / 2, chY + 25);
         state.MENU_BUTTONS.accountChange = { x: btnX, y: chY, w: btnW, h: 40 };
     } else {
-        // Session expired — need password
+        // No active session — sign in with username + password
+        ctx.fillStyle = "#4ade80";
+        ctx.font = "bold 30px 'Courier New', monospace";
+        ctx.fillText("Sign In", w / 2, h * 0.22);
         ctx.fillStyle = "#6b7280";
         ctx.font = "13px 'Courier New', monospace";
-        ctx.fillText("Session expired — enter your password to continue.", w / 2, h * 0.24 + 74);
+        ctx.fillText("Enter your username and password to continue", w / 2, h * 0.22 + 28);
 
         const fieldW = 280, fieldH = 46, fieldX = w / 2 - 140;
-        const pwY = h * 0.46;
-        drawAccountInput(ctx, "PASSWORD", state.accountPassword, true, true, fieldX, pwY, fieldW, fieldH);
+        const unY = h * 0.36;
+        const pwY = unY + fieldH + 20;
+
+        drawAccountInput(ctx, "USERNAME", state.accountInput, false,
+            state.accountActiveField === 'username', fieldX, unY, fieldW, fieldH);
+        drawAccountInput(ctx, "PASSWORD", state.accountPassword, true,
+            state.accountActiveField === 'password', fieldX, pwY, fieldW, fieldH);
+
+        state.MENU_BUTTONS.accountUsernameField = { x: fieldX, y: unY, w: fieldW, h: fieldH };
         state.MENU_BUTTONS.accountPasswordField = { x: fieldX, y: pwY, w: fieldW, h: fieldH };
 
         if (state.accountError) {
@@ -984,7 +993,7 @@ export function drawAccountLoginScreen() {
         if (state.accountLoading) {
             ctx.fillStyle = "#6b7280";
             ctx.font = "bold 15px 'Courier New', monospace";
-            ctx.fillText("Logging in...", w / 2, loginY + 28);
+            ctx.fillText("Signing in...", w / 2, loginY + 28);
         } else {
             const hLogin = state.menuHover === "accountLogin";
             ctx.fillStyle = hLogin ? "rgba(74,222,128,0.25)" : "rgba(74,222,128,0.10)";
@@ -994,11 +1003,11 @@ export function drawAccountLoginScreen() {
             ctx.strokeRect(btnX, loginY, btnW, btnH);
             ctx.fillStyle = "#4ade80";
             ctx.font = "bold 16px 'Courier New', monospace";
-            ctx.fillText("Log In", w / 2, loginY + 32);
+            ctx.fillText("Sign In", w / 2, loginY + 32);
             state.MENU_BUTTONS.accountLogin = { x: btnX, y: loginY, w: btnW, h: btnH };
         }
 
-        const chY = (state.accountLoading ? h * 0.46 + fieldH + 68 : h * 0.46 + fieldH + (state.accountError ? 44 : 24) + btnH + 14);
+        const chY = loginY + (state.accountLoading ? 60 : btnH + 14);
         const hChange = state.menuHover === "accountChange";
         ctx.fillStyle = hChange ? "rgba(156,163,175,0.18)" : "rgba(156,163,175,0.06)";
         ctx.fillRect(btnX, chY, btnW, 40);
@@ -1007,8 +1016,12 @@ export function drawAccountLoginScreen() {
         ctx.strokeRect(btnX, chY, btnW, 40);
         ctx.fillStyle = "#9ca3af";
         ctx.font = "13px 'Courier New', monospace";
-        ctx.fillText("Different Account", w / 2, chY + 25);
+        ctx.fillText("Create Account", w / 2, chY + 25);
         state.MENU_BUTTONS.accountChange = { x: btnX, y: chY, w: btnW, h: 40 };
+
+        ctx.fillStyle = "#374151";
+        ctx.font = "12px 'Courier New', monospace";
+        ctx.fillText("Tab to switch fields  •  Enter to sign in", w / 2, chY + 56);
     }
 
     ctx.lineWidth = 1;

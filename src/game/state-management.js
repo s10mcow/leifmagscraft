@@ -510,8 +510,10 @@ export function startGame() {
         } else {
             const savedAccount = localStorage.getItem('lm2d_account');
             if (savedAccount) {
-                // Had an account before, session expired — need to re-enter password
+                // Had an account before, session expired — show sign-in screen
                 state.playerAccount = savedAccount;
+                state.accountInput = savedAccount;
+                state.accountActiveField = 'username';
                 state.gameState = 'accountLogin';
                 document.title = "Leef & Maggie's Minecraft 2D \u2014 A Two-Block Building Adventure";
             } else {
@@ -525,6 +527,8 @@ export function startGame() {
         if (savedAccount) {
             state.playerAccount = savedAccount;
             state.multiplayerName = savedAccount;
+            state.accountInput = savedAccount;
+            state.accountActiveField = 'username';
             state.gameState = 'accountLogin';
         } else {
             state.gameState = 'accountCreate';

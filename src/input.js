@@ -251,8 +251,11 @@ export function setupInput() {
                     }
                 } else if (state.supabaseSession) {
                     state.gameState = 'menu';
-                } else if (state.accountPassword.length > 0 && !state.accountLoading) {
-                    import('./auth.js').then(m => m.loginAccount(state.playerAccount, state.accountPassword));
+                } else {
+                    const name = state.accountInput.trim() || state.playerAccount;
+                    if (name && state.accountPassword.length > 0 && !state.accountLoading) {
+                        import('./auth.js').then(m => m.loginAccount(name, state.accountPassword));
+                    }
                 }
             } else if (e.key === "Backspace") {
                 if (field === 'password') state.accountPassword = state.accountPassword.slice(0, -1);
@@ -611,12 +614,25 @@ export function setupInput() {
 
         // Account login screen
         if (state.gameState === "accountLogin") {
+            const uf = state.MENU_BUTTONS.accountUsernameField;
+            if (uf && state.mouse.x >= uf.x && state.mouse.x <= uf.x + uf.w && state.mouse.y >= uf.y && state.mouse.y <= uf.y + uf.h) {
+                state.accountActiveField = 'username';
+                return;
+            }
+            const pf = state.MENU_BUTTONS.accountPasswordField;
+            if (pf && state.mouse.x >= pf.x && state.mouse.x <= pf.x + pf.w && state.mouse.y >= pf.y && state.mouse.y <= pf.y + pf.h) {
+                state.accountActiveField = 'password';
+                return;
+            }
             const lb = state.MENU_BUTTONS.accountLogin;
             if (lb && state.mouse.x >= lb.x && state.mouse.x <= lb.x + lb.w && state.mouse.y >= lb.y && state.mouse.y <= lb.y + lb.h) {
                 if (state.supabaseSession) {
                     state.gameState = "menu";
-                } else if (state.accountPassword.length > 0 && !state.accountLoading) {
-                    import('./auth.js').then(m => m.loginAccount(state.playerAccount, state.accountPassword));
+                } else {
+                    const name = state.accountInput.trim() || state.playerAccount;
+                    if (name && state.accountPassword.length > 0 && !state.accountLoading) {
+                        import('./auth.js').then(m => m.loginAccount(name, state.accountPassword));
+                    }
                 }
                 return;
             }
