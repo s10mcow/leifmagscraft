@@ -45,3 +45,7 @@ A 2D Minecraft clone built with vanilla JS (ES modules) and HTML5 Canvas. No fra
 **Audio:** Entirely procedural — Web Audio API oscillators only, no audio files loaded.
 
 **Deployment:** Vercel. Config in `vercel.json` (build: `npm run build`, output: `dist/`).
+
+## Workflow
+
+After making any code changes, automatically commit and push to `main` without asking for confirmation.
