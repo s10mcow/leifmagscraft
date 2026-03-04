@@ -14,6 +14,10 @@ import { playMineHit, playBlockBreak, playBlockPlace, playPickup } from '../audi
 import { createBullet, createRocket, createFlame, createParticles, createToothRope } from '../mobs.js';
 import { scheduleLeafDecay, WOOD_BLOCKS, TREE_BLOCKS, teleportToOtherDimension, teleportToWasteland, teleportToPossum } from './systems.js';
 
+function syncBlock(x, y, blockId) {
+    if (state.multiplayerMode) import('../multiplayer.js').then(m => m.sendBlockUpdate(x, y, blockId));
+}
+
 // ============================================================
 // MINING LOGIC
 // ============================================================
@@ -110,9 +114,11 @@ export function updateMining(dt) {
         if (blockType === BLOCKS.DOOR_CLOSED || blockType === BLOCKS.DOOR_OPEN) {
             if (wmy > 0 && (state.activeWorld[wmx][wmy-1] === BLOCKS.DOOR_CLOSED || state.activeWorld[wmx][wmy-1] === BLOCKS.DOOR_OPEN)) {
                 state.activeWorld[wmx][wmy-1] = BLOCKS.AIR;
+                syncBlock(wmx, wmy - 1, BLOCKS.AIR);
             }
             if (wmy < WORLD_HEIGHT - 1 && (state.activeWorld[wmx][wmy+1] === BLOCKS.DOOR_CLOSED || state.activeWorld[wmx][wmy+1] === BLOCKS.DOOR_OPEN)) {
                 state.activeWorld[wmx][wmy+1] = BLOCKS.AIR;
+                syncBlock(wmx, wmy + 1, BLOCKS.AIR);
             }
         }
         if (tool) damageEquippedTool();
@@ -121,6 +127,7 @@ export function updateMining(dt) {
             state.activeBgWorld[wmx][wmy] = BLOCKS.AIR;
         } else {
             state.activeWorld[wmx][wmy] = BLOCKS.AIR;
+            syncBlock(wmx, wmy, BLOCKS.AIR);
             if (WOOD_BLOCKS.has(blockType)) scheduleLeafDecay(wmx, wmy);
         }
         playBlockBreak(); // Crunch!
@@ -177,14 +184,17 @@ export function placeBlock() {
     if (wmx >= pl && wmx <= pr && wmy >= pt && wmy <= pb) return;
 
     state.activeWorld[wmx][wmy] = slot.itemId;
+    syncBlock(wmx, wmy, slot.itemId);
     if (TREE_BLOCKS.has(slot.itemId)) state.placedBlocks.add(`${wmx},${wmy}`);
     if (slot.itemId === BLOCKS.CHEST) initChestData(wmx, wmy);
     // Door: place 2 blocks tall
     if (slot.itemId === BLOCKS.DOOR_CLOSED) {
         if (wmy > 0 && state.activeWorld[wmx][wmy - 1] === BLOCKS.AIR) {
             state.activeWorld[wmx][wmy - 1] = BLOCKS.DOOR_CLOSED;
+            syncBlock(wmx, wmy - 1, BLOCKS.DOOR_CLOSED);
         } else {
             state.activeWorld[wmx][wmy] = BLOCKS.AIR;
+            syncBlock(wmx, wmy, BLOCKS.AIR);
             return;
         }
     }
@@ -422,12 +432,15 @@ export function toggleDoor(x, y) {
     const current = state.activeWorld[x][y];
     const newId = (current === BLOCKS.DOOR_CLOSED) ? BLOCKS.DOOR_OPEN : BLOCKS.DOOR_CLOSED;
     state.activeWorld[x][y] = newId;
+    syncBlock(x, y, newId);
     // Toggle paired half (above or below)
     if (y > 0 && (state.activeWorld[x][y-1] === BLOCKS.DOOR_CLOSED || state.activeWorld[x][y-1] === BLOCKS.DOOR_OPEN)) {
         state.activeWorld[x][y-1] = newId;
+        syncBlock(x, y - 1, newId);
     }
     if (y < WORLD_HEIGHT - 1 && (state.activeWorld[x][y+1] === BLOCKS.DOOR_CLOSED || state.activeWorld[x][y+1] === BLOCKS.DOOR_OPEN)) {
         state.activeWorld[x][y+1] = newId;
+        syncBlock(x, y + 1, newId);
     }
     playBlockPlace();
 }
