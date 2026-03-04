@@ -10,7 +10,11 @@ import { drawItemIcon } from './items.js';
 // --- PLAYER ---
 export function drawPlayer() {
     const sx = state.player.x - state.camera.x + state.screenShake.x;
-    const sy = state.player.y - state.camera.y + state.screenShake.y;
+    // Always anchor art to feet so crouch hitbox change doesn't shift the sprite
+    const DRAW_HEIGHT = 46;
+    const feetScreenY = state.player.y + state.player.height - state.camera.y + state.screenShake.y;
+    const sy = feetScreenY - DRAW_HEIGHT;
+    const playerBottomY = feetScreenY;
 
     if (state.player.invincibleTimer > 0 && Math.floor(state.player.invincibleTimer / 80) % 2 === 0) {
         state.ctx.globalAlpha = 0.4;
@@ -18,7 +22,6 @@ export function drawPlayer() {
 
     // Crouch: squish player vertically from the bottom
     const isCrouching = state.player.crouching;
-    const playerBottomY = sy + state.player.height;
     if (isCrouching) {
         state.ctx.save();
         const pcx = sx + state.player.width / 2;
@@ -99,9 +102,10 @@ export function drawPlayer() {
     // Restore crouch transform before drawing shield (shield stays at normal scale)
     if (isCrouching) state.ctx.restore();
 
-    // Shield in offhand — drawn on the off-hand side of the player
+    // Shield in offhand or hotbar — drawn on the off-hand side of the player
     const offhand = state.offhand;
-    if (offhand && offhand.itemId === ITEMS.SHIELD) {
+    const hasHotbarShield = !offhand?.itemId && state.inventory.slots.some(s => s.itemId === ITEMS.SHIELD);
+    if ((offhand && offhand.itemId === ITEMS.SHIELD) || hasHotbarShield) {
         const shx = state.player.facing === 1 ? sx - 10 : sx + state.player.width + 2;
         const shBaseY = isCrouching ? playerBottomY - 24 : sy + 16;
         const shH = isCrouching ? 22 : 18;

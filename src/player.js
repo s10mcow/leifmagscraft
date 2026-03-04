@@ -30,8 +30,31 @@ export function updatePlayer(dt) {
     if (state.player.invincibleTimer > 0) state.player.invincibleTimer -= dt;
     if (state.player.attackCooldown > 0) state.player.attackCooldown -= dt;
 
-    // Crouching (Shift key)
+    // Crouching (Shift key) — shrink to one block tall, feet stay fixed
+    const wasCrouching = state.player.crouching;
     state.player.crouching = !!state.keys["Shift"];
+    if (state.player.crouching && !wasCrouching) {
+        // Transition into crouch: reduce height from 46→32, push y down so feet stay
+        state.player.y += (state.player.height - BLOCK_SIZE);
+        state.player.height = BLOCK_SIZE;
+    } else if (!state.player.crouching && wasCrouching) {
+        // Transition out of crouch: restore height, pull y up
+        const headY = state.player.y - (46 - BLOCK_SIZE);
+        const headBlock = Math.floor(headY / BLOCK_SIZE);
+        const pLeft  = Math.floor(state.player.x / BLOCK_SIZE);
+        const pRight = Math.floor((state.player.x + state.player.width - 1) / BLOCK_SIZE);
+        let blocked = false;
+        for (let gx = pLeft; gx <= pRight; gx++) {
+            if (isBlockSolid(gx, headBlock)) { blocked = true; break; }
+        }
+        if (!blocked) {
+            state.player.y -= (46 - BLOCK_SIZE);
+            state.player.height = 46;
+        } else {
+            // Stay crouched — re-engage crouch
+            state.player.crouching = true;
+        }
+    }
 
     // Immobilized by Possum Protector tail wrap
     const isWrapped = state.mobs.some(m => m.type === 'possum_protector' && m.wrapping);
@@ -262,21 +285,32 @@ export function respawnPlayer() {
 export function hurtPlayer(damage, knockFromX, damageType = "melee") {
     if (state.player.invincibleTimer > 0 || state.gameOver) return;
 
-    // Shield block: crouching + shield in offhand + attack from the facing side
-    if (state.player.crouching && state.offhand && state.offhand.itemId === ITEMS.SHIELD && state.offhand.durability > 0) {
-        const attackFromLeft = knockFromX < state.player.x + state.player.width / 2;
-        const facingLeft = state.player.facing === -1;
-        if (attackFromLeft === facingLeft) {
-            state.offhand.durability--;
-            if (state.offhand.durability <= 0) {
-                state.offhand.itemId = 0; state.offhand.count = 0; state.offhand.durability = 0;
-                addFloatingText(state.player.x, state.player.y - 30, "Shield broke!", "#ef4444");
-                playToolBreak();
-            } else {
-                addFloatingText(state.player.x + 20, state.player.y - 10, "Blocked!", "#4ade80");
+    // Shield block: crouching + shield anywhere in inventory + attack from the facing side
+    if (state.player.crouching) {
+        // Find shield in offhand first, then hotbar
+        let shieldSlot = null;
+        if (state.offhand && state.offhand.itemId === ITEMS.SHIELD && state.offhand.durability > 0) {
+            shieldSlot = state.offhand;
+        } else {
+            for (const slot of state.inventory.slots) {
+                if (slot.itemId === ITEMS.SHIELD && slot.durability > 0) { shieldSlot = slot; break; }
             }
-            state.screenShake.intensity = 3;
-            return;
+        }
+        if (shieldSlot) {
+            const attackFromLeft = knockFromX < state.player.x + state.player.width / 2;
+            const facingLeft = state.player.facing === -1;
+            if (attackFromLeft === facingLeft) {
+                shieldSlot.durability--;
+                if (shieldSlot.durability <= 0) {
+                    shieldSlot.itemId = 0; shieldSlot.count = 0; shieldSlot.durability = 0;
+                    addFloatingText(state.player.x, state.player.y - 30, "Shield broke!", "#ef4444");
+                    playToolBreak();
+                } else {
+                    addFloatingText(state.player.x + 20, state.player.y - 10, "Blocked!", "#4ade80");
+                }
+                state.screenShake.intensity = 3;
+                return;
+            }
         }
     }
 

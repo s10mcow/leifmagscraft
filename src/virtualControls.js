@@ -61,8 +61,9 @@ function buildDOM() {
             <div id="vbtn-chat"   class="vbtn vbtn-sm">💬</div>
         </div>
         <div class="vbtn-row">
-            <div id="vbtn-place" class="vbtn">📦</div>
-            <div id="vbtn-mine"  class="vbtn">⛏</div>
+            <div id="vbtn-place"  class="vbtn">📦</div>
+            <div id="vbtn-mine"   class="vbtn">⛏</div>
+            <div id="vbtn-crouch" class="vbtn">▼</div>
         </div>
         <div class="vbtn-row">
             <div id="vbtn-jump"  class="vbtn vbtn-jump">▲</div>
@@ -188,6 +189,12 @@ function initButtons() {
     // Reload gun
     const reload = document.getElementById('vbtn-reload');
     reload.addEventListener('touchstart', (e) => { e.preventDefault(); triggerManualReload(); }, { passive: false });
+
+    // Crouch / shield (Shift key)
+    const crouch = document.getElementById('vbtn-crouch');
+    crouch.addEventListener('touchstart',  (e) => { e.preventDefault(); state.keys['Shift'] = true;  }, { passive: false });
+    crouch.addEventListener('touchend',    (e) => { e.preventDefault(); state.keys['Shift'] = false; }, { passive: false });
+    crouch.addEventListener('touchcancel', ()  => { state.keys['Shift'] = false; });
 
     // Chat
     const chat = document.getElementById('vbtn-chat');
