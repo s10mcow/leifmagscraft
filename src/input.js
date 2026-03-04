@@ -440,6 +440,10 @@ export function setupInput() {
             if (b && state.mouse.x >= b.x && state.mouse.x <= b.x + b.w && state.mouse.y >= b.y && state.mouse.y <= b.y + b.h) {
                 state.menuHover = "accountCreate";
             }
+            const si = state.MENU_BUTTONS.accountSignIn;
+            if (si && state.mouse.x >= si.x && state.mouse.x <= si.x + si.w && state.mouse.y >= si.y && state.mouse.y <= si.y + si.h) {
+                state.menuHover = "accountSignIn";
+            }
             return;
         }
         if (state.gameState === "accountLogin") {
@@ -608,6 +612,15 @@ export function setupInput() {
                 if (name.length > 0 && state.accountPassword.length >= 6 && !state.accountLoading) {
                     import('./auth.js').then(m => m.createAccount(name, state.accountPassword));
                 }
+            }
+            const si = state.MENU_BUTTONS.accountSignIn;
+            if (si && state.mouse.x >= si.x && state.mouse.x <= si.x + si.w && state.mouse.y >= si.y && state.mouse.y <= si.y + si.h) {
+                const saved = localStorage.getItem('lm2d_account');
+                state.accountInput = saved || '';
+                state.accountPassword = '';
+                state.accountActiveField = 'username';
+                state.accountError = null;
+                state.gameState = 'accountLogin';
             }
             return;
         }

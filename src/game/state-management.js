@@ -504,35 +504,16 @@ export function startGame() {
 
     checkExistingSession().then((hasSession) => {
         if (hasSession) {
-            // Valid session — skip password entry, go straight to login confirmation
+            // Valid session — show Welcome Back / Continue
             state.gameState = 'accountLogin';
             document.title = "Leef & Maggie's Minecraft 2D \u2014 A Two-Block Building Adventure";
         } else {
-            const savedAccount = localStorage.getItem('lm2d_account');
-            if (savedAccount) {
-                // Had an account before, session expired — show sign-in screen
-                state.playerAccount = savedAccount;
-                state.accountInput = savedAccount;
-                state.accountActiveField = 'username';
-                state.gameState = 'accountLogin';
-                document.title = "Leef & Maggie's Minecraft 2D \u2014 A Two-Block Building Adventure";
-            } else {
-                state.gameState = 'accountCreate';
-                document.title = 'Make an Account';
-            }
-        }
-    }).catch(() => {
-        // Supabase unreachable — fall back to local account
-        const savedAccount = localStorage.getItem('lm2d_account');
-        if (savedAccount) {
-            state.playerAccount = savedAccount;
-            state.multiplayerName = savedAccount;
-            state.accountInput = savedAccount;
-            state.accountActiveField = 'username';
-            state.gameState = 'accountLogin';
-        } else {
+            // Always start at Create Account; Sign In link is on that screen
             state.gameState = 'accountCreate';
             document.title = 'Make an Account';
         }
+    }).catch(() => {
+        state.gameState = 'accountCreate';
+        document.title = 'Make an Account';
     });
 }

@@ -915,6 +915,15 @@ export function drawAccountCreateScreen() {
     ctx.fillStyle = "#374151";
     ctx.font = "12px 'Courier New', monospace";
     ctx.fillText("Tab to switch fields  •  Enter to confirm", w / 2, btnY + btnH + 18);
+
+    // Sign In link
+    const signInY = btnY + btnH + 40;
+    const hSignIn = state.menuHover === "accountSignIn";
+    ctx.fillStyle = hSignIn ? "#4ade80" : "#6b7280";
+    ctx.font = "13px 'Courier New', monospace";
+    ctx.fillText("Already have an account? Sign In", w / 2, signInY);
+    const siLinkW = 260, siLinkH = 22;
+    state.MENU_BUTTONS.accountSignIn = { x: w / 2 - siLinkW / 2, y: signInY - 16, w: siLinkW, h: siLinkH };
     ctx.lineWidth = 1;
 }
 
