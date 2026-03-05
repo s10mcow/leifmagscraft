@@ -17,7 +17,8 @@ const wss = new WebSocketServer({ port: PORT, host: HOST });
 
 // Persistent state (lives until server restarts)
 const clients = new Map();   // id -> { ws, name, x, y }
-const blockChanges = [];     // all block edits since server start
+let worldSeed = null;        // seed of the current active world
+let blockChanges = [];       // all block edits for the current seed
 
 let nextId = 1;
 let mobHostId = null;
@@ -49,6 +50,12 @@ wss.on('connection', (ws) => {
             const payload = decodeJWT(msg.token);
             const verifiedName = payload?.user_metadata?.username;
             client.name = verifiedName || msg.name || client.name;
+            // If this client's seed differs from the active world seed, wipe block history
+            if (msg.seed && msg.seed !== worldSeed) {
+                worldSeed = msg.seed;
+                blockChanges = [];
+                console.log(`New world seed ${worldSeed} — block history cleared.`);
+            }
             broadcast({ type: 'player_join', id, name: client.name }, ws);
 
         } else if (msg.type === 'player_update') {
@@ -57,6 +64,8 @@ wss.on('connection', (ws) => {
             broadcast(msg, ws);   // relay to everyone else
 
         } else if (msg.type === 'block_update') {
+            // Ignore changes from a stale seed
+            if (msg.seed && msg.seed !== worldSeed) return;
             // Overwrite existing entry for same position, or push new one
             const idx = blockChanges.findIndex(b => b.x === msg.x && b.y === msg.y);
             if (idx >= 0) blockChanges[idx] = msg;

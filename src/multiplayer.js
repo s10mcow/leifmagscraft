@@ -27,7 +27,7 @@ export function mulberry32(seed) {
     };
 }
 
-export const MULTIPLAYER_SEED = 0xC0FFEE42; // fixed seed for shared world
+export const MULTIPLAYER_SEED = 0xDEADBEEF; // bump this to reset the shared world
 
 export function connectMultiplayer() {
     if (ws) ws.close();
@@ -36,7 +36,7 @@ export function connectMultiplayer() {
     ws.onopen = () => {
         state.multiplayerConnected = true;
         state.isMobHost = false; // server will promote us if we're first
-        ws.send(JSON.stringify({ type: 'join', name: state.multiplayerName, token: state.supabaseSession?.access_token || null }));
+        ws.send(JSON.stringify({ type: 'join', name: state.multiplayerName, token: state.supabaseSession?.access_token || null, seed: MULTIPLAYER_SEED }));
         pushChat('Connected to server!', '#4ade80');
         // Send position every 100ms
         posInterval = setInterval(() => {
@@ -157,7 +157,7 @@ export function disconnectMultiplayer() {
 
 export function sendBlockUpdate(x, y, blockId) {
     if (!ws || ws.readyState !== WebSocket.OPEN) return;
-    ws.send(JSON.stringify({ type: 'block_update', x, y, blockId }));
+    ws.send(JSON.stringify({ type: 'block_update', x, y, blockId, seed: MULTIPLAYER_SEED }));
 }
 
 export function sendChat(text) {
