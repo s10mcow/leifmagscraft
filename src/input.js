@@ -933,7 +933,7 @@ export function setupInput() {
             if (t.identifier !== swipeTouchId) continue;
             const rect = state.canvas.getBoundingClientRect();
             const cy = (t.clientY - rect.top) * (state.canvas.height / rect.height);
-            const dy = swipeLastY - cy; // positive = finger moved up = scroll content down
+            const dy = cy - swipeLastY; // positive = finger moved down = scroll content down
             swipeLastY = cy;
             applySwipeScroll(dy);
             break;
