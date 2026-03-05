@@ -147,10 +147,10 @@ export function placeOres(seed) {
             const mult = nearCave ? 2 : 1;
             const rand = Math.random();
 
-            if (depth > 5 && rand < 0.01 * mult) state.world[x][y] = BLOCKS.COAL;
+            if (depth > 5 && rand < 0.006 * mult) state.world[x][y] = BLOCKS.COAL;
             else if (depth > 5 && Math.random() < 0.01 * mult) state.world[x][y] = BLOCKS.COPPER;
-            else if (depth > 10 && Math.random() < 0.018 * mult) state.world[x][y] = BLOCKS.IRON;
-            else if (depth > 10 && Math.random() < 0.005 * mult) state.world[x][y] = BLOCKS.EMERALD;
+            else if (depth > 10 && Math.random() < 0.011 * mult) state.world[x][y] = BLOCKS.IRON;
+            else if (depth > 10 && Math.random() < 0.003 * mult) state.world[x][y] = BLOCKS.EMERALD;
             else if (depth > 20 && Math.random() < 0.008 * mult) {
                 // Gold — place as a small clump (seed the neighbour cells too)
                 state.world[x][y] = BLOCKS.GOLD;
