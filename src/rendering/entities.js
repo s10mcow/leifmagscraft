@@ -1033,116 +1033,231 @@ function drawMob(mob) {
     }
 
     else if (mob.type === "possum_god") {
-        // The Possum God — divine massive possum, golden aura, crown, glowing eyes
+        // THE POSSUM GOD — bipedal angelic possum, wings, golden aura, laser mouth
         const f = mob.facing;
         const t = performance.now() * 0.003;
-        const bodyCol = isHurt ? "#ffeeaa" : "#d4af37"; // golden
+        const bodyCol  = isHurt ? "#ffeeaa" : "#d4af37";
+        const bellyCol = isHurt ? "#fff5cc" : "#fffff0";
+        const cx = sx + def.width / 2;
+        const cy = sy + def.height / 2;
 
-        // Divine aura (pulsing glow behind body)
-        const aura = 0.18 + Math.sin(t * 2) * 0.08;
-        state.ctx.fillStyle = `rgba(255, 220, 60, ${aura})`;
+        // ── GOLDEN AURA: rotating rings ──────────────────────────────
+        state.ctx.save();
+        for (let ring = 0; ring < 3; ring++) {
+            const angle = t * (1.2 + ring * 0.4) + ring * Math.PI * 0.66;
+            const rx = def.width  * (0.55 + ring * 0.12);
+            const ry = def.height * (0.35 + ring * 0.08);
+            const alpha = 0.12 + Math.sin(t * 2 + ring) * 0.06;
+            state.ctx.strokeStyle = `rgba(255, 230, 60, ${alpha + 0.15})`;
+            state.ctx.lineWidth = 3 - ring;
+            state.ctx.beginPath();
+            state.ctx.ellipse(cx, cy - 6, rx, ry, angle, 0, Math.PI * 2);
+            state.ctx.stroke();
+        }
+        // Orbiting golden sparks
+        for (let sp = 0; sp < 6; sp++) {
+            const ang = t * 1.8 + sp * Math.PI / 3;
+            const px2 = cx + Math.cos(ang) * (def.width * 0.62);
+            const py2 = cy - 6 + Math.sin(ang) * (def.height * 0.42);
+            const sparkA = 0.5 + Math.sin(t * 4 + sp) * 0.3;
+            state.ctx.fillStyle = `rgba(255, 240, 100, ${sparkA})`;
+            state.ctx.fillRect(px2 - 2, py2 - 2, 4, 4);
+        }
+        state.ctx.restore();
+
+        // ── ANGELIC WINGS (drawn behind body) ─────────────────────────
+        const wingFlap = Math.sin(t * 3) * 12;
+        const wingBaseY = sy + 28;
+        state.ctx.save();
+        // Left wing
+        state.ctx.fillStyle = `rgba(255, 255, 255, 0.85)`;
         state.ctx.beginPath();
-        state.ctx.ellipse(sx + def.width / 2, sy + def.height / 2, def.width * 0.75, def.height * 0.65, 0, 0, Math.PI * 2);
+        state.ctx.moveTo(sx + 22, wingBaseY + 4);
+        state.ctx.lineTo(sx - 38, wingBaseY - 18 - wingFlap);
+        state.ctx.lineTo(sx - 30, wingBaseY + 10 - wingFlap * 0.4);
+        state.ctx.lineTo(sx - 18, wingBaseY + 26);
+        state.ctx.lineTo(sx + 16, wingBaseY + 22);
+        state.ctx.closePath();
         state.ctx.fill();
+        // Left wing feather tips (golden edges)
+        state.ctx.strokeStyle = `rgba(255, 215, 0, 0.7)`;
+        state.ctx.lineWidth = 2;
+        for (let fi = 0; fi < 4; fi++) {
+            const fx1 = sx + 18 - fi * 14;
+            const fy1 = wingBaseY + 22 - fi * 2;
+            const fx2 = sx - 32 + fi * 4;
+            const fy2 = wingBaseY - 16 - wingFlap + fi * 6;
+            state.ctx.beginPath();
+            state.ctx.moveTo(fx1, fy1);
+            state.ctx.lineTo(fx2, fy2);
+            state.ctx.stroke();
+        }
+        // Right wing
+        state.ctx.fillStyle = `rgba(255, 255, 255, 0.85)`;
+        state.ctx.beginPath();
+        state.ctx.moveTo(sx + def.width - 22, wingBaseY + 4);
+        state.ctx.lineTo(sx + def.width + 38, wingBaseY - 18 - wingFlap);
+        state.ctx.lineTo(sx + def.width + 30, wingBaseY + 10 - wingFlap * 0.4);
+        state.ctx.lineTo(sx + def.width + 18, wingBaseY + 26);
+        state.ctx.lineTo(sx + def.width - 16, wingBaseY + 22);
+        state.ctx.closePath();
+        state.ctx.fill();
+        state.ctx.strokeStyle = `rgba(255, 215, 0, 0.7)`;
+        for (let fi = 0; fi < 4; fi++) {
+            const fx1 = sx + def.width - 18 + fi * 14;
+            const fy1 = wingBaseY + 22 - fi * 2;
+            const fx2 = sx + def.width + 32 - fi * 4;
+            const fy2 = wingBaseY - 16 - wingFlap + fi * 6;
+            state.ctx.beginPath();
+            state.ctx.moveTo(fx1, fy1);
+            state.ctx.lineTo(fx2, fy2);
+            state.ctx.stroke();
+        }
+        state.ctx.restore();
 
-        // Body (80×90)
+        // ── TAIL (wrapping when active) ───────────────────────────────
+        if (mob.wrapping) {
+            const wt = t * 2;
+            state.ctx.lineWidth = 9;
+            state.ctx.strokeStyle = isHurt ? "#ffeeaa" : "#d4af37";
+            state.ctx.beginPath();
+            const wpx = state.player.x + state.player.width / 2 - state.camera.x + state.screenShake.x;
+            const wpy = state.player.y + state.player.height / 2 - state.camera.y + state.screenShake.y;
+            for (let seg = 0; seg < 4; seg++) {
+                const angle = wt + seg * Math.PI * 0.65;
+                const rad = 20 + seg * 5;
+                const wx2 = wpx + Math.cos(angle) * rad;
+                const wy2 = wpy + Math.sin(angle) * rad * 0.5;
+                if (seg === 0) state.ctx.moveTo(wx2, wy2); else state.ctx.lineTo(wx2, wy2);
+            }
+            state.ctx.stroke();
+            state.ctx.lineWidth = 1;
+            state.ctx.fillStyle = "rgba(212, 175, 55, 0.3)";
+            state.ctx.fillRect(
+                state.player.x - state.camera.x + state.screenShake.x - 5,
+                state.player.y - state.camera.y + state.screenShake.y - 5,
+                state.player.width + 10, state.player.height + 10
+            );
+        } else {
+            // Resting tail behind body
+            const tailX = f === 1 ? sx - 2 : sx + def.width;
+            state.ctx.fillStyle = bodyCol;
+            state.ctx.fillRect(tailX + (f === 1 ? -2 : -6), sy + 58, 8, 4);
+            state.ctx.fillRect(tailX + (f === 1 ? -6 : -8), sy + 62, 6, 5);
+            state.ctx.fillRect(tailX + (f === 1 ? -10 : -8), sy + 67, 5, 6);
+            state.ctx.fillStyle = `rgba(255,230,80,${0.6 + Math.sin(t * 3) * 0.3})`;
+            state.ctx.fillRect(tailX + (f === 1 ? -13 : -8), sy + 73, 6, 6);
+        }
+
+        // ── ARMS (outstretched to sides) ──────────────────────────────
         state.ctx.fillStyle = bodyCol;
-        state.ctx.fillRect(sx + 8, sy + 14, 64, 50);
-        // Belly — cream/ivory
-        state.ctx.fillStyle = isHurt ? "#fff5cc" : "#fffff0";
-        state.ctx.fillRect(sx + 20, sy + 20, 40, 34);
-        // Divine markings — golden glyphs on body
+        // Left arm — stretched left
+        state.ctx.fillRect(sx - 14, sy + 32, 20, 8);  // upper arm
+        state.ctx.fillRect(sx - 22, sy + 34, 10, 6);  // forearm
         state.ctx.fillStyle = "#c8960c";
-        state.ctx.fillRect(sx + 14, sy + 16, 4, 44);
-        state.ctx.fillRect(sx + 62, sy + 16, 4, 44);
-        state.ctx.fillRect(sx + 34, sy + 14, 12, 6);
-        state.ctx.fillRect(sx + 34, sy + 52, 12, 6);
-
-        // Head (80×24 wide, 28 tall)
-        const hxG = f === 1 ? sx + 52 : sx + 0;
+        state.ctx.fillRect(sx - 26, sy + 32, 6, 10);  // hand/claw
+        // Right arm — stretched right
         state.ctx.fillStyle = bodyCol;
-        state.ctx.fillRect(hxG, sy - 4, 32, 28);
+        state.ctx.fillRect(sx + def.width - 6, sy + 32, 20, 8);
+        state.ctx.fillRect(sx + def.width + 12, sy + 34, 10, 6);
+        state.ctx.fillStyle = "#c8960c";
+        state.ctx.fillRect(sx + def.width + 20, sy + 32, 6, 10);
+
+        // ── BODY (upright torso) ──────────────────────────────────────
+        state.ctx.fillStyle = bodyCol;
+        state.ctx.fillRect(sx + 18, sy + 28, 44, 38);
+        // Belly
+        state.ctx.fillStyle = bellyCol;
+        state.ctx.fillRect(sx + 26, sy + 34, 28, 24);
+        // Divine stripe markings
+        state.ctx.fillStyle = "#c8960c";
+        state.ctx.fillRect(sx + 22, sy + 30, 3, 32);
+        state.ctx.fillRect(sx + 55, sy + 30, 3, 32);
+
+        // ── TWO LEGS ─────────────────────────────────────────────────
+        state.ctx.fillStyle = bodyCol;
+        state.ctx.fillRect(sx + 22, sy + 65, 14, 22);  // left leg
+        state.ctx.fillRect(sx + 44, sy + 65, 14, 22);  // right leg
+        // Feet / claws
+        state.ctx.fillStyle = "#c8960c";
+        state.ctx.fillRect(sx + 19, sy + 84, 20, 5);
+        state.ctx.fillRect(sx + 41, sy + 84, 20, 5);
+
+        // ── HEAD ─────────────────────────────────────────────────────
+        state.ctx.fillStyle = bodyCol;
+        state.ctx.fillRect(sx + 24, sy + 2, 32, 28);
         // White face
-        state.ctx.fillStyle = isHurt ? "#fff5cc" : "#fffff0";
-        state.ctx.fillRect(hxG + 3, sy - 1, 26, 22);
-        // Glowing divine eyes (bright gold with inner light)
+        state.ctx.fillStyle = bellyCol;
+        state.ctx.fillRect(sx + 27, sy + 5, 26, 22);
+        // Big ears
+        state.ctx.fillStyle = bodyCol;
+        state.ctx.fillRect(sx + 24, sy - 12, 10, 14);
+        state.ctx.fillRect(sx + 46, sy - 12, 10, 14);
+        state.ctx.fillStyle = "#ff9944";
+        state.ctx.fillRect(sx + 26, sy - 10, 6, 9);
+        state.ctx.fillRect(sx + 48, sy - 10, 6, 9);
+        // Glowing eyes
         state.ctx.fillStyle = "#ffee00";
-        state.ctx.fillRect(hxG + 5, sy + 3, 8, 8);
-        state.ctx.fillRect(hxG + 18, sy + 3, 8, 8);
+        state.ctx.fillRect(sx + 29, sy + 7, 8, 8);
+        state.ctx.fillRect(sx + 43, sy + 7, 8, 8);
         state.ctx.fillStyle = "#ffffff";
-        state.ctx.fillRect(hxG + 7, sy + 5, 4, 4);
-        state.ctx.fillRect(hxG + 20, sy + 5, 4, 4);
-        // Glowing pupils
+        state.ctx.fillRect(sx + 31, sy + 9, 4, 4);
+        state.ctx.fillRect(sx + 45, sy + 9, 4, 4);
         const pulseEye = Math.sin(t * 4) > 0 ? "#ffdd00" : "#ff8800";
         state.ctx.fillStyle = pulseEye;
-        state.ctx.fillRect(hxG + 8, sy + 6, 2, 2);
-        state.ctx.fillRect(hxG + 21, sy + 6, 2, 2);
+        state.ctx.fillRect(sx + 32, sy + 10, 2, 2);
+        state.ctx.fillRect(sx + 46, sy + 10, 2, 2);
         // Nose
         state.ctx.fillStyle = "#ff9944";
-        if (f === 1) state.ctx.fillRect(hxG + 26, sy + 13, 8, 5);
-        else         state.ctx.fillRect(hxG - 2, sy + 13, 8, 5);
-        // Mouth (serene / divine)
-        state.ctx.fillStyle = "#8b6c00";
-        const mxG = f === 1 ? hxG + 14 : hxG + 8;
-        state.ctx.fillRect(mxG, sy + 19, 10, 3);
-        // Big divine ears
-        state.ctx.fillStyle = bodyCol;
-        state.ctx.fillRect(hxG + 3, sy - 16, 10, 14);
-        state.ctx.fillRect(hxG + 18, sy - 16, 10, 14);
-        state.ctx.fillStyle = "#ff9944";
-        state.ctx.fillRect(hxG + 5, sy - 13, 6, 9);
-        state.ctx.fillRect(hxG + 20, sy - 13, 6, 9);
+        state.ctx.fillRect(sx + 36, sy + 19, 8, 5);
+        // Mouth — glows when laser charging/firing
+        const laserActive = mob.laserCharging || mob.laserFiring;
+        const mouthGlow = laserActive ? `rgba(255, 80, 0, ${0.8 + Math.sin(t * 12) * 0.2})` : "#8b6c00";
+        state.ctx.fillStyle = mouthGlow;
+        state.ctx.fillRect(sx + 33, sy + 23, 14, 4);
+        if (laserActive) {
+            // Charging glow around mouth
+            const chargeA = mob.laserCharging ? 0.3 + Math.sin(t * 10) * 0.2 : 0.6;
+            state.ctx.fillStyle = `rgba(255, 120, 0, ${chargeA})`;
+            state.ctx.fillRect(sx + 29, sy + 20, 22, 10);
+        }
 
-        // CROWN — three golden spikes
-        state.ctx.fillStyle = "#ffd700";
-        const crownX = hxG + 2;
-        const crownY = sy - 18;
-        state.ctx.fillRect(crownX, crownY + 6, 28, 6);       // crown band
-        state.ctx.fillRect(crownX + 2,  crownY, 6, 10);      // left spike
-        state.ctx.fillRect(crownX + 11, crownY - 4, 6, 14);  // center tall spike
-        state.ctx.fillRect(crownX + 20, crownY, 6, 10);      // right spike
-        // Jewels on crown
-        state.ctx.fillStyle = "#ff2244";
-        state.ctx.fillRect(crownX + 4,  crownY + 7, 2, 2);
-        state.ctx.fillStyle = "#00aaff";
-        state.ctx.fillRect(crownX + 13, crownY + 7, 2, 2);
-        state.ctx.fillStyle = "#44ff44";
-        state.ctx.fillRect(crownX + 22, crownY + 7, 2, 2);
+        // ── LASER BEAM ───────────────────────────────────────────────
+        if (mob.laserFiring) {
+            const mouthWorldX = mob.x + def.width / 2;
+            const mouthWorldY = mob.y + 24;
+            const msx = mouthWorldX - state.camera.x + state.screenShake.x;
+            const msy = mouthWorldY - state.camera.y + state.screenShake.y;
+            const tpx = state.player.x + state.player.width / 2 - state.camera.x + state.screenShake.x;
+            const tpy = state.player.y + state.player.height / 2 - state.camera.y + state.screenShake.y;
+            // Outer beam glow
+            state.ctx.save();
+            state.ctx.lineCap = "round";
+            state.ctx.strokeStyle = `rgba(255, 200, 0, 0.25)`;
+            state.ctx.lineWidth = 20;
+            state.ctx.beginPath(); state.ctx.moveTo(msx, msy); state.ctx.lineTo(tpx, tpy); state.ctx.stroke();
+            // Mid glow
+            state.ctx.strokeStyle = `rgba(255, 120, 0, 0.6)`;
+            state.ctx.lineWidth = 8;
+            state.ctx.beginPath(); state.ctx.moveTo(msx, msy); state.ctx.lineTo(tpx, tpy); state.ctx.stroke();
+            // Core beam
+            state.ctx.strokeStyle = "#ffffff";
+            state.ctx.lineWidth = 3;
+            state.ctx.beginPath(); state.ctx.moveTo(msx, msy); state.ctx.lineTo(tpx, tpy); state.ctx.stroke();
+            state.ctx.restore();
+        }
 
-        // Four massive legs
-        state.ctx.fillStyle = bodyCol;
-        state.ctx.fillRect(sx + 10,  sy + 64, 14, 22);
-        state.ctx.fillRect(sx + 30,  sy + 64, 14, 22);
-        state.ctx.fillRect(sx + 50,  sy + 64, 14, 22);
-        // Claws
-        state.ctx.fillStyle = "#c8960c";
-        state.ctx.fillRect(sx + 8,   sy + 84, 18, 5);
-        state.ctx.fillRect(sx + 28,  sy + 84, 18, 5);
-        state.ctx.fillRect(sx + 48,  sy + 84, 18, 5);
-
-        // Long elegant tail — golden with glowing tip
-        const tGodBase = f === 1 ? sx - 6 : sx + def.width + 6;
-        state.ctx.fillStyle = bodyCol;
-        state.ctx.fillRect(tGodBase + (f === 1 ? 0 : -10), sy + 26, 12, 5);
-        state.ctx.fillRect(tGodBase + (f === 1 ? -6 : -12), sy + 31, 10, 5);
-        state.ctx.fillRect(tGodBase + (f === 1 ? -12 : -14), sy + 36, 8, 6);
-        state.ctx.fillRect(tGodBase + (f === 1 ? -16 : -12), sy + 42, 6, 8);
-        // Glowing tail tip
-        state.ctx.fillStyle = `rgba(255, 230, 80, ${0.7 + Math.sin(t * 3) * 0.3})`;
-        state.ctx.fillRect(tGodBase + (f === 1 ? -18 : -10), sy + 46, 8, 8);
-
-        // Health bar (boss-tier)
+        // ── HEALTH BAR ───────────────────────────────────────────────
         const hpFracG = mob.health / def.maxHealth;
         state.ctx.fillStyle = "rgba(0,0,0,0.75)";
-        state.ctx.fillRect(sx - 6, sy - 32, def.width + 12, 10);
+        state.ctx.fillRect(sx - 6, sy - 36, def.width + 12, 10);
         state.ctx.fillStyle = hpFracG > 0.5 ? "#ffd700" : hpFracG > 0.25 ? "#ff8800" : "#ee2222";
-        state.ctx.fillRect(sx - 4, sy - 30, (def.width + 8) * hpFracG, 6);
-        // Name label
+        state.ctx.fillRect(sx - 4, sy - 34, (def.width + 8) * hpFracG, 6);
         state.ctx.save();
         state.ctx.font = "bold 9px monospace";
         state.ctx.fillStyle = "#ffd700";
         state.ctx.textAlign = "center";
-        state.ctx.fillText("THE POSSUM GOD", sx + def.width / 2, sy - 34);
+        state.ctx.fillText("THE POSSUM GOD", cx, sy - 38);
         state.ctx.restore();
     }
 

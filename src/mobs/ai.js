@@ -599,20 +599,96 @@ export function updateMobs(dt, dayBrightness) {
         }
 
         else if (mob.type === "possum_god") {
-            // The Possum God — relentless, super fast, does half player health per hit
-            mob.velX = dirToPlayer * def.speed;
-            mob.facing = dirToPlayer;
-            // Jump over obstacles
-            if (mob.onGround && isBlockSolid(Math.floor((mob.x + (dirToPlayer > 0 ? def.width : 0)) / BLOCK_SIZE), Math.floor((mob.y + def.height / 2) / BLOCK_SIZE))) {
-                mob.velY = -10;
-            }
-            if (dist < def.attackRange && mob.attackCooldown <= 0) {
-                const godDmg = Math.floor(state.player.maxHealth / 2);
-                hurtPlayer(godDmg, mob.x + def.width / 2);
-                mob.attackCooldown = 350;
-                createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 16, "#ffd700", 8);
-                createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 8, "#ffffff", 5);
-                addFloatingText(state.player.x + state.player.width / 2, state.player.y - 24, `-${godDmg} DIVINE WRATH`, "#ffd700");
+            // Cooldown timers
+            mob.wrapCooldown      = (mob.wrapCooldown      || 0) - dt;
+            mob.laserCooldown     = (mob.laserCooldown     || 0) - dt;
+            mob.laserChargeTimer  = (mob.laserChargeTimer  || 0) - dt;
+            mob.laserFireTimer    = (mob.laserFireTimer    || 0) - dt;
+            mob.laserDamageTimer  = (mob.laserDamageTimer  || 0) - dt;
+
+            // ── TAIL WRAP PHASE ──────────────────────────────────────
+            if (mob.wrapping) {
+                // Hover near player while wrapping
+                mob.velX = dirToPlayer * def.speed * 0.3;
+                mob.wrapTimer    = (mob.wrapTimer    || 0) - dt;
+                mob.squeezeTimer = (mob.squeezeTimer || 0) - dt;
+                mob.biteTimer    = (mob.biteTimer    || 0) - dt;
+
+                // Squeeze damage every 300ms
+                if (mob.squeezeTimer <= 0) {
+                    hurtPlayer(3, mob.x + def.width / 2);
+                    mob.squeezeTimer = 300;
+                    createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 5, "#ffd700", 4);
+                }
+                // Bite during wrap — 1/3 player max health every 1200ms
+                if (mob.biteTimer <= 0) {
+                    const biteDmg = Math.floor(state.player.maxHealth / 3);
+                    hurtPlayer(biteDmg, mob.x + def.width / 2);
+                    mob.biteTimer = 1200;
+                    addFloatingText(state.player.x + state.player.width / 2, state.player.y - 20, `-${biteDmg} DIVINE BITE!`, "#ffd700");
+                    createParticles(state.player.x + state.player.width / 2, state.player.y, 10, "#ffaa00", 6);
+                }
+                if (mob.wrapTimer <= 0) {
+                    mob.wrapping = false;
+                    mob.wrapCooldown = 5000;
+                }
+            // ── LASER PHASE ─────────────────────────────────────────
+            } else if (mob.laserCharging) {
+                mob.velX = 0; // stand still while charging
+                if (mob.laserChargeTimer <= 0) {
+                    mob.laserCharging = false;
+                    mob.laserFiring   = true;
+                    mob.laserFireTimer = 900;
+                    mob.laserDamageTimer = 0;
+                }
+            } else if (mob.laserFiring) {
+                mob.velX = 0;
+                // Deal laser damage every 200ms while firing
+                if (mob.laserDamageTimer <= 0) {
+                    const laserDmg = Math.floor(state.player.maxHealth / 5);
+                    hurtPlayer(laserDmg, mob.x + def.width / 2);
+                    mob.laserDamageTimer = 200;
+                    createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 6, "#ff8800", 5);
+                }
+                if (mob.laserFireTimer <= 0) {
+                    mob.laserFiring  = false;
+                    mob.laserCooldown = 6000;
+                }
+            // ── NORMAL PURSUIT ──────────────────────────────────────
+            } else {
+                mob.velX   = dirToPlayer * def.speed;
+                mob.facing = dirToPlayer;
+                if (mob.onGround && isBlockSolid(
+                    Math.floor((mob.x + (dirToPlayer > 0 ? def.width : 0)) / BLOCK_SIZE),
+                    Math.floor((mob.y + def.height / 2) / BLOCK_SIZE)
+                )) { mob.velY = -10; }
+
+                // Initiate tail wrap
+                if (dist < 90 && mob.wrapCooldown <= 0) {
+                    mob.wrapping     = true;
+                    mob.wrapTimer    = 5500;
+                    mob.squeezeTimer = 300;
+                    mob.biteTimer    = 700;
+                    mob.wrapCooldown = 6000;
+                    addFloatingText(mob.x + def.width / 2, mob.y - 30, "DIVINE TAIL WRAP!", "#ffd700");
+                    createParticles(mob.x + def.width / 2, mob.y + def.height / 2, 16, "#ffd700", 7);
+                }
+                // Initiate laser when mid-range
+                else if (dist > 100 && dist < 500 && mob.laserCooldown <= 0) {
+                    mob.laserCharging  = true;
+                    mob.laserChargeTimer = 1400;
+                    mob.laserCooldown  = 8000;
+                    addFloatingText(mob.x + def.width / 2, mob.y - 30, "LASER MOUTH CHARGING...", "#ff8800");
+                }
+                // Melee divine wrath when very close
+                else if (dist < def.attackRange && mob.attackCooldown <= 0) {
+                    const godDmg = Math.floor(state.player.maxHealth / 2);
+                    hurtPlayer(godDmg, mob.x + def.width / 2);
+                    mob.attackCooldown = 350;
+                    createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 16, "#ffd700", 8);
+                    createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 8, "#ffffff", 5);
+                    addFloatingText(state.player.x + state.player.width / 2, state.player.y - 24, `-${godDmg} DIVINE WRATH`, "#ffd700");
+                }
             }
         }
 
