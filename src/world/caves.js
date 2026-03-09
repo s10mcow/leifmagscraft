@@ -147,11 +147,11 @@ export function placeOres(seed) {
             const mult = nearCave ? 2 : 1;
             const rand = Math.random();
 
-            if (depth > 5 && rand < 0.006 * mult) state.world[x][y] = BLOCKS.COAL;
-            else if (depth > 5 && Math.random() < 0.01 * mult) state.world[x][y] = BLOCKS.COPPER;
-            else if (depth > 10 && Math.random() < 0.011 * mult) state.world[x][y] = BLOCKS.IRON;
-            else if (depth > 10 && Math.random() < 0.003 * mult) state.world[x][y] = BLOCKS.EMERALD;
-            else if (depth > 20 && Math.random() < 0.008 * mult) {
+            if (depth > 5 && rand < 0.002 * mult) state.world[x][y] = BLOCKS.COAL;
+            else if (depth > 5 && Math.random() < 0.003 * mult) state.world[x][y] = BLOCKS.COPPER;
+            else if (depth > 10 && Math.random() < 0.003 * mult) state.world[x][y] = BLOCKS.IRON;
+            else if (depth > 10 && Math.random() < 0.0008 * mult) state.world[x][y] = BLOCKS.EMERALD;
+            else if (depth > 20 && Math.random() < 0.0015 * mult) {
                 // Gold — place as a small clump (seed the neighbour cells too)
                 state.world[x][y] = BLOCKS.GOLD;
                 for (const [ox, oy] of [[-1,0],[1,0],[0,-1],[0,1]]) {
@@ -160,7 +160,7 @@ export function placeOres(seed) {
                         state.world[nx][ny] = BLOCKS.GOLD;
                     }
                 }
-            } else if (depth > 40 && Math.random() < 0.0035 * mult) state.world[x][y] = BLOCKS.DIAMOND;
+            } else if (depth > 40 && Math.random() < 0.001 * mult) state.world[x][y] = BLOCKS.DIAMOND;
             else if (depth > 30 && Math.random() < 0.008 * mult) {
                 // Obsidian clump — about as rare as gold, spawns in groups of ~3
                 state.world[x][y] = BLOCKS.OBSIDIAN;
