@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh auth:*)",
+      "Bash(winget install:*)",
+      "Bash(/c/Users/user1/AppData/Local/Microsoft/WinGet/Packages/GitHub.cli_Microsoft.Winget.Source_8wekyb3d8bbwe/tools/gh.exe auth:*)",
+      "Bash(wc:*)",
+      "Bash(grep:*)",
+      "Bash(npm run:*)",
+      "Bash(node:*)",
+      "Bash(do node:*)"
+    ]
+  }
+}

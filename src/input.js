@@ -7,7 +7,7 @@
 // ============================================================
 
 import { state } from './state.js';
-import { BLOCKS, ITEMS, UI, RECIPES, TRADES, SMELTING_RECIPES, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, ITEM_INFO, isBlockId, getItemName } from './constants.js';
+import { BLOCKS, ITEMS, UI, RECIPES, TRADES, SMELTING_RECIPES, FURNACE_RECIPES, FUEL_VALUES, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, ITEM_INFO, isBlockId, getItemName } from './constants.js';
 import { HOTBAR_SIZE, BACKPACK_SIZE, TOTAL_SLOTS, clickInventorySlot, rightClickInventorySlot, returnCursorItem, clickArmorSlot, clickOffhandSlot, countItem, addFloatingText, craft, addToInventory, removeItems } from './inventory.js';
 import { playSelect } from './audio.js';
 import { createParticles, createMob } from './mobs.js';
@@ -346,6 +346,9 @@ export function setupInput() {
                 } else if (state.blastFurnaceOpen) {
                     state.blastFurnaceOpen = false;
                     state.blastFurnacePos = null;
+                } else if (state.furnaceOpen) {
+                    state.furnaceOpen = false;
+                    state.furnacePos = null;
                 } else if (state.tradingOpen) {
                     state.tradingOpen = false;
                     state.tradingVillager = null;
@@ -396,6 +399,9 @@ export function setupInput() {
             } else if (state.blastFurnaceOpen) {
                 state.blastFurnaceOpen = false;
                 state.blastFurnacePos = null;
+            } else if (state.furnaceOpen) {
+                state.furnaceOpen = false;
+                state.furnacePos = null;
             } else if (state.tradingOpen) {
                 state.tradingOpen = false;
                 state.tradingVillager = null;
@@ -774,6 +780,56 @@ export function setupInput() {
             const activeTrades = (state.tradingVillager && state.tradingVillager.tradeList) || TRADES;
             if (state.tradingHover >= 0 && state.tradingHover < activeTrades.length) {
                 fn.executeTrade(activeTrades[state.tradingHover]);
+            }
+            return;
+        }
+        if (state.furnaceOpen && state.furnacePos) {
+            const key = `${state.furnacePos.x},${state.furnacePos.y}`;
+            const f = state.furnaceData[key];
+            const rects = state.furnaceSlotRects;
+            if (f && rects) {
+                const { x: mx, y: my } = scaledMouse(460, 340);
+                const hotSlot = state.inventory.slots[state.inventory.selectedSlot];
+                // Output slot — take items into inventory
+                if (mx >= rects.outputX && mx <= rects.outputX + rects.slotSize &&
+                    my >= rects.outputY && my <= rects.outputY + rects.slotSize) {
+                    if (f.outputSlot.itemId !== 0) {
+                        addToInventory(f.outputSlot.itemId, f.outputSlot.count);
+                        f.outputSlot.itemId = 0; f.outputSlot.count = 0;
+                    }
+                }
+                // Input slot — put ore in or take out
+                else if (mx >= rects.inputX && mx <= rects.inputX + rects.slotSize &&
+                    my >= rects.inputY && my <= rects.inputY + rects.slotSize) {
+                    if (hotSlot.count > 0 && FURNACE_RECIPES.find(r => r.input === hotSlot.itemId)) {
+                        if (f.inputSlot.itemId === 0 || f.inputSlot.itemId === hotSlot.itemId) {
+                            const move = Math.min(hotSlot.count, 64 - f.inputSlot.count);
+                            f.inputSlot.itemId = hotSlot.itemId;
+                            f.inputSlot.count += move;
+                            hotSlot.count -= move;
+                            if (hotSlot.count === 0) hotSlot.itemId = 0;
+                        }
+                    } else if (hotSlot.count === 0 && f.inputSlot.itemId !== 0) {
+                        addToInventory(f.inputSlot.itemId, f.inputSlot.count);
+                        f.inputSlot.itemId = 0; f.inputSlot.count = 0;
+                    }
+                }
+                // Fuel slot — put coal in or take out
+                else if (mx >= rects.fuelX && mx <= rects.fuelX + rects.slotSize &&
+                    my >= rects.fuelY && my <= rects.fuelY + rects.slotSize) {
+                    if (hotSlot.count > 0 && FUEL_VALUES[hotSlot.itemId] !== undefined) {
+                        if (f.fuelSlot.itemId === 0 || f.fuelSlot.itemId === hotSlot.itemId) {
+                            const move = Math.min(hotSlot.count, 64 - f.fuelSlot.count);
+                            f.fuelSlot.itemId = hotSlot.itemId;
+                            f.fuelSlot.count += move;
+                            hotSlot.count -= move;
+                            if (hotSlot.count === 0) hotSlot.itemId = 0;
+                        }
+                    } else if (hotSlot.count === 0 && f.fuelSlot.itemId !== 0) {
+                        addToInventory(f.fuelSlot.itemId, f.fuelSlot.count);
+                        f.fuelSlot.itemId = 0; f.fuelSlot.count = 0;
+                    }
+                }
             }
             return;
         }

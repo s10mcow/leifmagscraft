@@ -20,6 +20,8 @@ export const BLOCKS = {
   BLAST_FURNACE: 49, RAW_STEEL_ORE: 50, TITANIUM_ORE: 51, URANIUM_ORE: 52,
   // Possum Realm / Candy Land
   CANDY_GROUND: 53, LOLLIPOP_TOP: 54, CANDY_CANE: 55,
+  // Overworld furnace
+  FURNACE: 56,
 };
 
 // --- ITEM IDs (100+) ---
@@ -64,6 +66,8 @@ export const ITEMS = {
   POSSUM_TOOTH: 170,
   POSSUM_TAIL: 171,
   TOOTH_ROPE: 172,
+  // Overworld ingots (smelted in furnace)
+  IRON_INGOT: 173, COPPER_INGOT: 174, GOLD_INGOT: 175,
 };
 
 // --- WORLD SETTINGS ---
@@ -209,6 +213,8 @@ export const BLOCK_INFO = {
   [BLOCKS.CANDY_GROUND]:  { name: "Candy Ground",  color: "#f9a8d4", topColor: "#fce7f3", breakable: true, mineTime: 200, toolType: "shovel", minTier: 0, drops: BLOCKS.CANDY_GROUND },
   [BLOCKS.LOLLIPOP_TOP]:  { name: "Lollipop Top",  color: "#f472b6", breakable: true, mineTime: 100, toolType: null, minTier: 0, drops: null },
   [BLOCKS.CANDY_CANE]:    { name: "Candy Cane",    color: "#ef4444", breakable: true, mineTime: 350, toolType: "axe", minTier: 0, drops: BLOCKS.CANDY_CANE },
+  // Overworld furnace
+  [BLOCKS.FURNACE]: { name: "Furnace", color: "#5a5050", breakable: true, mineTime: 900, toolType: "pickaxe", minTier: 1, drops: BLOCKS.FURNACE },
 };
 
 // --- ITEM PROPERTIES ---
@@ -290,6 +296,10 @@ export const ITEM_INFO = {
   [ITEMS.POSSUM_TOOTH]: { name: "Possum's Tooth", stackable: true, maxStack: 16, color: "#fffff0" },
   [ITEMS.POSSUM_TAIL]: { name: "Possum's Tail", stackable: true, maxStack: 16, color: "#ccbbaa" },
   [ITEMS.TOOTH_ROPE]:  { name: "Tooth Rope",    stackable: true, maxStack: 8,  color: "#c4a040", toolType: "thrown", damage: 40 },
+  // Overworld ingots
+  [ITEMS.IRON_INGOT]:   { name: "Iron Ingot",   stackable: true, maxStack: 64, color: "#d4d4d4" },
+  [ITEMS.COPPER_INGOT]: { name: "Copper Ingot", stackable: true, maxStack: 64, color: "#e07040" },
+  [ITEMS.GOLD_INGOT]:   { name: "Gold Ingot",   stackable: true, maxStack: 64, color: "#ffd700" },
 };
 
 // --- MOB DEFINITIONS ---
@@ -328,25 +338,25 @@ export const RECIPES = [
   { result: ITEMS.STONE_PICKAXE, resultCount: 1, ingredients: [{ id: BLOCKS.COBBLESTONE, count: 3 }, { id: ITEMS.STICK, count: 2 }] },
   { result: ITEMS.STONE_SWORD, resultCount: 1, ingredients: [{ id: BLOCKS.COBBLESTONE, count: 2 }, { id: ITEMS.STICK, count: 1 }] },
   { result: ITEMS.STONE_AXE, resultCount: 1, ingredients: [{ id: BLOCKS.COBBLESTONE, count: 3 }, { id: ITEMS.STICK, count: 2 }] },
-  { result: ITEMS.IRON_PICKAXE, resultCount: 1, ingredients: [{ id: BLOCKS.IRON, count: 3 }, { id: ITEMS.STICK, count: 2 }] },
-  { result: ITEMS.IRON_SWORD, resultCount: 1, ingredients: [{ id: BLOCKS.IRON, count: 2 }, { id: ITEMS.STICK, count: 1 }] },
-  { result: ITEMS.IRON_AXE, resultCount: 1, ingredients: [{ id: BLOCKS.IRON, count: 3 }, { id: ITEMS.STICK, count: 2 }] },
-  { result: ITEMS.GOLD_PICKAXE, resultCount: 1, ingredients: [{ id: BLOCKS.GOLD, count: 3 }, { id: ITEMS.STICK, count: 2 }] },
-  { result: ITEMS.GOLD_SWORD, resultCount: 1, ingredients: [{ id: BLOCKS.GOLD, count: 2 }, { id: ITEMS.STICK, count: 1 }] },
-  { result: ITEMS.GOLD_AXE, resultCount: 1, ingredients: [{ id: BLOCKS.GOLD, count: 3 }, { id: ITEMS.STICK, count: 2 }] },
+  { result: ITEMS.IRON_PICKAXE, resultCount: 1, ingredients: [{ id: ITEMS.IRON_INGOT, count: 3 }, { id: ITEMS.STICK, count: 2 }] },
+  { result: ITEMS.IRON_SWORD, resultCount: 1, ingredients: [{ id: ITEMS.IRON_INGOT, count: 2 }, { id: ITEMS.STICK, count: 1 }] },
+  { result: ITEMS.IRON_AXE, resultCount: 1, ingredients: [{ id: ITEMS.IRON_INGOT, count: 3 }, { id: ITEMS.STICK, count: 2 }] },
+  { result: ITEMS.GOLD_PICKAXE, resultCount: 1, ingredients: [{ id: ITEMS.GOLD_INGOT, count: 3 }, { id: ITEMS.STICK, count: 2 }] },
+  { result: ITEMS.GOLD_SWORD, resultCount: 1, ingredients: [{ id: ITEMS.GOLD_INGOT, count: 2 }, { id: ITEMS.STICK, count: 1 }] },
+  { result: ITEMS.GOLD_AXE, resultCount: 1, ingredients: [{ id: ITEMS.GOLD_INGOT, count: 3 }, { id: ITEMS.STICK, count: 2 }] },
   { result: ITEMS.DIAMOND_PICKAXE, resultCount: 1, ingredients: [{ id: BLOCKS.DIAMOND, count: 3 }, { id: ITEMS.STICK, count: 2 }] },
   { result: ITEMS.DIAMOND_SWORD, resultCount: 1, ingredients: [{ id: BLOCKS.DIAMOND, count: 2 }, { id: ITEMS.STICK, count: 1 }] },
   { result: ITEMS.DIAMOND_AXE, resultCount: 1, ingredients: [{ id: BLOCKS.DIAMOND, count: 3 }, { id: ITEMS.STICK, count: 2 }] },
   { result: BLOCKS.TORCH, resultCount: 4, ingredients: [{ id: ITEMS.STICK, count: 1 }, { id: BLOCKS.COAL, count: 1 }] },
   { result: BLOCKS.BED, resultCount: 1, ingredients: [{ id: BLOCKS.PLANKS, count: 3 }, { id: ITEMS.WOOL, count: 3 }] },
-  { result: ITEMS.IRON_HELMET, resultCount: 1, ingredients: [{ id: BLOCKS.IRON, count: 5 }] },
-  { result: ITEMS.IRON_CHESTPLATE, resultCount: 1, ingredients: [{ id: BLOCKS.IRON, count: 8 }] },
-  { result: ITEMS.IRON_LEGGINGS, resultCount: 1, ingredients: [{ id: BLOCKS.IRON, count: 7 }] },
-  { result: ITEMS.IRON_BOOTS, resultCount: 1, ingredients: [{ id: BLOCKS.IRON, count: 4 }] },
-  { result: ITEMS.GOLD_HELMET, resultCount: 1, ingredients: [{ id: BLOCKS.GOLD, count: 5 }] },
-  { result: ITEMS.GOLD_CHESTPLATE, resultCount: 1, ingredients: [{ id: BLOCKS.GOLD, count: 8 }] },
-  { result: ITEMS.GOLD_LEGGINGS, resultCount: 1, ingredients: [{ id: BLOCKS.GOLD, count: 7 }] },
-  { result: ITEMS.GOLD_BOOTS, resultCount: 1, ingredients: [{ id: BLOCKS.GOLD, count: 4 }] },
+  { result: ITEMS.IRON_HELMET, resultCount: 1, ingredients: [{ id: ITEMS.IRON_INGOT, count: 5 }] },
+  { result: ITEMS.IRON_CHESTPLATE, resultCount: 1, ingredients: [{ id: ITEMS.IRON_INGOT, count: 8 }] },
+  { result: ITEMS.IRON_LEGGINGS, resultCount: 1, ingredients: [{ id: ITEMS.IRON_INGOT, count: 7 }] },
+  { result: ITEMS.IRON_BOOTS, resultCount: 1, ingredients: [{ id: ITEMS.IRON_INGOT, count: 4 }] },
+  { result: ITEMS.GOLD_HELMET, resultCount: 1, ingredients: [{ id: ITEMS.GOLD_INGOT, count: 5 }] },
+  { result: ITEMS.GOLD_CHESTPLATE, resultCount: 1, ingredients: [{ id: ITEMS.GOLD_INGOT, count: 8 }] },
+  { result: ITEMS.GOLD_LEGGINGS, resultCount: 1, ingredients: [{ id: ITEMS.GOLD_INGOT, count: 7 }] },
+  { result: ITEMS.GOLD_BOOTS, resultCount: 1, ingredients: [{ id: ITEMS.GOLD_INGOT, count: 4 }] },
   { result: ITEMS.DIAMOND_HELMET, resultCount: 1, ingredients: [{ id: BLOCKS.DIAMOND, count: 5 }] },
   { result: ITEMS.DIAMOND_CHESTPLATE, resultCount: 1, ingredients: [{ id: BLOCKS.DIAMOND, count: 8 }] },
   { result: ITEMS.DIAMOND_LEGGINGS, resultCount: 1, ingredients: [{ id: BLOCKS.DIAMOND, count: 7 }] },
@@ -358,30 +368,32 @@ export const RECIPES = [
   { result: BLOCKS.CHEST, resultCount: 1, ingredients: [{ id: BLOCKS.PLANKS, count: 4 }] },
   { result: BLOCKS.DOOR_CLOSED, resultCount: 1, ingredients: [{ id: BLOCKS.PLANKS, count: 6 }] },
   { result: BLOCKS.PRESSURE_PLATE, resultCount: 1, ingredients: [{ id: BLOCKS.COBBLESTONE, count: 2 }] },
-  { result: ITEMS.FLINT_AND_STEEL, resultCount: 1, ingredients: [{ id: ITEMS.FLINT, count: 1 }, { id: BLOCKS.IRON, count: 1 }] },
-  { result: ITEMS.PISTOL, resultCount: 1, ingredients: [{ id: BLOCKS.IRON, count: 2 }, { id: BLOCKS.COPPER, count: 1 }, { id: ITEMS.GUNPOWDER, count: 1 }] },
-  { result: ITEMS.AK47, resultCount: 1, resultDurability: 80,   ingredients: [{ id: BLOCKS.IRON, count: 4 }, { id: BLOCKS.COPPER, count: 2 }, { id: ITEMS.GUNPOWDER, count: 1 }] },
-  { result: ITEMS.AK47, resultCount: 1, resultDurability: 2000, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 4 }, { id: BLOCKS.COPPER, count: 2 }, { id: ITEMS.GUNPOWDER, count: 1 }] },
-  { result: ITEMS.BULLETS, resultCount: 24, ingredients: [{ id: BLOCKS.IRON, count: 1 }, { id: BLOCKS.COPPER, count: 1 }, { id: ITEMS.GUNPOWDER, count: 1 }] },
-  { result: ITEMS.ROCKET_LAUNCHER, resultCount: 1, resultDurability: 30,  ingredients: [{ id: BLOCKS.IRON,        count: 2 }, { id: BLOCKS.COPPER, count: 2 }, { id: ITEMS.GUNPOWDER, count: 2 }] },
-  { result: ITEMS.ROCKET_LAUNCHER, resultCount: 1, resultDurability: 800, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 2 }, { id: BLOCKS.COPPER, count: 2 }, { id: ITEMS.GUNPOWDER, count: 2 }] },
-  { result: ITEMS.FUEL_CANISTER,   resultCount: 1, ingredients: [{ id: BLOCKS.IRON, count: 1 }, { id: ITEMS.TOXIC_BUCKET, count: 1 }] },
+  { result: ITEMS.FLINT_AND_STEEL, resultCount: 1, ingredients: [{ id: ITEMS.FLINT, count: 1 }, { id: ITEMS.IRON_INGOT, count: 1 }] },
+  { result: ITEMS.PISTOL, resultCount: 1, ingredients: [{ id: ITEMS.IRON_INGOT, count: 2 }, { id: ITEMS.COPPER_INGOT, count: 1 }, { id: ITEMS.GUNPOWDER, count: 1 }] },
+  { result: ITEMS.AK47, resultCount: 1, resultDurability: 80,   ingredients: [{ id: ITEMS.IRON_INGOT, count: 4 }, { id: ITEMS.COPPER_INGOT, count: 2 }, { id: ITEMS.GUNPOWDER, count: 1 }] },
+  { result: ITEMS.AK47, resultCount: 1, resultDurability: 2000, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 4 }, { id: ITEMS.COPPER_INGOT, count: 2 }, { id: ITEMS.GUNPOWDER, count: 1 }] },
+  { result: ITEMS.BULLETS, resultCount: 24, ingredients: [{ id: ITEMS.IRON_INGOT, count: 1 }, { id: ITEMS.COPPER_INGOT, count: 1 }, { id: ITEMS.GUNPOWDER, count: 1 }] },
+  { result: ITEMS.ROCKET_LAUNCHER, resultCount: 1, resultDurability: 30,  ingredients: [{ id: ITEMS.IRON_INGOT,   count: 2 }, { id: ITEMS.COPPER_INGOT, count: 2 }, { id: ITEMS.GUNPOWDER, count: 2 }] },
+  { result: ITEMS.ROCKET_LAUNCHER, resultCount: 1, resultDurability: 800, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 2 }, { id: ITEMS.COPPER_INGOT, count: 2 }, { id: ITEMS.GUNPOWDER, count: 2 }] },
+  { result: ITEMS.FUEL_CANISTER,   resultCount: 1, ingredients: [{ id: ITEMS.IRON_INGOT, count: 1 }, { id: ITEMS.TOXIC_BUCKET, count: 1 }] },
   { result: ITEMS.FLAMETHROWER,    resultCount: 1, ingredients: [{ id: ITEMS.GUNPOWDER, count: 1 }, { id: ITEMS.STEEL_INGOT, count: 4 }, { id: ITEMS.TITANIUM_INGOT, count: 2 }, { id: ITEMS.FUEL_CANISTER, count: 1 }] },
-  { result: ITEMS.ROCKET, resultCount: 4, ingredients: [{ id: BLOCKS.IRON, count: 1 }, { id: ITEMS.GUNPOWDER, count: 1 }] },
+  { result: ITEMS.ROCKET, resultCount: 4, ingredients: [{ id: ITEMS.IRON_INGOT, count: 1 }, { id: ITEMS.GUNPOWDER, count: 1 }] },
   { result: ITEMS.MINIATURE_NETHER_PORTAL, resultCount: 1, ingredients: [{ id: BLOCKS.OBSIDIAN, count: 4 }, { id: ITEMS.FLINT_AND_STEEL, count: 1 }] },
   { result: ITEMS.WASTELAND_TELEPORTER, resultCount: 1, ingredients: [{ id: BLOCKS.COBBLESTONE, count: 24 }, { id: BLOCKS.OBSIDIAN, count: 4 }] },
   { result: ITEMS.POSSUM_TELEPORTER, resultCount: 1, ingredients: [{ id: ITEMS.RAW_PORKCHOP, count: 10 }, { id: ITEMS.STEAK, count: 10 }, { id: BLOCKS.GLOWSTONE, count: 5 }] },
   { result: ITEMS.TOOTH_ROPE, resultCount: 1, ingredients: [{ id: ITEMS.POSSUM_TOOTH, count: 1 }, { id: ITEMS.POSSUM_TAIL, count: 1 }] },
-  { result: ITEMS.SHIELD, resultCount: 1, ingredients: [{ id: BLOCKS.PLANKS, count: 6 }, { id: BLOCKS.IRON, count: 1 }] },
+  { result: ITEMS.SHIELD, resultCount: 1, ingredients: [{ id: BLOCKS.PLANKS, count: 6 }, { id: ITEMS.IRON_INGOT, count: 1 }] },
+  // Furnace
+  { result: BLOCKS.FURNACE, resultCount: 1, ingredients: [{ id: BLOCKS.COBBLESTONE, count: 8 }] },
   // Blast furnace
-  { result: BLOCKS.BLAST_FURNACE, resultCount: 1, ingredients: [{ id: BLOCKS.IRON, count: 5 }, { id: BLOCKS.COBBLESTONE, count: 8 }] },
+  { result: BLOCKS.BLAST_FURNACE, resultCount: 1, ingredients: [{ id: ITEMS.IRON_INGOT, count: 5 }, { id: BLOCKS.COBBLESTONE, count: 8 }] },
   // Riot armor (steel ingots)
   { result: ITEMS.RIOT_HELMET,     resultCount: 1, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 5 }] },
   { result: ITEMS.RIOT_CHESTPLATE, resultCount: 1, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 8 }] },
   { result: ITEMS.RIOT_LEGGINGS,   resultCount: 1, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 7 }] },
   { result: ITEMS.RIOT_BOOTS,      resultCount: 1, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 4 }] },
   // Bucket
-  { result: ITEMS.BUCKET, resultCount: 1, ingredients: [{ id: BLOCKS.IRON, count: 3 }] },
+  { result: ITEMS.BUCKET, resultCount: 1, ingredients: [{ id: ITEMS.IRON_INGOT, count: 3 }] },
 ];
 
 // --- SMELTING RECIPES (blast furnace) ---
@@ -389,6 +401,18 @@ export const SMELTING_RECIPES = [
   { input: BLOCKS.RAW_STEEL_ORE, output: ITEMS.STEEL_INGOT,    outputCount: 1 },
   { input: BLOCKS.TITANIUM_ORE,  output: ITEMS.TITANIUM_INGOT, outputCount: 1 },
 ];
+
+// --- FURNACE RECIPES (overworld furnace) ---
+export const FURNACE_RECIPES = [
+  { input: BLOCKS.IRON,   output: ITEMS.IRON_INGOT,   smeltTime: 3000 },
+  { input: BLOCKS.COPPER, output: ITEMS.COPPER_INGOT, smeltTime: 3000 },
+  { input: BLOCKS.GOLD,   output: ITEMS.GOLD_INGOT,   smeltTime: 5000 },
+];
+
+// Fuel values in ms (how long one item burns)
+export const FUEL_VALUES = {
+  [BLOCKS.COAL]: 24000, // 8 smelt-cycles worth of fuel
+};
 
 // --- VILLAGER TRADES ---
 export const TRADES = [

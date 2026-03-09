@@ -33,6 +33,10 @@ export const state = {
     blastFurnaceOpen: false,
     blastFurnacePos: null,
     blastFurnaceHover: -1,
+    furnaceOpen: false,
+    furnacePos: null,
+    furnaceData: {},        // keyed "x,y" → { inputSlot, fuelSlot, outputSlot, progress, fuelLeft, maxFuel }
+    furnaceSlotRects: null, // set by drawFurnaceMenu for click detection
     chestOpen: false,
     chestPos: null,
     chestHover: -1,

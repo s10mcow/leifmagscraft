@@ -359,6 +359,28 @@ export function drawBlock(blockType, screenX, screenY) {
         return;
     }
     // Blast Furnace — iron frame + orange glow interior
+    if (blockType === BLOCKS.FURNACE) {
+        // Stone body
+        state.ctx.fillStyle = "#5a5050";
+        state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
+        // Brick lines
+        state.ctx.fillStyle = "#443535";
+        state.ctx.fillRect(screenX, screenY + 10, BLOCK_SIZE, 2);
+        state.ctx.fillRect(screenX, screenY + 22, BLOCK_SIZE, 2);
+        // Furnace mouth — glows when active
+        const key = state.furnacePos ? `${state.furnacePos.x},${state.furnacePos.y}` : null;
+        const fData = key ? state.furnaceData[key] : null;
+        const active = fData && fData.fuelLeft > 0;
+        const t3 = performance.now() * 0.004;
+        const glow2 = active ? 0.5 + Math.sin(t3) * 0.25 : 0.15;
+        state.ctx.fillStyle = active ? `rgba(255,120,0,${glow2})` : `rgba(60,40,30,${glow2})`;
+        state.ctx.fillRect(screenX + 8, screenY + 12, 16, 10);
+        // Door frame
+        state.ctx.fillStyle = "#333";
+        state.ctx.fillRect(screenX + 6, screenY + 10, 20, 14);
+        state.ctx.fillStyle = active ? `rgba(255,120,0,${glow2})` : "rgba(40,30,20,0.8)";
+        state.ctx.fillRect(screenX + 8, screenY + 12, 16, 10);
+    }
     if (blockType === BLOCKS.BLAST_FURNACE) {
         state.ctx.fillStyle = "#3a3a3a";
         state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);

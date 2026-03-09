@@ -7,7 +7,7 @@
 // ============================================================
 
 import { state } from '../state.js';
-import { BLOCKS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, MOB_DEFS, getItemName } from '../constants.js';
+import { BLOCKS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, MOB_DEFS, getItemName, FURNACE_RECIPES, FUEL_VALUES } from '../constants.js';
 import { addFloatingText, countItem, addToInventory } from '../inventory.js';
 import { findSurfaceY, generateNetherWorld, generateWastelandWorld, generatePossumWorld, switchDimension } from '../world.js';
 import { playCraft } from '../audio.js';
@@ -230,4 +230,48 @@ export function teleportToPossum() {
     state.player.velX = 0;
     state.player.velY = 0;
     addFloatingText(state.player.x, state.player.y - 30, "Welcome to Possum Realm! :D", "#ff88cc");
+}
+
+// ============================================================
+// FURNACE UPDATE - runs each frame for all active furnaces
+// ============================================================
+export function updateFurnaces(dt) {
+    for (const key of Object.keys(state.furnaceData)) {
+        const f = state.furnaceData[key];
+
+        // Find if input is a smeltable ore
+        const recipe = FURNACE_RECIPES.find(r => r.input === f.inputSlot.itemId);
+        if (!recipe || f.inputSlot.count === 0) { f.progress = 0; continue; }
+
+        // Check if output slot can accept the result
+        const outputFull = f.outputSlot.itemId !== 0 &&
+            (f.outputSlot.itemId !== recipe.output || f.outputSlot.count >= 64);
+        if (outputFull) continue;
+
+        // Try to ignite fuel if not burning
+        if (f.fuelLeft <= 0) {
+            const fuelVal = FUEL_VALUES[f.fuelSlot.itemId];
+            if (!fuelVal || f.fuelSlot.count === 0) { f.progress = 0; continue; }
+            f.fuelLeft = fuelVal;
+            f.maxFuel  = fuelVal;
+            f.fuelSlot.count--;
+            if (f.fuelSlot.count === 0) f.fuelSlot.itemId = 0;
+        }
+
+        // Burn
+        f.fuelLeft -= dt;
+        f.progress += dt;
+
+        if (f.progress >= recipe.smeltTime) {
+            f.progress = 0;
+            f.inputSlot.count--;
+            if (f.inputSlot.count === 0) f.inputSlot.itemId = 0;
+            if (f.outputSlot.itemId === 0) {
+                f.outputSlot.itemId = recipe.output;
+                f.outputSlot.count  = 1;
+            } else {
+                f.outputSlot.count++;
+            }
+        }
+    }
 }

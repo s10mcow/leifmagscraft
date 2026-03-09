@@ -23,7 +23,7 @@ function syncBlock(x, y, blockId) {
 // ============================================================
 
 export function updateMining(dt) {
-    if (state.craftingOpen || state.tradingOpen || state.chestOpen || state.blastFurnaceOpen || state.gameOver) return;
+    if (state.craftingOpen || state.tradingOpen || state.chestOpen || state.blastFurnaceOpen || state.furnaceOpen || state.gameOver) return;
     // Don't mine when holding a gun
     const gunSlot = state.inventory.slots[state.inventory.selectedSlot];
     const gunInfo = gunSlot.count > 0 ? ITEM_INFO[gunSlot.itemId] : null;
@@ -215,7 +215,7 @@ export function placeBlock() {
 // ============================================================
 
 export function interact() {
-    if (state.gameOver || state.craftingOpen || state.sleeping || state.tradingOpen || state.chestOpen || state.blastFurnaceOpen) return;
+    if (state.gameOver || state.craftingOpen || state.sleeping || state.tradingOpen || state.chestOpen || state.blastFurnaceOpen || state.furnaceOpen) return;
 
     // Bucket: pick up liquid at cursor
     const heldSlot = state.inventory.slots[state.inventory.selectedSlot];
@@ -372,6 +372,20 @@ export function interact() {
             state.blastFurnaceOpen = true;
             state.blastFurnacePos = { x: wmx_c, y: wmy_c };
             state.blastFurnaceHover = -1;
+            return;
+        }
+        if (state.activeWorld[wmx_c][wmy_c] === BLOCKS.FURNACE && blockDist < BLOCK_SIZE * 5) {
+            const key = `${wmx_c},${wmy_c}`;
+            if (!state.furnaceData[key]) {
+                state.furnaceData[key] = {
+                    inputSlot:  { itemId: 0, count: 0 },
+                    fuelSlot:   { itemId: 0, count: 0 },
+                    outputSlot: { itemId: 0, count: 0 },
+                    progress: 0, fuelLeft: 0, maxFuel: 0,
+                };
+            }
+            state.furnaceOpen = true;
+            state.furnacePos = { x: wmx_c, y: wmy_c };
             return;
         }
     }

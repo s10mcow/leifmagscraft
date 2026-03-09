@@ -14,7 +14,7 @@ import { addFloatingText } from '../inventory.js';
 import { updateMusic } from '../audio.js';
 import { drawTitleScreen, drawPauseMenu, drawGeneratingScreen, drawLoadingScreen, drawSavingScreen, drawModeSelectScreen, drawAccountCreateScreen, drawAccountLoginScreen, drawAuthCheckingScreen } from '../ui.js';
 import { updateMining, handleGunFire } from './input-handlers.js';
-import { updateSleep, updateLeafDecay } from './systems.js';
+import { updateSleep, updateLeafDecay, updateFurnaces } from './systems.js';
 import { drawGameFrame } from './frame-renderer.js';
 
 // --- LOCAL CONSTANTS ---
@@ -115,6 +115,7 @@ export function gameLoop(timestamp) {
                     updateProjectiles(dt);
                     updateParticles(dt);
                     updateLeafDecay(dt);
+                    updateFurnaces(dt);
                     if (state.isMobHost || !state.multiplayerMode) spawnMobs(dt, state.cachedDayBrightness);
                 }
                 updateMusic(dt, state.cachedDayBrightness);
