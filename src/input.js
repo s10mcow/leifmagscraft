@@ -788,7 +788,7 @@ export function setupInput() {
             const f = state.furnaceData[key];
             const rects = state.furnaceSlotRects;
             if (f && rects) {
-                const { x: mx, y: my } = scaledMouse(460, 340);
+                const { x: mx, y: my } = scaledMouse(460, 530);
                 const hotSlot = state.inventory.slots[state.inventory.selectedSlot];
                 // Output slot — take items into inventory
                 if (mx >= rects.outputX && mx <= rects.outputX + rects.slotSize &&
@@ -828,6 +828,45 @@ export function setupInput() {
                     } else if (hotSlot.count === 0 && f.fuelSlot.itemId !== 0) {
                         addToInventory(f.fuelSlot.itemId, f.fuelSlot.count);
                         f.fuelSlot.itemId = 0; f.fuelSlot.count = 0;
+                    }
+                }
+                // Inventory slots — move ore to input, fuel to fuel slot
+                else {
+                    const { isx, hotbarY, bpY, is, ip } = rects;
+                    const tryMove = (slot) => {
+                        if (slot.count <= 0) return;
+                        if (FURNACE_RECIPES.find(r => r.input === slot.itemId)) {
+                            if (f.inputSlot.itemId === 0 || f.inputSlot.itemId === slot.itemId) {
+                                const move = Math.min(slot.count, 64 - f.inputSlot.count);
+                                f.inputSlot.itemId = slot.itemId;
+                                f.inputSlot.count += move;
+                                slot.count -= move;
+                                if (slot.count === 0) slot.itemId = 0;
+                            }
+                        } else if (FUEL_VALUES[slot.itemId] !== undefined) {
+                            if (f.fuelSlot.itemId === 0 || f.fuelSlot.itemId === slot.itemId) {
+                                const move = Math.min(slot.count, 64 - f.fuelSlot.count);
+                                f.fuelSlot.itemId = slot.itemId;
+                                f.fuelSlot.count += move;
+                                slot.count -= move;
+                                if (slot.count === 0) slot.itemId = 0;
+                            }
+                        }
+                    };
+                    for (let i = 0; i < HOTBAR_SIZE; i++) {
+                        const sx = isx + i * (is + ip);
+                        if (mx >= sx && mx <= sx + is && my >= hotbarY && my <= hotbarY + is) {
+                            tryMove(state.inventory.slots[i]);
+                            break;
+                        }
+                    }
+                    for (let i = 0; i < BACKPACK_SIZE; i++) {
+                        const c = i % 9, r = Math.floor(i / 9);
+                        const sx = isx + c * (is + ip), sy = bpY + r * (is + ip);
+                        if (mx >= sx && mx <= sx + is && my >= sy && my <= sy + is) {
+                            tryMove(state.inventory.slots[HOTBAR_SIZE + i]);
+                            break;
+                        }
                     }
                 }
             }

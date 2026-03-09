@@ -454,7 +454,10 @@ export function drawFurnaceMenu() {
     state.ctx.fillStyle = "rgba(0,0,0,0.75)";
     state.ctx.fillRect(0, 0, state.canvas.width, state.canvas.height);
 
-    const pw = 460, ph = 340;
+    const is = UI.SLOT_SIZE, ip = UI.SLOT_PAD;
+    const invCols = UI.INV_COLS;
+    const invTotalW = UI.INV_TOTAL_W;
+    const pw = Math.max(460, invTotalW + 40), ph = 530;
     const px = (state.canvas.width - pw) / 2, py = (state.canvas.height - ph) / 2;
     state.ctx.save();
     applyPanelScale(pw, ph);
@@ -473,7 +476,7 @@ export function drawFurnaceMenu() {
     const midX = state.canvas.width / 2;
     const slotY = py + 78;
 
-    // Input slot (left)
+    // Input slot
     const inputX = midX - 130 - slotSize / 2;
     state.ctx.strokeStyle = "#888"; state.ctx.lineWidth = 2;
     state.ctx.fillStyle = "#2a2a3a"; state.ctx.fillRect(inputX, slotY, slotSize, slotSize);
@@ -487,7 +490,7 @@ export function drawFurnaceMenu() {
         state.ctx.fillText("ORE", inputX + slotSize / 2, slotY + slotSize / 2 + 4);
     }
 
-    // Arrow / progress bar
+    // Progress arrow
     const recipe = FURNACE_RECIPES.find(r => r.input === f.inputSlot.itemId);
     const isSmelting = f.fuelLeft > 0 && recipe && f.inputSlot.count > 0;
     const progress = recipe ? f.progress / recipe.smeltTime : 0;
@@ -497,7 +500,7 @@ export function drawFurnaceMenu() {
     state.ctx.fillStyle = "#fff"; state.ctx.font = "bold 16px 'Courier New', monospace"; state.ctx.textAlign = "center";
     state.ctx.fillText("→", midX, slotY + 31);
 
-    // Output slot (right)
+    // Output slot
     const outputX = midX + 130 - slotSize / 2;
     state.ctx.strokeStyle = "#888"; state.ctx.lineWidth = 2;
     state.ctx.fillStyle = "#2a2a3a"; state.ctx.fillRect(outputX, slotY, slotSize, slotSize);
@@ -516,7 +519,7 @@ export function drawFurnaceMenu() {
     state.ctx.fillText("Input", inputX + slotSize / 2, slotY + slotSize + 14);
     state.ctx.fillText("Output", outputX + slotSize / 2, slotY + slotSize + 14);
 
-    // Fuel slot (bottom-left area)
+    // Fuel slot
     const fuelSlotX = inputX;
     const fuelSlotY = slotY + slotSize + 30;
     state.ctx.strokeStyle = "#e0a030"; state.ctx.lineWidth = 2;
@@ -541,8 +544,46 @@ export function drawFurnaceMenu() {
     state.ctx.fillStyle = "#9ca3af"; state.ctx.font = "10px 'Courier New', monospace"; state.ctx.textAlign = "left";
     state.ctx.fillText("Fuel", fuelSlotX + slotSize + 8, fuelSlotY + 26);
 
-    // Store slot rects for click detection (in canvas-space, before scale)
-    state.furnaceSlotRects = { inputX, inputY: slotY, outputX, outputY: slotY, fuelX: fuelSlotX, fuelY: fuelSlotY, slotSize };
+    // ── INVENTORY ────────────────────────────────────────────────────
+    const sepY = fuelSlotY + slotSize + 20;
+    state.ctx.strokeStyle = "rgba(255,255,255,0.1)"; state.ctx.lineWidth = 1;
+    state.ctx.beginPath(); state.ctx.moveTo(px + 16, sepY); state.ctx.lineTo(px + pw - 16, sepY); state.ctx.stroke();
+
+    state.ctx.fillStyle = "#9ca3af"; state.ctx.font = "bold 11px 'Courier New', monospace"; state.ctx.textAlign = "center";
+    state.ctx.fillText("YOUR INVENTORY", state.canvas.width / 2, sepY + 14);
+
+    const isx = (state.canvas.width - invTotalW) / 2;
+    const hotbarY = sepY + 22;
+
+    // Hover detection uses scaled mouse
+    const { x: smx, y: smy } = (() => {
+        const s = Math.min(1, (state.canvas.width - 8) / pw, (state.canvas.height - 8) / ph);
+        if (s >= 1) return { x: state.mouse.x, y: state.mouse.y };
+        const cx2 = state.canvas.width / 2, cy2 = state.canvas.height / 2;
+        return { x: (state.mouse.x - cx2 * (1 - s)) / s, y: (state.mouse.y - cy2 * (1 - s)) / s };
+    })();
+
+    // Hotbar row
+    for (let i = 0; i < HOTBAR_SIZE; i++) {
+        const sx2 = isx + i * (is + ip);
+        const hover = smx >= sx2 && smx <= sx2 + is && smy >= hotbarY && smy <= hotbarY + is;
+        drawInventorySlot(sx2, hotbarY, is, state.inventory.slots[i], hover, i);
+    }
+    // Backpack rows
+    const bpY = hotbarY + is + ip + 4;
+    for (let i = 0; i < BACKPACK_SIZE; i++) {
+        const c = i % invCols, r = Math.floor(i / invCols);
+        const sx2 = isx + c * (is + ip), sy2 = bpY + r * (is + ip);
+        const hover = smx >= sx2 && smx <= sx2 + is && smy >= sy2 && smy <= sy2 + is;
+        drawInventorySlot(sx2, sy2, is, state.inventory.slots[HOTBAR_SIZE + i], hover, HOTBAR_SIZE + i);
+    }
+
+    // Store slot rects for click detection
+    state.furnaceSlotRects = {
+        inputX, inputY: slotY, outputX, outputY: slotY,
+        fuelX: fuelSlotX, fuelY: fuelSlotY, slotSize,
+        isx, hotbarY, bpY, is, ip,
+    };
 
     state.ctx.restore();
 }
