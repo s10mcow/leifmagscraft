@@ -83,6 +83,28 @@ export function drawHotbar() {
     state.ctx.fillText("OFF", offX + s / 2, offY - 4);
     drawInventorySlot(offX, offY, s, state.offhand, false);
 
+    // Temperature bar above hotbar
+    {
+        const temp = state.player.temperature;
+        const barW = 100, barH = 8;
+        const barX = state.canvas.width / 2 - barW / 2;
+        const barY = sy - 46;
+        state.ctx.fillStyle = "rgba(0,0,0,0.5)";
+        state.ctx.fillRect(barX - 1, barY - 1, barW + 2, barH + 2);
+        const fillW = (temp / 100) * barW;
+        const tempColor = temp <= 20 ? "#66aaff" : temp <= 45 ? "#88ddff" : temp <= 60 ? "#44ee88" : temp <= 80 ? "#ffaa33" : "#ff4444";
+        state.ctx.fillStyle = tempColor;
+        state.ctx.fillRect(barX, barY, fillW, barH);
+        // Neutral midpoint marker
+        state.ctx.fillStyle = "rgba(255,255,255,0.4)";
+        state.ctx.fillRect(barX + barW / 2, barY, 1, barH);
+        const tempLabel = temp <= 10 ? "Freezing!" : temp <= 30 ? "Cold" : temp <= 60 ? "Comfortable" : temp <= 80 ? "Hot" : "Heatstroke!";
+        state.ctx.font = "9px 'Courier New', monospace";
+        state.ctx.textAlign = "center";
+        state.ctx.fillStyle = (temp <= 10 || temp >= 90) ? "#ff5555" : "#ffffff";
+        state.ctx.fillText(tempLabel, state.canvas.width / 2, barY - 2);
+    }
+
     const held = state.inventory.slots[state.inventory.selectedSlot];
     if (held.count > 0 && held.itemId !== 0) {
         const heldInfo = ITEM_INFO[held.itemId];

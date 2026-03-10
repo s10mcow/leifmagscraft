@@ -6,7 +6,7 @@
 // ============================================================
 
 import { state } from './state.js';
-import { BLOCKS, ITEMS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, GRAVITY, MAX_FALL_SPEED, PLAYER_REACH, SAFE_FALL_BLOCKS, MOB_DEFS, ITEM_INFO } from './constants.js';
+import { BLOCKS, ITEMS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, GRAVITY, MAX_FALL_SPEED, PLAYER_REACH, SAFE_FALL_BLOCKS, MOB_DEFS, ITEM_INFO, BIOMES } from './constants.js';
 import { isBlockSolid, findSurfaceY } from './world.js';
 import { addFloatingText, getEquippedTool, getEquippedTier, getArmorDefense, damageAllArmor, damageEquippedTool } from './inventory.js';
 import { playJump, playFootstep, playLand, playHurt, playMobHit, playBlockPlace, playSelect, playToolBreak } from './audio.js';
@@ -30,6 +30,51 @@ export function updatePlayer(dt) {
     if (state.player.invincibleTimer > 0) state.player.invincibleTimer -= dt;
     if (state.player.attackCooldown > 0) state.player.attackCooldown -= dt;
     if (state.player.rawMeatDebuffTimer > 0) state.player.rawMeatDebuffTimer -= dt;
+
+    // --- Temperature system ---
+    {
+        let targetTemp = 50; // neutral default
+        if (state.inNether) {
+            targetTemp = 92;
+        } else if (state.inWasteland) {
+            targetTemp = 72;
+        } else if (!state.inPossum) {
+            const blockX = Math.floor((state.player.x + state.player.width / 2) / BLOCK_SIZE);
+            const biome = (state.biomeMap && blockX >= 0 && blockX < state.biomeMap.length) ? state.biomeMap[blockX] : BIOMES.FOREST;
+            if (biome === BIOMES.DESERT) targetTemp = 83;
+            else if (biome === BIOMES.SAVANNAH) targetTemp = 65;
+            else if (biome === BIOMES.TUNDRA) targetTemp = 20;
+        }
+        // Wool armor warms you up in cold climates
+        if (targetTemp < 50) {
+            let warmthCount = 0;
+            for (const type of ["helmet", "chestplate", "leggings", "boots"]) {
+                const slot = state.inventory.armor[type];
+                if (slot.itemId !== 0 && ITEM_INFO[slot.itemId]?.warmth) warmthCount++;
+            }
+            targetTemp = Math.min(50, targetTemp + warmthCount * 7);
+        }
+        // Drift temperature toward target
+        const drift = dt * 0.007;
+        if (state.player.temperature < targetTemp) {
+            state.player.temperature = Math.min(targetTemp, state.player.temperature + drift);
+        } else if (state.player.temperature > targetTemp) {
+            state.player.temperature = Math.max(targetTemp, state.player.temperature - drift);
+        }
+        // Damage at extremes (freezing ≤10, heatstroke ≥90)
+        if (state.player.temperature <= 10 || state.player.temperature >= 90) {
+            state.player.tempDamageTimer -= dt;
+            if (state.player.tempDamageTimer <= 0) {
+                state.player.health = Math.max(0, state.player.health - 1);
+                state.player.tempDamageTimer = 4000;
+                const isCold = state.player.temperature <= 10;
+                playHurt();
+                addFloatingText(state.player.x, state.player.y - 20, isCold ? "Freezing!" : "Heatstroke!", isCold ? "#88ccff" : "#ff8800");
+            }
+        } else {
+            state.player.tempDamageTimer = 0;
+        }
+    }
 
     // Crouching (Shift key) — shrink to one block tall, feet stay fixed
     const wasCrouching = state.player.crouching;

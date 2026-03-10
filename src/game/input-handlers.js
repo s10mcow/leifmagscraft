@@ -217,8 +217,43 @@ export function placeBlock() {
 export function interact() {
     if (state.gameOver || state.craftingOpen || state.sleeping || state.tradingOpen || state.chestOpen || state.blastFurnaceOpen || state.furnaceOpen || state.smokerOpen) return;
 
-    // Bucket: pick up liquid at cursor
     const heldSlot = state.inventory.slots[state.inventory.selectedSlot];
+
+    // Glass Bottle: fill from nearby water
+    if (heldSlot.itemId === ITEMS.GLASS_BOTTLE) {
+        const px = Math.floor((state.player.x + state.player.width / 2) / BLOCK_SIZE);
+        const py = Math.floor((state.player.y + state.player.height / 2) / BLOCK_SIZE);
+        let foundWater = false;
+        outer: for (let dx = -2; dx <= 2; dx++) {
+            for (let dy = -2; dy <= 2; dy++) {
+                const wx = px + dx, wy = py + dy;
+                if (wx >= 0 && wx < WORLD_WIDTH && wy >= 0 && wy < WORLD_HEIGHT && state.activeWorld[wx][wy] === BLOCKS.WATER) {
+                    heldSlot.itemId = ITEMS.WATER_BOTTLE;
+                    heldSlot.durability = 4;
+                    addFloatingText(state.player.x, state.player.y - 20, "Water bottle filled!", "#4488ff");
+                    foundWater = true;
+                    break outer;
+                }
+            }
+        }
+        if (foundWater) return;
+    }
+
+    // Water Bottle: drink a sip to cool down
+    if (heldSlot.itemId === ITEMS.WATER_BOTTLE) {
+        state.player.temperature = Math.max(0, state.player.temperature - 15);
+        heldSlot.durability = (heldSlot.durability > 0 ? heldSlot.durability : 4) - 1;
+        if (heldSlot.durability <= 0) {
+            heldSlot.itemId = ITEMS.GLASS_BOTTLE;
+            heldSlot.durability = 0;
+            addFloatingText(state.player.x, state.player.y - 20, "Bottle empty!", "#aaaaaa");
+        } else {
+            addFloatingText(state.player.x, state.player.y - 20, `Refreshing! (${heldSlot.durability} sips left)`, "#44aaff");
+        }
+        return;
+    }
+
+    // Bucket: pick up liquid at cursor
     if (heldSlot.itemId === ITEMS.BUCKET) {
         const bx = Math.floor((state.mouse.x + state.camera.x) / BLOCK_SIZE);
         const by = Math.floor((state.mouse.y + state.camera.y) / BLOCK_SIZE);

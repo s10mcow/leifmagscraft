@@ -519,6 +519,27 @@ export function drawBlock(blockType, screenX, screenY) {
         state.ctx.fillRect(screenX + 20, screenY + 2, 4, 4);
         return;
     }
+    // Glass — semi-transparent with window-pane cross
+    if (blockType === BLOCKS.GLASS) {
+        state.ctx.fillStyle = "rgba(184, 216, 240, 0.3)";
+        state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
+        // Pane cross lines
+        state.ctx.strokeStyle = "rgba(200, 232, 255, 0.55)";
+        state.ctx.lineWidth = 1;
+        state.ctx.beginPath();
+        state.ctx.moveTo(screenX + BLOCK_SIZE / 2, screenY);
+        state.ctx.lineTo(screenX + BLOCK_SIZE / 2, screenY + BLOCK_SIZE);
+        state.ctx.moveTo(screenX, screenY + BLOCK_SIZE / 2);
+        state.ctx.lineTo(screenX + BLOCK_SIZE, screenY + BLOCK_SIZE / 2);
+        state.ctx.stroke();
+        // Corner shine highlight
+        state.ctx.fillStyle = "rgba(255,255,255,0.22)";
+        state.ctx.fillRect(screenX + 3, screenY + 3, 8, 5);
+        // Border
+        state.ctx.strokeStyle = "rgba(180, 220, 255, 0.5)";
+        state.ctx.strokeRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
+        return;
+    }
     // Silver Ore — stone base with shimmering silver-white flecks
     if (blockType === BLOCKS.SILVER_ORE) {
         state.ctx.fillStyle = "#8896a8";
