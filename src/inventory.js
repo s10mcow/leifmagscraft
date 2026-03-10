@@ -148,11 +148,15 @@ export function eatFood() {
         return;
     }
     if (info.candyBuff) {
-        // Possum candy: speed boost for 20s, then sugar crash for 10s
-        state.player.speedBuffTimer = 20000;
-        state.player.sugarCrashTimer = 0; // cancel any existing crash
+        const buffs = ["speed", "jump", "strength", "regen"];
+        const picked = buffs[Math.floor(Math.random() * buffs.length)];
+        state.player.candyBuffTimer = 20000;
+        state.player.candyBuffType = picked;
+        state.player.regenHealTimer = 0;
+        state.player.sugarCrashTimer = 0;
         state.player.health = Math.min(state.player.maxHealth, state.player.health + info.healAmount);
-        addFloatingText(state.player.x, state.player.y - 20, "Sugar Rush! ZOOM!", "#ff44cc");
+        const labels = { speed: "Speed Rush! ZOOM!", jump: "Jump Boost! BOING!", strength: "Strength! POW!", regen: "Regeneration! +" };
+        addFloatingText(state.player.x, state.player.y - 20, labels[picked], "#ff44cc");
         playEat();
         slot.count--;
         if (slot.count === 0) { slot.itemId = 0; slot.durability = 0; }

@@ -108,7 +108,9 @@ export const state = {
         rawMeatDebuffTimer: 0,
         temperature: 50,
         tempDamageTimer: 0,
-        speedBuffTimer: 0,
+        candyBuffTimer: 0,
+        candyBuffType: null,  // "speed" | "jump" | "strength" | "regen"
+        regenHealTimer: 0,
         sugarCrashTimer: 0,
     },
     camera: { x: 0, y: 0 },

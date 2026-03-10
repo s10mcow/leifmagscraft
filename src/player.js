@@ -30,11 +30,23 @@ export function updatePlayer(dt) {
     if (state.player.invincibleTimer > 0) state.player.invincibleTimer -= dt;
     if (state.player.attackCooldown > 0) state.player.attackCooldown -= dt;
     if (state.player.rawMeatDebuffTimer > 0) state.player.rawMeatDebuffTimer -= dt;
-    if (state.player.speedBuffTimer > 0) {
-        state.player.speedBuffTimer -= dt;
-        if (state.player.speedBuffTimer <= 0) {
-            state.player.speedBuffTimer = 0;
-            state.player.sugarCrashTimer = 10000; // crash after rush
+    if (state.player.candyBuffTimer > 0) {
+        state.player.candyBuffTimer -= dt;
+        // Regen: heal 1 HP every 2s
+        if (state.player.candyBuffType === "regen") {
+            state.player.regenHealTimer -= dt;
+            if (state.player.regenHealTimer <= 0) {
+                state.player.regenHealTimer = 2000;
+                if (state.player.health < state.player.maxHealth) {
+                    state.player.health = Math.min(state.player.maxHealth, state.player.health + 1);
+                    addFloatingText(state.player.x, state.player.y - 20, "+1", "#44ff88");
+                }
+            }
+        }
+        if (state.player.candyBuffTimer <= 0) {
+            state.player.candyBuffTimer = 0;
+            state.player.candyBuffType = null;
+            state.player.sugarCrashTimer = 10000;
             addFloatingText(state.player.x, state.player.y - 20, "Sugar crash...", "#aa88cc");
         }
     }
@@ -117,7 +129,7 @@ export function updatePlayer(dt) {
     // Movement (disabled during crafting or when wrapped)
     if (!state.craftingOpen && !state.chestOpen && !isWrapped) {
         const debuffed = state.player.rawMeatDebuffTimer > 0 || state.player.sugarCrashTimer > 0;
-        const speedMult = state.player.speedBuffTimer > 0 ? 1.7 : (debuffed ? 0.5 : 1.0);
+        const speedMult = state.player.candyBuffType === "speed" ? 1.7 : (debuffed ? 0.5 : 1.0);
         const moveSpeed = state.player.crouching ? state.player.speed * 0.4 : state.player.speed * speedMult;
         if (state.keys["ArrowLeft"] || state.keys["a"] || state.keys["A"]) {
             state.player.velX = -moveSpeed;
@@ -130,7 +142,7 @@ export function updatePlayer(dt) {
             if (Math.abs(state.player.velX) < 0.1) state.player.velX = 0;
         }
         if (!state.player.crouching && (state.keys["ArrowUp"] || state.keys["w"] || state.keys["W"] || state.keys[" "]) && state.player.onGround) {
-            state.player.velY = state.player.jumpForce;
+            state.player.velY = state.player.candyBuffType === "jump" ? state.player.jumpForce * 1.6 : state.player.jumpForce;
             state.player.onGround = false;
             playJump();
         }
@@ -421,6 +433,7 @@ export function attackMob(mob) {
         damageEquippedTool();
     }
     if (state.player.rawMeatDebuffTimer > 0) damage = Math.max(1, Math.floor(damage * 0.5));
+    if (state.player.candyBuffType === "strength") damage = Math.floor(damage * 2);
 
     mob.health -= damage;
     mob.hurtTimer = 200;

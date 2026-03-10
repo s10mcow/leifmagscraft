@@ -920,9 +920,11 @@ export function drawHUD() {
         state.ctx.fillText(label, state.canvas.width - 10, statusY + 14);
         statusY += 23;
     };
-    if (state.player.speedBuffTimer > 0)
-        drawStatus("rgba(180,20,160,0.7)", "#ffaaff", `★ Sugar Rush ${Math.ceil(state.player.speedBuffTimer / 1000)}s`);
-    else if (state.player.sugarCrashTimer > 0)
+    if (state.player.candyBuffTimer > 0) {
+        const buffLabels = { speed: "★ Speed Rush", jump: "★ Jump Boost", strength: "★ Strength", regen: "★ Regen" };
+        const label = buffLabels[state.player.candyBuffType] || "★ Candy Buff";
+        drawStatus("rgba(180,20,160,0.7)", "#ffaaff", `${label} ${Math.ceil(state.player.candyBuffTimer / 1000)}s`);
+    } else if (state.player.sugarCrashTimer > 0)
         drawStatus("rgba(80,40,100,0.7)", "#cc88ff", `▼ Sugar Crash ${Math.ceil(state.player.sugarCrashTimer / 1000)}s`);
     if (state.player.rawMeatDebuffTimer > 0)
         drawStatus("rgba(180,80,0,0.7)", "#ffcc66", `☠ Food Poison ${Math.ceil(state.player.rawMeatDebuffTimer / 1000)}s`);
