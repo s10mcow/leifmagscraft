@@ -69,7 +69,6 @@ export const ITEMS = {
   POSSUM_TELEPORTER: 169,
   POSSUM_TOOTH: 170,
   POSSUM_TAIL: 171,
-  TOOTH_ROPE: 172,
   // Overworld ingots (smelted in furnace)
   IRON_INGOT: 173, COPPER_INGOT: 174, GOLD_INGOT: 175,
   SILVER_INGOT: 176,
@@ -306,7 +305,6 @@ export const ITEM_INFO = {
   [ITEMS.POSSUM_TELEPORTER]: { name: "Possum Teleporter", stackable: false, color: "#e8a0d0" },
   [ITEMS.POSSUM_TOOTH]: { name: "Possum's Tooth", stackable: true, maxStack: 16, color: "#fffff0" },
   [ITEMS.POSSUM_TAIL]: { name: "Possum's Tail", stackable: true, maxStack: 16, color: "#ccbbaa" },
-  [ITEMS.TOOTH_ROPE]:  { name: "Tooth Rope",    stackable: true, maxStack: 8,  color: "#c4a040", toolType: "thrown", damage: 40 },
   // Cooked meats
   [ITEMS.COOKED_PORKCHOP]: { name: "Cooked Porkchop", stackable: true, maxStack: 64, food: true, healAmount: 6 },
   [ITEMS.COOKED_BEEF]:     { name: "Cooked Beef",     stackable: true, maxStack: 64, food: true, healAmount: 8 },
@@ -398,7 +396,6 @@ export const RECIPES = [
   { result: ITEMS.MINIATURE_NETHER_PORTAL, resultCount: 1, ingredients: [{ id: BLOCKS.OBSIDIAN, count: 4 }, { id: ITEMS.FLINT_AND_STEEL, count: 1 }] },
   { result: ITEMS.WASTELAND_TELEPORTER, resultCount: 1, ingredients: [{ id: BLOCKS.COBBLESTONE, count: 24 }, { id: BLOCKS.OBSIDIAN, count: 4 }] },
   { result: ITEMS.POSSUM_TELEPORTER, resultCount: 1, ingredients: [{ id: ITEMS.RAW_PORKCHOP, count: 10 }, { id: ITEMS.STEAK, count: 10 }, { id: BLOCKS.GLOWSTONE, count: 5 }] },
-  { result: ITEMS.TOOTH_ROPE, resultCount: 1, ingredients: [{ id: ITEMS.POSSUM_TOOTH, count: 1 }, { id: ITEMS.POSSUM_TAIL, count: 1 }] },
   { result: ITEMS.SHIELD, resultCount: 1, ingredients: [{ id: BLOCKS.PLANKS, count: 6 }, { id: ITEMS.IRON_INGOT, count: 1 }] },
   // Furnace
   { result: BLOCKS.FURNACE, resultCount: 1, ingredients: [{ id: BLOCKS.COBBLESTONE, count: 8 }] },

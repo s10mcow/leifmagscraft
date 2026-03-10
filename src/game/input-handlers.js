@@ -11,7 +11,7 @@ import { BLOCKS, ITEMS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, BLOCK_INFO, ITEM_
 import { addToInventory, addFloatingText, getEquippedTool, getEquippedTier, damageEquippedTool, eatFood } from '../inventory.js';
 import { isBlockSolid, initChestData, removeChestData, checkLavaWaterInteraction } from '../world.js';
 import { playMineHit, playBlockBreak, playBlockPlace, playPickup } from '../audio.js';
-import { createBullet, createRocket, createFlame, createParticles, createToothRope } from '../mobs.js';
+import { createBullet, createRocket, createFlame, createParticles } from '../mobs.js';
 import { scheduleLeafDecay, WOOD_BLOCKS, TREE_BLOCKS, teleportToOtherDimension, teleportToWasteland, teleportToPossum } from './systems.js';
 
 function syncBlock(x, y, blockId) {
@@ -549,21 +549,6 @@ export function handleGunFire(dt) {
     if (slot.count === 0 || slot.itemId === 0) return;
     const itemInfo = ITEM_INFO[slot.itemId];
 
-    // Thrown items (e.g. Tooth Rope)
-    if (itemInfo && itemInfo.toolType === "thrown") {
-        if (!state.mouse.leftDown) return;
-        if (state.gunCooldown > 0) return;
-        if (slot.count <= 0) return;
-        const px = state.player.x + state.player.width / 2;
-        const py = state.player.y + state.player.height / 3;
-        const targetX = state.mouse.x + state.camera.x;
-        const targetY = state.mouse.y + state.camera.y;
-        createToothRope(px, py, targetX, targetY, itemInfo.damage);
-        slot.count--;
-        if (slot.count <= 0) { slot.itemId = 0; slot.count = 0; }
-        state.gunCooldown = 600;
-        return;
-    }
 
     if (!itemInfo || itemInfo.toolType !== "gun") return;
 

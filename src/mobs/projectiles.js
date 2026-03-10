@@ -77,18 +77,6 @@ export function createFlame(x, y, targetX, targetY, damage) {
     });
 }
 
-export function createToothRope(x, y, targetX, targetY, damage) {
-    const dx = targetX - x, dy = targetY - y;
-    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-    const speed = 10;
-    const t = dist / speed;
-    state.projectiles.push({
-        x, y,
-        velX: (dx / dist) * speed,
-        velY: (dy / dist) * speed - 0.075 * t,
-        damage, life: 180, isToothRope: true
-    });
-}
 
 export function createFireball(x, y, targetX, targetY, damage) {
     const dx = targetX - x, dy = targetY - y;
@@ -107,8 +95,7 @@ export function createFireball(x, y, targetX, targetY, damage) {
 export function updateProjectiles(dt) {
     for (let i = state.projectiles.length - 1; i >= 0; i--) {
         const p = state.projectiles[i];
-        if (!p.isBullet && !p.isRocket && !p.isFireball && !p.isFlame && !p.isToothRope) p.velY += 0.15; // Gravity for arrows only
-        if (p.isToothRope) p.velY += 0.12; // Arc gravity for tooth rope
+        if (!p.isBullet && !p.isRocket && !p.isFireball && !p.isFlame) p.velY += 0.15; // Gravity for arrows only
         if (p.isRocket) p.velY += 0.05; // Slight gravity for rockets
         p.x += p.velX;
         p.y += p.velY;
@@ -240,38 +227,6 @@ export function updateProjectiles(dt) {
             }
         }
 
-        // Tooth rope hits
-        if (p.isToothRope) {
-            let hitSomething = false;
-            for (let j = state.mobs.length - 1; j >= 0; j--) {
-                const mob = state.mobs[j];
-                const def = MOB_DEFS[mob.type];
-                if (mob.dead) continue;
-                if (p.x >= mob.x && p.x <= mob.x + def.width &&
-                    p.y >= mob.y && p.y <= mob.y + def.height) {
-                    mob.health -= p.damage;
-                    mob.hurtTimer = 400;
-                    mob.aggroed = true;
-                    mob.velX = (p.velX > 0 ? 6 : -6);
-                    mob.velY = -5;
-                    createParticles(p.x, p.y, 12, "#c4a040", 6);
-                    createParticles(p.x, p.y, 6, "#ffffff", 3);
-                    addFloatingText(mob.x + def.width / 2, mob.y - 16, `-${p.damage}`, "#c4a040");
-                    hitSomething = true;
-                    break;
-                }
-            }
-            if (hitSomething) { state.projectiles.splice(i, 1); continue; }
-            const trx = Math.floor(p.x / BLOCK_SIZE);
-            const try_ = Math.floor(p.y / BLOCK_SIZE);
-            if (isBlockSolid(trx, try_)) {
-                createParticles(p.x, p.y, 5, "#c4a040", 3);
-                state.projectiles.splice(i, 1);
-                continue;
-            }
-            if (p.life <= 0) { state.projectiles.splice(i, 1); continue; }
-            continue;
-        }
 
         const bx = Math.floor(p.x / BLOCK_SIZE);
         const by = Math.floor(p.y / BLOCK_SIZE);
