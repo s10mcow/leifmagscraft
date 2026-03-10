@@ -49,15 +49,6 @@ export function resetAllGameState() {
         state.inventory.slots[i] = { itemId: 0, count: 0, durability: 0 };
     }
     state.inventory.selectedSlot = 0;
-    // Spawn loadout
-    state.inventory.armor["helmet"]     = { itemId: ITEMS.RIOT_HELMET,     count: 1, durability: 350 };
-    state.inventory.armor["chestplate"] = { itemId: ITEMS.RIOT_CHESTPLATE, count: 1, durability: 520 };
-    state.inventory.armor["leggings"]   = { itemId: ITEMS.RIOT_LEGGINGS,   count: 1, durability: 480 };
-    state.inventory.armor["boots"]      = { itemId: ITEMS.RIOT_BOOTS,      count: 1, durability: 400 };
-    state.inventory.slots[0] = { itemId: ITEMS.FLAMETHROWER,         count: 1, durability: 300 };
-    state.inventory.slots[1] = { itemId: ITEMS.FUEL_CANISTER,        count: 10, durability: 0 };
-    state.inventory.slots[2] = { itemId: ITEMS.WASTELAND_TELEPORTER, count: 1, durability: 0 };
-    state.inventory.slots[3] = { itemId: ITEMS.POSSUM_TELEPORTER,    count: 1, durability: 0 };
     state.cursorItem.itemId = 0; state.cursorItem.count = 0; state.cursorItem.durability = 0;
     state.offhand.itemId = 0; state.offhand.count = 0; state.offhand.durability = 0;
 
