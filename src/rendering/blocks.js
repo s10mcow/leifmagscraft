@@ -495,6 +495,21 @@ export function drawBlock(blockType, screenX, screenY) {
         state.ctx.strokeRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
         return;
     }
+    // Silver Ore — stone base with shimmering silver-white flecks
+    if (blockType === BLOCKS.SILVER_ORE) {
+        state.ctx.fillStyle = "#8896a8";
+        state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
+        state.ctx.fillStyle = "#d8e0ec";
+        state.ctx.fillRect(screenX + 4,  screenY + 6,  7, 5);
+        state.ctx.fillRect(screenX + 19, screenY + 16, 6, 4);
+        state.ctx.fillRect(screenX + 9,  screenY + 21, 8, 4);
+        state.ctx.fillStyle = "rgba(255,255,255,0.35)";
+        state.ctx.fillRect(screenX + 5,  screenY + 7,  3, 2);
+        state.ctx.fillRect(screenX + 20, screenY + 17, 2, 2);
+        state.ctx.strokeStyle = "rgba(0,0,0,0.15)";
+        state.ctx.strokeRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
+        return;
+    }
     state.ctx.strokeStyle = "rgba(0, 0, 0, 0.15)";
     state.ctx.strokeRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
 }

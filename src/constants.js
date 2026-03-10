@@ -22,6 +22,8 @@ export const BLOCKS = {
   CANDY_GROUND: 53, LOLLIPOP_TOP: 54, CANDY_CANE: 55,
   // Overworld furnace
   FURNACE: 56,
+  // Silver ore
+  SILVER_ORE: 57,
 };
 
 // --- ITEM IDs (100+) ---
@@ -68,6 +70,7 @@ export const ITEMS = {
   TOOTH_ROPE: 172,
   // Overworld ingots (smelted in furnace)
   IRON_INGOT: 173, COPPER_INGOT: 174, GOLD_INGOT: 175,
+  SILVER_INGOT: 176,
 };
 
 // --- WORLD SETTINGS ---
@@ -215,6 +218,7 @@ export const BLOCK_INFO = {
   [BLOCKS.CANDY_CANE]:    { name: "Candy Cane",    color: "#ef4444", breakable: true, mineTime: 350, toolType: "axe", minTier: 0, drops: BLOCKS.CANDY_CANE },
   // Overworld furnace
   [BLOCKS.FURNACE]: { name: "Furnace", color: "#5a5050", breakable: true, mineTime: 900, toolType: "pickaxe", minTier: 1, drops: BLOCKS.FURNACE },
+  [BLOCKS.SILVER_ORE]: { name: "Silver Ore", color: "#8896a8", breakable: true, mineTime: 800, toolType: "pickaxe", minTier: 1, drops: BLOCKS.SILVER_ORE },
 };
 
 // --- ITEM PROPERTIES ---
@@ -300,6 +304,7 @@ export const ITEM_INFO = {
   [ITEMS.IRON_INGOT]:   { name: "Iron Ingot",   stackable: true, maxStack: 64, color: "#d4d4d4" },
   [ITEMS.COPPER_INGOT]: { name: "Copper Ingot", stackable: true, maxStack: 64, color: "#e07040" },
   [ITEMS.GOLD_INGOT]:   { name: "Gold Ingot",   stackable: true, maxStack: 64, color: "#ffd700" },
+  [ITEMS.SILVER_INGOT]: { name: "Silver Ingot", stackable: true, maxStack: 64, color: "#c0c8d8" },
 };
 
 // --- MOB DEFINITIONS ---
@@ -404,9 +409,10 @@ export const SMELTING_RECIPES = [
 
 // --- FURNACE RECIPES (overworld furnace) ---
 export const FURNACE_RECIPES = [
-  { input: BLOCKS.IRON,   output: ITEMS.IRON_INGOT,   smeltTime: 3000 },
-  { input: BLOCKS.COPPER, output: ITEMS.COPPER_INGOT, smeltTime: 3000 },
-  { input: BLOCKS.GOLD,   output: ITEMS.GOLD_INGOT,   smeltTime: 5000 },
+  { input: BLOCKS.IRON,       output: ITEMS.IRON_INGOT,   smeltTime: 3000 },
+  { input: BLOCKS.COPPER,     output: ITEMS.COPPER_INGOT, smeltTime: 3000 },
+  { input: BLOCKS.GOLD,       output: ITEMS.GOLD_INGOT,   smeltTime: 5000 },
+  { input: BLOCKS.SILVER_ORE, output: ITEMS.SILVER_INGOT, smeltTime: 4000 },
 ];
 
 // Fuel values in ms (how long one item burns)
