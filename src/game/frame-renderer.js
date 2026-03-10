@@ -17,10 +17,12 @@ const PLAYER_COLORS = ['#e07040','#40a0e0','#e040a0','#40e080','#e0c040','#a040e
 function drawOtherPlayers() {
     const players = Object.values(state.otherPlayers);
     if (!players.length) return;
+    const myDim = state.inNether ? 'nether' : state.inWasteland ? 'wasteland' : state.inPossum ? 'possum' : 'overworld';
     const camX = state.camera.x - state.screenShake.x;
     const camY = state.camera.y - state.screenShake.y;
     for (let pi = 0; pi < players.length; pi++) {
         const p = players[pi];
+        if ((p.dim || 'overworld') !== myDim) continue; // hide players in other dimensions
         const sx = p.x - camX;
         const sy = p.y - camY;
         const col = PLAYER_COLORS[pi % PLAYER_COLORS.length];

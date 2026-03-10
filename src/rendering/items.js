@@ -174,6 +174,33 @@ export function drawItemIcon(itemId, x, y, size) {
         return;
     }
 
+    // Possum Candy — classic wrapped candy (pink body, white twist ends)
+    if (itemId === ITEMS.POSSUM_CANDY) {
+        const ctx = state.ctx;
+        const cx = x + size * 0.1, cy = y + size * 0.3;
+        const cw = size * 0.8, ch = size * 0.4;
+        // Body — pink with white stripe
+        ctx.fillStyle = "#ff44cc";
+        ctx.fillRect(cx, cy, cw, ch);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(cx + cw * 0.35, cy, cw * 0.1, ch);
+        ctx.fillRect(cx + cw * 0.55, cy, cw * 0.1, ch);
+        // Highlight
+        ctx.fillStyle = "rgba(255,255,255,0.35)";
+        ctx.fillRect(cx + 1, cy + 1, cw - 2, ch * 0.35);
+        // Left twist (white wrapper end)
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(cx - size * 0.15, cy + ch * 0.1, size * 0.15, ch * 0.8);
+        ctx.fillStyle = "#ffbbee";
+        ctx.fillRect(cx - size * 0.15, cy + ch * 0.25, size * 0.07, ch * 0.5);
+        // Right twist
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(cx + cw, cy + ch * 0.1, size * 0.15, ch * 0.8);
+        ctx.fillStyle = "#ffbbee";
+        ctx.fillRect(cx + cw + size * 0.08, cy + ch * 0.25, size * 0.07, ch * 0.5);
+        return;
+    }
+
     if (isBlockId(itemId)) {
         const info = BLOCK_INFO[itemId];
         if (!info || !info.color) return;

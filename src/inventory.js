@@ -147,6 +147,17 @@ export function eatFood() {
         if (slot.count === 0) { slot.itemId = 0; slot.durability = 0; }
         return;
     }
+    if (info.candyBuff) {
+        // Possum candy: speed boost for 20s, then sugar crash for 10s
+        state.player.speedBuffTimer = 20000;
+        state.player.sugarCrashTimer = 0; // cancel any existing crash
+        state.player.health = Math.min(state.player.maxHealth, state.player.health + info.healAmount);
+        addFloatingText(state.player.x, state.player.y - 20, "Sugar Rush! ZOOM!", "#ff44cc");
+        playEat();
+        slot.count--;
+        if (slot.count === 0) { slot.itemId = 0; slot.durability = 0; }
+        return;
+    }
     if (state.player.health >= state.player.maxHealth) {
         addFloatingText(state.player.x, state.player.y - 20, "Already full health!", "#ffaa00");
         return;

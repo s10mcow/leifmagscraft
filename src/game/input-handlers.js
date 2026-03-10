@@ -332,6 +332,32 @@ export function interact() {
         break;
     }
 
+    // Check for nearby possum to pet
+    for (const mob of state.mobs) {
+        if (mob.type !== "possum") continue;
+        const possDef = MOB_DEFS.possum;
+        const pcx = state.player.x + state.player.width / 2;
+        const pcy = state.player.y + state.player.height / 2;
+        const mcx = mob.x + possDef.width / 2;
+        const mcy = mob.y + possDef.height / 2;
+        if (Math.sqrt((pcx - mcx) ** 2 + (pcy - mcy) ** 2) < BLOCK_SIZE * 4) {
+            if (!mob.petCooldown || mob.petCooldown <= 0) {
+                mob.petCooldown = 8000; // 8s between pets
+                if (Math.random() < 0.35) {
+                    addToInventory(ITEMS.POSSUM_CANDY, 1);
+                    addFloatingText(mob.x + possDef.width / 2, mob.y - 20, "Got possum candy!", "#ff44cc");
+                    createParticles(mob.x + possDef.width / 2, mob.y + possDef.height / 2, 8, "#ff88dd", 2);
+                } else {
+                    addFloatingText(mob.x + possDef.width / 2, mob.y - 16, "...", "#ccaacc");
+                }
+                addFloatingText(state.player.x, state.player.y - 28, "Petted the possum!", "#ffbbee");
+            } else {
+                addFloatingText(state.player.x, state.player.y - 20, "The possum needs space!", "#ccaacc");
+            }
+            return;
+        }
+    }
+
     // Check for nearby wolf
     for (const mob of state.mobs) {
         if (mob.type !== "wolf") continue;

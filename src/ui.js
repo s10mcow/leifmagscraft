@@ -912,21 +912,27 @@ export function drawHUD() {
     state.ctx.fillStyle = "#9ca3af"; state.ctx.font = "11px 'Courier New', monospace";
     state.ctx.fillText(`Mobs: ${state.mobs.length}`, state.canvas.width - 10, 67);
 
-    // Raw meat debuff indicator
-    if (state.player.rawMeatDebuffTimer > 0) {
-        const secs = Math.ceil(state.player.rawMeatDebuffTimer / 1000);
-        state.ctx.fillStyle = "rgba(180,80,0,0.7)"; state.ctx.fillRect(state.canvas.width - 150, 76, 145, 20);
-        state.ctx.fillStyle = "#ffcc66"; state.ctx.font = "bold 11px 'Courier New', monospace"; state.ctx.textAlign = "right";
-        state.ctx.fillText(`☠ Food Poison ${secs}s`, state.canvas.width - 10, 90);
-    }
+    // Stacked status indicators
+    let statusY = 76;
+    const drawStatus = (bg, textColor, label) => {
+        state.ctx.fillStyle = bg; state.ctx.fillRect(state.canvas.width - 150, statusY, 145, 20);
+        state.ctx.fillStyle = textColor; state.ctx.font = "bold 11px 'Courier New', monospace"; state.ctx.textAlign = "right";
+        state.ctx.fillText(label, state.canvas.width - 10, statusY + 14);
+        statusY += 23;
+    };
+    if (state.player.speedBuffTimer > 0)
+        drawStatus("rgba(180,20,160,0.7)", "#ffaaff", `★ Sugar Rush ${Math.ceil(state.player.speedBuffTimer / 1000)}s`);
+    else if (state.player.sugarCrashTimer > 0)
+        drawStatus("rgba(80,40,100,0.7)", "#cc88ff", `▼ Sugar Crash ${Math.ceil(state.player.sugarCrashTimer / 1000)}s`);
+    if (state.player.rawMeatDebuffTimer > 0)
+        drawStatus("rgba(180,80,0,0.7)", "#ffcc66", `☠ Food Poison ${Math.ceil(state.player.rawMeatDebuffTimer / 1000)}s`);
 
     // Dimension indicator
-    state.ctx.fillStyle = "rgba(0,0,0,0.4)"; state.ctx.fillRect(state.canvas.width - 150, state.player.rawMeatDebuffTimer > 0 ? 99 : 76, 145, 20);
+    state.ctx.fillStyle = "rgba(0,0,0,0.4)"; state.ctx.fillRect(state.canvas.width - 150, statusY, 145, 20);
     const dimColor = state.inNether ? "#ff4444" : state.inWasteland ? "#c8a030" : state.inPossum ? "#ff88cc" : "#4ade80";
     const dimName  = state.inNether ? "NETHER"  : state.inWasteland ? "WASTELAND" : state.inPossum ? "POSSUM REALM" : "Overworld";
-    const dimY = state.player.rawMeatDebuffTimer > 0 ? 113 : 90;
     state.ctx.fillStyle = dimColor; state.ctx.font = "bold 11px 'Courier New', monospace";
-    state.ctx.fillText(dimName, state.canvas.width - 10, dimY);
+    state.ctx.fillText(dimName, state.canvas.width - 10, statusY + 14);
 }
 
 // --- TITLE SCREEN ---

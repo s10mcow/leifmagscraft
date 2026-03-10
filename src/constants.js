@@ -26,6 +26,8 @@ export const BLOCKS = {
   SILVER_ORE: 57,
   // Smoker (food cooker)
   SMOKER: 58,
+  // Glass
+  GLASS: 59,
 };
 
 // --- ITEM IDs (100+) ---
@@ -74,6 +76,11 @@ export const ITEMS = {
   SILVER_INGOT: 176,
   // Cooked meats (cooked in smoker)
   COOKED_PORKCHOP: 177, COOKED_BEEF: 178, COOKED_MUTTON: 179, COOKED_CHICKEN: 180,
+  // Glass bottle + water bottle
+  GLASS_BOTTLE: 181, WATER_BOTTLE: 182,
+  // Wool armor (warmth in cold climates)
+  WOOL_HELMET: 183, WOOL_CHESTPLATE: 184, WOOL_LEGGINGS: 185, WOOL_BOOTS: 186,
+  POSSUM_CANDY: 187,
 };
 
 // --- WORLD SETTINGS ---
@@ -125,7 +132,7 @@ export const BIOME_INFO = {
 // --- HELPER FUNCTIONS ---
 export function isBlockId(id) { return id >= 0 && id < 100; }
 export function isTool(id) { return id >= 101 && id <= 115; }
-export function isArmor(id) { return (id >= 120 && id <= 131) || (id >= 151 && id <= 154) || (id >= 158 && id <= 161); }
+export function isArmor(id) { return (id >= 120 && id <= 131) || (id >= 151 && id <= 154) || (id >= 158 && id <= 161) || (id >= 183 && id <= 186); }
 export function isFood(id) {
   return id === ITEMS.RAW_PORKCHOP || id === ITEMS.ROTTEN_FLESH ||
          id === ITEMS.MUTTON || id === ITEMS.STEAK ||
@@ -225,6 +232,7 @@ export const BLOCK_INFO = {
   [BLOCKS.FURNACE]: { name: "Furnace", color: "#5a5050", breakable: true, mineTime: 900, toolType: "pickaxe", minTier: 1, drops: BLOCKS.FURNACE },
   [BLOCKS.SILVER_ORE]: { name: "Silver Ore", color: "#8896a8", breakable: true, mineTime: 800, toolType: "pickaxe", minTier: 1, drops: BLOCKS.SILVER_ORE },
   [BLOCKS.SMOKER]:     { name: "Smoker",     color: "#4a5040", breakable: true, mineTime: 900, toolType: "pickaxe", minTier: 1, drops: BLOCKS.SMOKER },
+  [BLOCKS.GLASS]:      { name: "Glass",      color: "#b8d8f0", breakable: true, mineTime: 250, toolType: null,      minTier: 0, drops: BLOCKS.GLASS },
 };
 
 // --- ITEM PROPERTIES ---
@@ -305,6 +313,15 @@ export const ITEM_INFO = {
   [ITEMS.POSSUM_TELEPORTER]: { name: "Possum Teleporter", stackable: false, color: "#e8a0d0" },
   [ITEMS.POSSUM_TOOTH]: { name: "Possum's Tooth", stackable: true, maxStack: 16, color: "#fffff0" },
   [ITEMS.POSSUM_TAIL]: { name: "Possum's Tail", stackable: true, maxStack: 16, color: "#ccbbaa" },
+  // Glass bottles
+  [ITEMS.GLASS_BOTTLE]: { name: "Glass Bottle",  stackable: true,  maxStack: 16, color: "#b8d8f0" },
+  [ITEMS.WATER_BOTTLE]: { name: "Water Bottle",  stackable: false, color: "#4090e0" },
+  // Wool armor (low defense, keeps you warm)
+  [ITEMS.WOOL_HELMET]:     { name: "Wool Hat",      stackable: false, armorType: "helmet",     defense: 1, durability: 80,  color: "#f0f0f0", warmth: true },
+  [ITEMS.WOOL_CHESTPLATE]: { name: "Wool Sweater",  stackable: false, armorType: "chestplate", defense: 2, durability: 120, color: "#f0f0f0", warmth: true },
+  [ITEMS.WOOL_LEGGINGS]:   { name: "Wool Pants",    stackable: false, armorType: "leggings",   defense: 1, durability: 100, color: "#f0f0f0", warmth: true },
+  [ITEMS.WOOL_BOOTS]:      { name: "Wool Boots",    stackable: false, armorType: "boots",      defense: 1, durability: 70,  color: "#f0f0f0", warmth: true },
+  [ITEMS.POSSUM_CANDY]:   { name: "Possum Candy",  stackable: true,  maxStack: 16, food: true, healAmount: 2, candyBuff: true, color: "#ff44cc" },
   // Cooked meats
   [ITEMS.COOKED_PORKCHOP]: { name: "Cooked Porkchop", stackable: true, maxStack: 64, food: true, healAmount: 6 },
   [ITEMS.COOKED_BEEF]:     { name: "Cooked Beef",     stackable: true, maxStack: 64, food: true, healAmount: 8 },
@@ -410,6 +427,13 @@ export const RECIPES = [
   { result: ITEMS.RIOT_BOOTS,      resultCount: 1, ingredients: [{ id: ITEMS.TITANIUM_INGOT, count: 4 }] },
   // Bucket
   { result: ITEMS.BUCKET, resultCount: 1, ingredients: [{ id: ITEMS.IRON_INGOT, count: 3 }] },
+  // Glass bottle (3 glass)
+  { result: ITEMS.GLASS_BOTTLE, resultCount: 1, ingredients: [{ id: BLOCKS.GLASS, count: 3 }] },
+  // Wool armor
+  { result: ITEMS.WOOL_HELMET,     resultCount: 1, ingredients: [{ id: ITEMS.WOOL, count: 5 }] },
+  { result: ITEMS.WOOL_CHESTPLATE, resultCount: 1, ingredients: [{ id: ITEMS.WOOL, count: 8 }] },
+  { result: ITEMS.WOOL_LEGGINGS,   resultCount: 1, ingredients: [{ id: ITEMS.WOOL, count: 7 }] },
+  { result: ITEMS.WOOL_BOOTS,      resultCount: 1, ingredients: [{ id: ITEMS.WOOL, count: 4 }] },
 ];
 
 // --- SMELTING RECIPES (blast furnace) ---
@@ -424,6 +448,7 @@ export const FURNACE_RECIPES = [
   { input: BLOCKS.COPPER,     output: ITEMS.COPPER_INGOT, smeltTime: 3000 },
   { input: BLOCKS.GOLD,       output: ITEMS.GOLD_INGOT,   smeltTime: 5000 },
   { input: BLOCKS.SILVER_ORE, output: ITEMS.SILVER_INGOT, smeltTime: 4000 },
+  { input: BLOCKS.SAND,       output: BLOCKS.GLASS,       smeltTime: 2000 },
 ];
 
 // Food cooking recipes (used by Smoker)

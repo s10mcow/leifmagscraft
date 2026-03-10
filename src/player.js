@@ -30,6 +30,15 @@ export function updatePlayer(dt) {
     if (state.player.invincibleTimer > 0) state.player.invincibleTimer -= dt;
     if (state.player.attackCooldown > 0) state.player.attackCooldown -= dt;
     if (state.player.rawMeatDebuffTimer > 0) state.player.rawMeatDebuffTimer -= dt;
+    if (state.player.speedBuffTimer > 0) {
+        state.player.speedBuffTimer -= dt;
+        if (state.player.speedBuffTimer <= 0) {
+            state.player.speedBuffTimer = 0;
+            state.player.sugarCrashTimer = 10000; // crash after rush
+            addFloatingText(state.player.x, state.player.y - 20, "Sugar crash...", "#aa88cc");
+        }
+    }
+    if (state.player.sugarCrashTimer > 0) state.player.sugarCrashTimer -= dt;
 
     // --- Temperature system ---
     {
@@ -107,8 +116,9 @@ export function updatePlayer(dt) {
 
     // Movement (disabled during crafting or when wrapped)
     if (!state.craftingOpen && !state.chestOpen && !isWrapped) {
-        const debuffed = state.player.rawMeatDebuffTimer > 0;
-        const moveSpeed = state.player.crouching ? state.player.speed * 0.4 : (debuffed ? state.player.speed * 0.5 : state.player.speed);
+        const debuffed = state.player.rawMeatDebuffTimer > 0 || state.player.sugarCrashTimer > 0;
+        const speedMult = state.player.speedBuffTimer > 0 ? 1.7 : (debuffed ? 0.5 : 1.0);
+        const moveSpeed = state.player.crouching ? state.player.speed * 0.4 : state.player.speed * speedMult;
         if (state.keys["ArrowLeft"] || state.keys["a"] || state.keys["A"]) {
             state.player.velX = -moveSpeed;
             state.player.facing = -1;

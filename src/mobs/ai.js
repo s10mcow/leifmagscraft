@@ -524,6 +524,7 @@ export function updateMobs(dt, dayBrightness) {
         }
 
         else if (mob.type === "possum") {
+            if (mob.petCooldown > 0) mob.petCooldown -= dt;
             // Cheerful wander — slightly faster direction changes
             mob.wanderTimer -= dt;
             if (mob.wanderTimer <= 0) {
