@@ -138,6 +138,15 @@ export function eatFood() {
     if (slot.count === 0) return;
     const info = ITEM_INFO[slot.itemId];
     if (!info || !info.food) return;
+    if (info.rawMeat) {
+        // Raw meat: apply slowness + weakness debuff, minimal heal
+        state.player.rawMeatDebuffTimer = 30000;
+        addFloatingText(state.player.x, state.player.y - 20, "Raw meat! Debuffed!", "#ff9900");
+        playEat();
+        slot.count--;
+        if (slot.count === 0) { slot.itemId = 0; slot.durability = 0; }
+        return;
+    }
     if (state.player.health >= state.player.maxHealth) {
         addFloatingText(state.player.x, state.player.y - 20, "Already full health!", "#ffaa00");
         return;

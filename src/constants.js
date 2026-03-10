@@ -24,6 +24,8 @@ export const BLOCKS = {
   FURNACE: 56,
   // Silver ore
   SILVER_ORE: 57,
+  // Smoker (food cooker)
+  SMOKER: 58,
 };
 
 // --- ITEM IDs (100+) ---
@@ -71,6 +73,8 @@ export const ITEMS = {
   // Overworld ingots (smelted in furnace)
   IRON_INGOT: 173, COPPER_INGOT: 174, GOLD_INGOT: 175,
   SILVER_INGOT: 176,
+  // Cooked meats (cooked in smoker)
+  COOKED_PORKCHOP: 177, COOKED_BEEF: 178, COOKED_MUTTON: 179, COOKED_CHICKEN: 180,
 };
 
 // --- WORLD SETTINGS ---
@@ -126,7 +130,9 @@ export function isArmor(id) { return (id >= 120 && id <= 131) || (id >= 151 && i
 export function isFood(id) {
   return id === ITEMS.RAW_PORKCHOP || id === ITEMS.ROTTEN_FLESH ||
          id === ITEMS.MUTTON || id === ITEMS.STEAK ||
-         id === ITEMS.RAW_CHICKEN || id === ITEMS.HUMAN_MEAT;
+         id === ITEMS.RAW_CHICKEN || id === ITEMS.HUMAN_MEAT ||
+         id === ITEMS.COOKED_PORKCHOP || id === ITEMS.COOKED_BEEF ||
+         id === ITEMS.COOKED_MUTTON || id === ITEMS.COOKED_CHICKEN;
 }
 
 export function getItemName(id) {
@@ -219,12 +225,13 @@ export const BLOCK_INFO = {
   // Overworld furnace
   [BLOCKS.FURNACE]: { name: "Furnace", color: "#5a5050", breakable: true, mineTime: 900, toolType: "pickaxe", minTier: 1, drops: BLOCKS.FURNACE },
   [BLOCKS.SILVER_ORE]: { name: "Silver Ore", color: "#8896a8", breakable: true, mineTime: 800, toolType: "pickaxe", minTier: 1, drops: BLOCKS.SILVER_ORE },
+  [BLOCKS.SMOKER]:     { name: "Smoker",     color: "#4a5040", breakable: true, mineTime: 900, toolType: "pickaxe", minTier: 1, drops: BLOCKS.SMOKER },
 };
 
 // --- ITEM PROPERTIES ---
 export const ITEM_INFO = {
   [ITEMS.STICK]: { name: "Stick", stackable: true, maxStack: 64 },
-  [ITEMS.RAW_PORKCHOP]: { name: "Porkchop", stackable: true, maxStack: 64, food: true, healAmount: 4 },
+  [ITEMS.RAW_PORKCHOP]: { name: "Raw Porkchop", stackable: true, maxStack: 64, food: true, healAmount: 1, rawMeat: true },
   [ITEMS.BONE]: { name: "Bone", stackable: true, maxStack: 64 },
   [ITEMS.GUNPOWDER]: { name: "Gunpowder", stackable: true, maxStack: 64 },
   [ITEMS.ROTTEN_FLESH]: { name: "Rotten Flesh", stackable: true, maxStack: 64, food: true, healAmount: 2 },
@@ -261,9 +268,9 @@ export const ITEM_INFO = {
   [ITEMS.HAZMAT_LEGGINGS]:   { name: "Hazmat Leggings",   stackable: false, armorType: "leggings",   defense: 2, durability: 240, color: "#e8e820", radiation: true },
   [ITEMS.HAZMAT_BOOTS]:      { name: "Hazmat Boots",      stackable: false, armorType: "boots",      defense: 1, durability: 210, color: "#e8e820", radiation: true },
   [ITEMS.WOOL]: { name: "Wool", stackable: true, maxStack: 64 },
-  [ITEMS.MUTTON]: { name: "Mutton", stackable: true, maxStack: 64, food: true, healAmount: 3 },
+  [ITEMS.MUTTON]: { name: "Raw Mutton", stackable: true, maxStack: 64, food: true, healAmount: 1, rawMeat: true },
   [ITEMS.LEATHER]: { name: "Leather", stackable: true, maxStack: 64 },
-  [ITEMS.STEAK]: { name: "Steak", stackable: true, maxStack: 64, food: true, healAmount: 5 },
+  [ITEMS.STEAK]: { name: "Raw Beef", stackable: true, maxStack: 64, food: true, healAmount: 1, rawMeat: true },
   [ITEMS.FLINT]: { name: "Flint", stackable: true, maxStack: 64 },
   [ITEMS.FLINT_AND_STEEL]: { name: "Flint & Steel", stackable: false, toolType: "flint_steel", tier: 0, speed: 1, durability: 64, color: "#888888" },
   [ITEMS.BULLETS]: { name: "Bullets", stackable: true, maxStack: 64 },
@@ -271,7 +278,7 @@ export const ITEM_INFO = {
   [ITEMS.AK47]: { name: "AK-47", stackable: false, toolType: "gun", tier: 2, speed: 1, durability: 400, damage: 4, color: "#5a5a3a", fireRate: 150, magSize: 24, reloadTime: 3000 },
   [ITEMS.ENDER_PEARL]: { name: "Ender Pearl", stackable: true, maxStack: 16 },
   [ITEMS.FEATHER]: { name: "Feather", stackable: true, maxStack: 64 },
-  [ITEMS.RAW_CHICKEN]: { name: "Raw Chicken", stackable: true, maxStack: 64, food: true, healAmount: 3 },
+  [ITEMS.RAW_CHICKEN]: { name: "Raw Chicken", stackable: true, maxStack: 64, food: true, healAmount: 1, rawMeat: true },
   [ITEMS.ROCKET_LAUNCHER]: { name: "Rocket Launcher", stackable: false, toolType: "gun", tier: 3, speed: 1, durability: 100, damage: 12, color: "#556b2f", fireRate: 1500, ammoType: "rocket", magSize: 1, reloadTime: 3000 },
   [ITEMS.ROCKET]: { name: "Rocket", stackable: true, maxStack: 16 },
   [ITEMS.MINIATURE_NETHER_PORTAL]: { name: "Miniature Nether Portal", stackable: false, color: "#8800cc" },
@@ -300,6 +307,11 @@ export const ITEM_INFO = {
   [ITEMS.POSSUM_TOOTH]: { name: "Possum's Tooth", stackable: true, maxStack: 16, color: "#fffff0" },
   [ITEMS.POSSUM_TAIL]: { name: "Possum's Tail", stackable: true, maxStack: 16, color: "#ccbbaa" },
   [ITEMS.TOOTH_ROPE]:  { name: "Tooth Rope",    stackable: true, maxStack: 8,  color: "#c4a040", toolType: "thrown", damage: 40 },
+  // Cooked meats
+  [ITEMS.COOKED_PORKCHOP]: { name: "Cooked Porkchop", stackable: true, maxStack: 64, food: true, healAmount: 6 },
+  [ITEMS.COOKED_BEEF]:     { name: "Cooked Beef",     stackable: true, maxStack: 64, food: true, healAmount: 8 },
+  [ITEMS.COOKED_MUTTON]:   { name: "Cooked Mutton",   stackable: true, maxStack: 64, food: true, healAmount: 5 },
+  [ITEMS.COOKED_CHICKEN]:  { name: "Cooked Chicken",  stackable: true, maxStack: 64, food: true, healAmount: 6 },
   // Overworld ingots
   [ITEMS.IRON_INGOT]:   { name: "Iron Ingot",   stackable: true, maxStack: 64, color: "#d4d4d4" },
   [ITEMS.COPPER_INGOT]: { name: "Copper Ingot", stackable: true, maxStack: 64, color: "#e07040" },
@@ -390,6 +402,8 @@ export const RECIPES = [
   { result: ITEMS.SHIELD, resultCount: 1, ingredients: [{ id: BLOCKS.PLANKS, count: 6 }, { id: ITEMS.IRON_INGOT, count: 1 }] },
   // Furnace
   { result: BLOCKS.FURNACE, resultCount: 1, ingredients: [{ id: BLOCKS.COBBLESTONE, count: 8 }] },
+  // Smoker (food cooker)
+  { result: BLOCKS.SMOKER, resultCount: 1, ingredients: [{ id: BLOCKS.WOOD, count: 8 }] },
   // Blast furnace
   { result: BLOCKS.BLAST_FURNACE, resultCount: 1, ingredients: [{ id: ITEMS.IRON_INGOT, count: 5 }, { id: BLOCKS.COBBLESTONE, count: 8 }] },
   // Riot armor (steel ingots)
@@ -415,9 +429,24 @@ export const FURNACE_RECIPES = [
   { input: BLOCKS.SILVER_ORE, output: ITEMS.SILVER_INGOT, smeltTime: 4000 },
 ];
 
+// Food cooking recipes (used by Smoker)
+export const FOOD_RECIPES = [
+  { input: ITEMS.RAW_PORKCHOP, output: ITEMS.COOKED_PORKCHOP, cookTime: 2000 },
+  { input: ITEMS.STEAK,        output: ITEMS.COOKED_BEEF,     cookTime: 2000 },
+  { input: ITEMS.MUTTON,       output: ITEMS.COOKED_MUTTON,   cookTime: 2000 },
+  { input: ITEMS.RAW_CHICKEN,  output: ITEMS.COOKED_CHICKEN,  cookTime: 2000 },
+];
+
 // Fuel values in ms (how long one item burns)
 export const FUEL_VALUES = {
-  [BLOCKS.COAL]: 24000, // 8 smelt-cycles worth of fuel
+  [BLOCKS.COAL]:         24000, // 8 smelt-cycles worth of fuel
+  [BLOCKS.WOOD]:          8000, // 4 food cooks
+  [BLOCKS.SPRUCE_WOOD]:   8000,
+  [BLOCKS.ACACIA_WOOD]:   8000,
+  [BLOCKS.NETHER_WOOD]:   8000,
+  [BLOCKS.WARPED_WOOD]:   8000,
+  [BLOCKS.DEAD_WOOD]:     8000,
+  [BLOCKS.PLANKS]:        4000, // 2 food cooks
 };
 
 // --- VILLAGER TRADES ---

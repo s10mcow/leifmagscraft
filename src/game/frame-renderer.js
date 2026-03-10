@@ -9,7 +9,7 @@
 import { state } from '../state.js';
 import { BLOCKS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, TORCH_LIGHT_RADIUS, ITEMS } from '../constants.js';
 import { drawSky, drawBackgroundTrees, drawBlock, drawAllMobs, drawProjectiles, drawParticles, drawPlayer } from '../rendering.js';
-import { drawFloatingTexts, drawHotbar, drawHealthBar, drawBlockHighlight, drawMiningProgress, drawCraftingMenu, drawChestMenu, drawBlastFurnaceMenu, drawFurnaceMenu, drawTradingMenu, drawDeathScreen, drawHUD, drawChat } from '../ui.js';
+import { drawFloatingTexts, drawHotbar, drawHealthBar, drawBlockHighlight, drawMiningProgress, drawCraftingMenu, drawChestMenu, drawBlastFurnaceMenu, drawFurnaceMenu, drawSmokerMenu, drawTradingMenu, drawDeathScreen, drawHUD, drawChat } from '../ui.js';
 
 // SLEEP_DURATION must match the value in systems.js
 const PLAYER_COLORS = ['#e07040','#40a0e0','#e040a0','#40e080','#e0c040','#a040e0','#40e0c0'];
@@ -172,6 +172,9 @@ export function drawGameFrame(timestamp) {
 
     // 12.57. Furnace overlay
     drawFurnaceMenu();
+
+    // 12.58. Smoker overlay
+    drawSmokerMenu();
 
     // 12.6. Trading overlay
     drawTradingMenu();

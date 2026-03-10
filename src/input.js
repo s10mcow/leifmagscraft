@@ -7,7 +7,7 @@
 // ============================================================
 
 import { state } from './state.js';
-import { BLOCKS, ITEMS, UI, RECIPES, TRADES, SMELTING_RECIPES, FURNACE_RECIPES, FUEL_VALUES, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, ITEM_INFO, isBlockId, getItemName } from './constants.js';
+import { BLOCKS, ITEMS, UI, RECIPES, TRADES, SMELTING_RECIPES, FURNACE_RECIPES, FOOD_RECIPES, FUEL_VALUES, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, ITEM_INFO, isBlockId, getItemName } from './constants.js';
 import { HOTBAR_SIZE, BACKPACK_SIZE, TOTAL_SLOTS, clickInventorySlot, rightClickInventorySlot, returnCursorItem, clickArmorSlot, clickOffhandSlot, countItem, addFloatingText, craft, addToInventory, removeItems } from './inventory.js';
 import { playSelect } from './audio.js';
 import { createParticles, createMob } from './mobs.js';
@@ -349,6 +349,9 @@ export function setupInput() {
                 } else if (state.furnaceOpen) {
                     state.furnaceOpen = false;
                     state.furnacePos = null;
+                } else if (state.smokerOpen) {
+                    state.smokerOpen = false;
+                    state.smokerPos = null;
                 } else if (state.tradingOpen) {
                     state.tradingOpen = false;
                     state.tradingVillager = null;
@@ -379,6 +382,12 @@ export function setupInput() {
             } else if (state.blastFurnaceOpen) {
                 state.blastFurnaceOpen = false;
                 state.blastFurnacePos = null;
+            } else if (state.furnaceOpen) {
+                state.furnaceOpen = false;
+                state.furnacePos = null;
+            } else if (state.smokerOpen) {
+                state.smokerOpen = false;
+                state.smokerPos = null;
             } else if (state.tradingOpen) {
                 state.tradingOpen = false;
                 state.tradingVillager = null;
@@ -402,6 +411,9 @@ export function setupInput() {
             } else if (state.furnaceOpen) {
                 state.furnaceOpen = false;
                 state.furnacePos = null;
+            } else if (state.smokerOpen) {
+                state.smokerOpen = false;
+                state.smokerPos = null;
             } else if (state.tradingOpen) {
                 state.tradingOpen = false;
                 state.tradingVillager = null;
@@ -867,6 +879,76 @@ export function setupInput() {
                             tryMove(state.inventory.slots[HOTBAR_SIZE + i]);
                             break;
                         }
+                    }
+                }
+            }
+            return;
+        }
+        if (state.smokerOpen && state.smokerPos) {
+            const key = `${state.smokerPos.x},${state.smokerPos.y}`;
+            const f = state.smokerData[key];
+            const rects = state.smokerSlotRects;
+            if (f && rects) {
+                const { x: mx, y: my } = scaledMouse(460, 530);
+                const hotSlot = state.inventory.slots[state.inventory.selectedSlot];
+                if (mx >= rects.outputX && mx <= rects.outputX + rects.slotSize &&
+                    my >= rects.outputY && my <= rects.outputY + rects.slotSize) {
+                    if (f.outputSlot.itemId !== 0) {
+                        addToInventory(f.outputSlot.itemId, f.outputSlot.count);
+                        f.outputSlot.itemId = 0; f.outputSlot.count = 0;
+                    }
+                } else if (mx >= rects.inputX && mx <= rects.inputX + rects.slotSize &&
+                    my >= rects.inputY && my <= rects.inputY + rects.slotSize) {
+                    if (hotSlot.count > 0 && FOOD_RECIPES.find(r => r.input === hotSlot.itemId)) {
+                        if (f.inputSlot.itemId === 0 || f.inputSlot.itemId === hotSlot.itemId) {
+                            const move = Math.min(hotSlot.count, 64 - f.inputSlot.count);
+                            f.inputSlot.itemId = hotSlot.itemId; f.inputSlot.count += move;
+                            hotSlot.count -= move;
+                            if (hotSlot.count === 0) hotSlot.itemId = 0;
+                        }
+                    } else if (hotSlot.count === 0 && f.inputSlot.itemId !== 0) {
+                        addToInventory(f.inputSlot.itemId, f.inputSlot.count);
+                        f.inputSlot.itemId = 0; f.inputSlot.count = 0;
+                    }
+                } else if (mx >= rects.fuelX && mx <= rects.fuelX + rects.slotSize &&
+                    my >= rects.fuelY && my <= rects.fuelY + rects.slotSize) {
+                    if (hotSlot.count > 0 && FUEL_VALUES[hotSlot.itemId] !== undefined) {
+                        if (f.fuelSlot.itemId === 0 || f.fuelSlot.itemId === hotSlot.itemId) {
+                            const move = Math.min(hotSlot.count, 64 - f.fuelSlot.count);
+                            f.fuelSlot.itemId = hotSlot.itemId; f.fuelSlot.count += move;
+                            hotSlot.count -= move;
+                            if (hotSlot.count === 0) hotSlot.itemId = 0;
+                        }
+                    } else if (hotSlot.count === 0 && f.fuelSlot.itemId !== 0) {
+                        addToInventory(f.fuelSlot.itemId, f.fuelSlot.count);
+                        f.fuelSlot.itemId = 0; f.fuelSlot.count = 0;
+                    }
+                } else {
+                    const { isx, hotbarY, bpY, is, ip } = rects;
+                    const tryMoveFood = (slot) => {
+                        if (slot.count <= 0) return;
+                        if (FOOD_RECIPES.find(r => r.input === slot.itemId)) {
+                            if (f.inputSlot.itemId === 0 || f.inputSlot.itemId === slot.itemId) {
+                                const move = Math.min(slot.count, 64 - f.inputSlot.count);
+                                f.inputSlot.itemId = slot.itemId; f.inputSlot.count += move;
+                                slot.count -= move; if (slot.count === 0) slot.itemId = 0;
+                            }
+                        } else if (FUEL_VALUES[slot.itemId] !== undefined) {
+                            if (f.fuelSlot.itemId === 0 || f.fuelSlot.itemId === slot.itemId) {
+                                const move = Math.min(slot.count, 64 - f.fuelSlot.count);
+                                f.fuelSlot.itemId = slot.itemId; f.fuelSlot.count += move;
+                                slot.count -= move; if (slot.count === 0) slot.itemId = 0;
+                            }
+                        }
+                    };
+                    for (let i = 0; i < HOTBAR_SIZE; i++) {
+                        const sx = isx + i * (is + ip);
+                        if (mx >= sx && mx <= sx + is && my >= hotbarY && my <= hotbarY + is) { tryMoveFood(state.inventory.slots[i]); break; }
+                    }
+                    for (let i = 0; i < BACKPACK_SIZE; i++) {
+                        const c = i % 9, r = Math.floor(i / 9);
+                        const sx = isx + c * (is + ip), sy = bpY + r * (is + ip);
+                        if (mx >= sx && mx <= sx + is && my >= sy && my <= sy + is) { tryMoveFood(state.inventory.slots[HOTBAR_SIZE + i]); break; }
                     }
                 }
             }

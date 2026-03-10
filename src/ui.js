@@ -6,7 +6,7 @@
 // ============================================================
 
 import { state } from './state.js';
-import { BLOCKS, ITEMS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, UI, RECIPES, TRADES, BLOCK_INFO, ITEM_INFO, MOB_DEFS, getItemName, isStackable, maxStackSize, isFood, PLAYER_REACH, SMELTING_RECIPES, FURNACE_RECIPES, FUEL_VALUES } from './constants.js';
+import { BLOCKS, ITEMS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, UI, RECIPES, TRADES, BLOCK_INFO, ITEM_INFO, MOB_DEFS, getItemName, isStackable, maxStackSize, isFood, PLAYER_REACH, SMELTING_RECIPES, FURNACE_RECIPES, FOOD_RECIPES, FUEL_VALUES } from './constants.js';
 import { countItem, getArmorDefense, HOTBAR_SIZE, BACKPACK_SIZE, canCraft, addToInventory, removeItems } from './inventory.js';
 import { drawItemIcon } from './rendering.js';
 import { getInventorySlotAtMouse, getArmorSlotAtMouse, getChestSlotAtMouse, getChestInventorySlotAtMouse, getOffhandSlotAtMouse } from './input.js';
@@ -588,6 +588,134 @@ export function drawFurnaceMenu() {
     state.ctx.restore();
 }
 
+// --- SMOKER MENU ---
+export function drawSmokerMenu() {
+    if (!state.smokerOpen || !state.smokerPos) return;
+    const key = `${state.smokerPos.x},${state.smokerPos.y}`;
+    const f = state.smokerData[key];
+    if (!f) return;
+
+    state.ctx.fillStyle = "rgba(0,0,0,0.75)";
+    state.ctx.fillRect(0, 0, state.canvas.width, state.canvas.height);
+
+    const is = UI.SLOT_SIZE, ip = UI.SLOT_PAD;
+    const invCols = UI.INV_COLS;
+    const invTotalW = UI.INV_TOTAL_W;
+    const pw = Math.max(460, invTotalW + 40), ph = 530;
+    const px = (state.canvas.width - pw) / 2, py = (state.canvas.height - ph) / 2;
+    state.ctx.save();
+    applyPanelScale(pw, ph);
+
+    state.ctx.fillStyle = "#1a2a1a"; state.ctx.fillRect(px, py, pw, ph);
+    state.ctx.strokeStyle = "#6a8a6a"; state.ctx.lineWidth = 3; state.ctx.strokeRect(px, py, pw, ph); state.ctx.lineWidth = 1;
+
+    state.ctx.fillStyle = "#80c080"; state.ctx.font = "bold 22px 'Courier New', monospace"; state.ctx.textAlign = "center";
+    state.ctx.fillText("SMOKER", state.canvas.width / 2, py + 34);
+    state.ctx.fillStyle = "#6b7280"; state.ctx.font = "11px 'Courier New', monospace";
+    state.ctx.fillText("Cook raw meat with wood or coal as fuel  |  Press E to close", state.canvas.width / 2, py + 52);
+
+    const slotSize = 52;
+    const midX = state.canvas.width / 2;
+    const slotY = py + 78;
+
+    // Input slot
+    const inputX = midX - 130 - slotSize / 2;
+    state.ctx.strokeStyle = "#6a8a6a"; state.ctx.lineWidth = 2;
+    state.ctx.fillStyle = "#1e2e1e"; state.ctx.fillRect(inputX, slotY, slotSize, slotSize);
+    state.ctx.strokeRect(inputX, slotY, slotSize, slotSize); state.ctx.lineWidth = 1;
+    if (f.inputSlot.itemId) {
+        drawItemIcon(f.inputSlot.itemId, inputX + 2, slotY + 2, slotSize - 4);
+        state.ctx.fillStyle = "#fff"; state.ctx.font = "bold 12px 'Courier New', monospace"; state.ctx.textAlign = "right";
+        state.ctx.fillText(f.inputSlot.count, inputX + slotSize - 3, slotY + slotSize - 3);
+    } else {
+        state.ctx.fillStyle = "#555"; state.ctx.font = "10px 'Courier New', monospace"; state.ctx.textAlign = "center";
+        state.ctx.fillText("RAW", inputX + slotSize / 2, slotY + slotSize / 2 + 4);
+    }
+
+    // Progress arrow
+    const recipe = FOOD_RECIPES.find(r => r.input === f.inputSlot.itemId);
+    const isCooking = f.fuelLeft > 0 && recipe && f.inputSlot.count > 0;
+    const progress = recipe ? f.progress / recipe.cookTime : 0;
+    state.ctx.fillStyle = "#333"; state.ctx.fillRect(midX - 28, slotY + 16, 56, 20);
+    state.ctx.fillStyle = isCooking ? "#60c060" : "#555";
+    state.ctx.fillRect(midX - 28, slotY + 16, Math.round(56 * Math.min(progress, 1)), 20);
+    state.ctx.fillStyle = "#fff"; state.ctx.font = "bold 16px 'Courier New', monospace"; state.ctx.textAlign = "center";
+    state.ctx.fillText("→", midX, slotY + 31);
+
+    // Output slot
+    const outputX = midX + 130 - slotSize / 2;
+    state.ctx.strokeStyle = "#6a8a6a"; state.ctx.lineWidth = 2;
+    state.ctx.fillStyle = "#1e2e1e"; state.ctx.fillRect(outputX, slotY, slotSize, slotSize);
+    state.ctx.strokeRect(outputX, slotY, slotSize, slotSize); state.ctx.lineWidth = 1;
+    if (f.outputSlot.itemId) {
+        drawItemIcon(f.outputSlot.itemId, outputX + 2, slotY + 2, slotSize - 4);
+        state.ctx.fillStyle = "#fff"; state.ctx.font = "bold 12px 'Courier New', monospace"; state.ctx.textAlign = "right";
+        state.ctx.fillText(f.outputSlot.count, outputX + slotSize - 3, slotY + slotSize - 3);
+    } else {
+        state.ctx.fillStyle = "#555"; state.ctx.font = "10px 'Courier New', monospace"; state.ctx.textAlign = "center";
+        state.ctx.fillText("OUT", outputX + slotSize / 2, slotY + slotSize / 2 + 4);
+    }
+
+    // Fuel slot
+    const fuelSlotX = midX - slotSize / 2;
+    const fuelSlotY = slotY + slotSize + 18;
+    state.ctx.strokeStyle = "#6a8a6a"; state.ctx.lineWidth = 2;
+    state.ctx.fillStyle = "#1e2e1e"; state.ctx.fillRect(fuelSlotX, fuelSlotY, slotSize, slotSize);
+    state.ctx.strokeRect(fuelSlotX, fuelSlotY, slotSize, slotSize); state.ctx.lineWidth = 1;
+    if (f.fuelSlot.itemId) {
+        drawItemIcon(f.fuelSlot.itemId, fuelSlotX + 2, fuelSlotY + 2, slotSize - 4);
+        state.ctx.fillStyle = "#fff"; state.ctx.font = "bold 12px 'Courier New', monospace"; state.ctx.textAlign = "right";
+        state.ctx.fillText(f.fuelSlot.count, fuelSlotX + slotSize - 3, fuelSlotY + slotSize - 3);
+    } else {
+        state.ctx.fillStyle = "#555"; state.ctx.font = "10px 'Courier New', monospace"; state.ctx.textAlign = "center";
+        state.ctx.fillText("FUEL", fuelSlotX + slotSize / 2, fuelSlotY + slotSize / 2 + 4);
+    }
+    // Fuel bar
+    const fuelPct = f.maxFuel > 0 ? f.fuelLeft / f.maxFuel : 0;
+    state.ctx.fillStyle = "#333"; state.ctx.fillRect(fuelSlotX + slotSize + 8, fuelSlotY, 80, 14);
+    state.ctx.fillStyle = f.fuelLeft > 0 ? "#60c060" : "#444";
+    state.ctx.fillRect(fuelSlotX + slotSize + 8, fuelSlotY, Math.round(80 * fuelPct), 14);
+    state.ctx.fillStyle = "#9ca3af"; state.ctx.font = "10px 'Courier New', monospace"; state.ctx.textAlign = "left";
+    state.ctx.fillText("Fuel", fuelSlotX + slotSize + 8, fuelSlotY + 26);
+
+    // Inventory
+    const sepY = fuelSlotY + slotSize + 20;
+    state.ctx.strokeStyle = "rgba(255,255,255,0.1)"; state.ctx.lineWidth = 1;
+    state.ctx.beginPath(); state.ctx.moveTo(px + 16, sepY); state.ctx.lineTo(px + pw - 16, sepY); state.ctx.stroke();
+    state.ctx.fillStyle = "#9ca3af"; state.ctx.font = "bold 11px 'Courier New', monospace"; state.ctx.textAlign = "center";
+    state.ctx.fillText("YOUR INVENTORY", state.canvas.width / 2, sepY + 14);
+
+    const isx = (state.canvas.width - invTotalW) / 2;
+    const hotbarY = sepY + 22;
+    const { x: smx, y: smy } = (() => {
+        const s = Math.min(1, (state.canvas.width - 8) / pw, (state.canvas.height - 8) / ph);
+        if (s >= 1) return { x: state.mouse.x, y: state.mouse.y };
+        const cx2 = state.canvas.width / 2, cy2 = state.canvas.height / 2;
+        return { x: (state.mouse.x - cx2 * (1 - s)) / s, y: (state.mouse.y - cy2 * (1 - s)) / s };
+    })();
+
+    for (let i = 0; i < HOTBAR_SIZE; i++) {
+        const sx2 = isx + i * (is + ip);
+        const hover = smx >= sx2 && smx <= sx2 + is && smy >= hotbarY && smy <= hotbarY + is;
+        drawInventorySlot(sx2, hotbarY, is, state.inventory.slots[i], hover, i);
+    }
+    const bpY = hotbarY + is + ip + 4;
+    for (let i = 0; i < BACKPACK_SIZE; i++) {
+        const c = i % invCols, r = Math.floor(i / invCols);
+        const sx2 = isx + c * (is + ip), sy2 = bpY + r * (is + ip);
+        const hover = smx >= sx2 && smx <= sx2 + is && smy >= sy2 && smy <= sy2 + is;
+        drawInventorySlot(sx2, sy2, is, state.inventory.slots[HOTBAR_SIZE + i], hover, HOTBAR_SIZE + i);
+    }
+
+    state.smokerSlotRects = {
+        inputX, inputY: slotY, outputX, outputY: slotY,
+        fuelX: fuelSlotX, fuelY: fuelSlotY, slotSize,
+        isx, hotbarY, bpY, is, ip,
+    };
+
+    state.ctx.restore();
+}
+
 // --- BLAST FURNACE MENU ---
 export function drawBlastFurnaceMenu() {
     if (!state.blastFurnaceOpen) return;
@@ -762,12 +890,21 @@ export function drawHUD() {
     state.ctx.fillStyle = "#9ca3af"; state.ctx.font = "11px 'Courier New', monospace";
     state.ctx.fillText(`Mobs: ${state.mobs.length}`, state.canvas.width - 10, 67);
 
+    // Raw meat debuff indicator
+    if (state.player.rawMeatDebuffTimer > 0) {
+        const secs = Math.ceil(state.player.rawMeatDebuffTimer / 1000);
+        state.ctx.fillStyle = "rgba(180,80,0,0.7)"; state.ctx.fillRect(state.canvas.width - 150, 76, 145, 20);
+        state.ctx.fillStyle = "#ffcc66"; state.ctx.font = "bold 11px 'Courier New', monospace"; state.ctx.textAlign = "right";
+        state.ctx.fillText(`☠ Food Poison ${secs}s`, state.canvas.width - 10, 90);
+    }
+
     // Dimension indicator
-    state.ctx.fillStyle = "rgba(0,0,0,0.4)"; state.ctx.fillRect(state.canvas.width - 150, 76, 145, 20);
+    state.ctx.fillStyle = "rgba(0,0,0,0.4)"; state.ctx.fillRect(state.canvas.width - 150, state.player.rawMeatDebuffTimer > 0 ? 99 : 76, 145, 20);
     const dimColor = state.inNether ? "#ff4444" : state.inWasteland ? "#c8a030" : state.inPossum ? "#ff88cc" : "#4ade80";
     const dimName  = state.inNether ? "NETHER"  : state.inWasteland ? "WASTELAND" : state.inPossum ? "POSSUM REALM" : "Overworld";
+    const dimY = state.player.rawMeatDebuffTimer > 0 ? 113 : 90;
     state.ctx.fillStyle = dimColor; state.ctx.font = "bold 11px 'Courier New', monospace";
-    state.ctx.fillText(dimName, state.canvas.width - 10, 90);
+    state.ctx.fillText(dimName, state.canvas.width - 10, dimY);
 }
 
 // --- TITLE SCREEN ---

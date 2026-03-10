@@ -495,6 +495,30 @@ export function drawBlock(blockType, screenX, screenY) {
         state.ctx.strokeRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
         return;
     }
+    // Smoker — mossy stone body with green smoke wisps
+    if (blockType === BLOCKS.SMOKER) {
+        state.ctx.fillStyle = "#4a5040";
+        state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
+        // Stone lines
+        state.ctx.fillStyle = "#353d30";
+        state.ctx.fillRect(screenX, screenY + 10, BLOCK_SIZE, 2);
+        state.ctx.fillRect(screenX, screenY + 22, BLOCK_SIZE, 2);
+        // Cooking chamber
+        const sKey = state.smokerPos ? `${state.smokerPos.x},${state.smokerPos.y}` : null;
+        const sData = sKey ? state.smokerData[sKey] : null;
+        const sActive = sData && sData.fuelLeft > 0;
+        const t4 = performance.now() * 0.004;
+        const sg = sActive ? 0.5 + Math.sin(t4) * 0.25 : 0.15;
+        state.ctx.fillStyle = "#333";
+        state.ctx.fillRect(screenX + 6, screenY + 10, 20, 14);
+        state.ctx.fillStyle = sActive ? `rgba(100,200,80,${sg})` : "rgba(30,40,25,0.8)";
+        state.ctx.fillRect(screenX + 8, screenY + 12, 16, 10);
+        // Smoke vent slots at top
+        state.ctx.fillStyle = "#222";
+        state.ctx.fillRect(screenX + 8,  screenY + 2, 4, 4);
+        state.ctx.fillRect(screenX + 20, screenY + 2, 4, 4);
+        return;
+    }
     // Silver Ore — stone base with shimmering silver-white flecks
     if (blockType === BLOCKS.SILVER_ORE) {
         state.ctx.fillStyle = "#8896a8";

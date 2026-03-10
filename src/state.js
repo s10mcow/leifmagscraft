@@ -37,6 +37,10 @@ export const state = {
     furnacePos: null,
     furnaceData: {},        // keyed "x,y" → { inputSlot, fuelSlot, outputSlot, progress, fuelLeft, maxFuel }
     furnaceSlotRects: null, // set by drawFurnaceMenu for click detection
+    smokerOpen: false,
+    smokerPos: null,
+    smokerData: {},         // keyed "x,y" → { inputSlot, fuelSlot, outputSlot, progress, fuelLeft, maxFuel }
+    smokerSlotRects: null,  // set by drawSmokerMenu for click detection
     chestOpen: false,
     chestPos: null,
     chestHover: -1,
@@ -100,7 +104,8 @@ export const state = {
         fallStartY: 0,
         isFalling: false,
         burnTimer: 0,
-        crouching: false
+        crouching: false,
+        rawMeatDebuffTimer: 0
     },
     camera: { x: 0, y: 0 },
     screenShake: { x: 0, y: 0, intensity: 0 },

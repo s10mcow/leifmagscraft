@@ -29,6 +29,7 @@ export function updatePlayer(dt) {
 
     if (state.player.invincibleTimer > 0) state.player.invincibleTimer -= dt;
     if (state.player.attackCooldown > 0) state.player.attackCooldown -= dt;
+    if (state.player.rawMeatDebuffTimer > 0) state.player.rawMeatDebuffTimer -= dt;
 
     // Crouching (Shift key) — shrink to one block tall, feet stay fixed
     const wasCrouching = state.player.crouching;
@@ -61,7 +62,8 @@ export function updatePlayer(dt) {
 
     // Movement (disabled during crafting or when wrapped)
     if (!state.craftingOpen && !state.chestOpen && !isWrapped) {
-        const moveSpeed = state.player.crouching ? state.player.speed * 0.4 : state.player.speed;
+        const debuffed = state.player.rawMeatDebuffTimer > 0;
+        const moveSpeed = state.player.crouching ? state.player.speed * 0.4 : (debuffed ? state.player.speed * 0.5 : state.player.speed);
         if (state.keys["ArrowLeft"] || state.keys["a"] || state.keys["A"]) {
             state.player.velX = -moveSpeed;
             state.player.facing = -1;
@@ -363,6 +365,7 @@ export function attackMob(mob) {
         else damage = 2;
         damageEquippedTool();
     }
+    if (state.player.rawMeatDebuffTimer > 0) damage = Math.max(1, Math.floor(damage * 0.5));
 
     mob.health -= damage;
     mob.hurtTimer = 200;
