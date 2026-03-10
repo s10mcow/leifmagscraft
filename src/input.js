@@ -644,6 +644,13 @@ export function setupInput() {
             const recipeAreaH = UI.CRAFTING_PANEL_H - UI.RECIPE_START_Y - UI.INV_BOTTOM_MARGIN;
             const maxScroll = Math.max(0, Math.ceil(RECIPES.length / UI.RECIPE_COLS) * 58 - recipeAreaH);
             state.craftingScroll = Math.max(0, Math.min(state.craftingScroll, maxScroll));
+        } else if (state.gameState === "playing" && !state.craftingOpen && !state.chestOpen &&
+                   !state.furnaceOpen && !state.smokerOpen && !state.blastFurnaceOpen &&
+                   !state.tradingOpen && !state.gameOver) {
+            // Scroll wheel switches hotbar slot
+            const dir = dy > 0 ? 1 : -1;
+            state.inventory.selectedSlot = (state.inventory.selectedSlot + dir + HOTBAR_SIZE) % HOTBAR_SIZE;
+            playSelect();
         }
     }
 

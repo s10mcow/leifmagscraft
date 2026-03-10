@@ -407,10 +407,10 @@ export const RECIPES = [
   // Blast furnace
   { result: BLOCKS.BLAST_FURNACE, resultCount: 1, ingredients: [{ id: ITEMS.IRON_INGOT, count: 5 }, { id: BLOCKS.COBBLESTONE, count: 8 }] },
   // Riot armor (steel ingots)
-  { result: ITEMS.RIOT_HELMET,     resultCount: 1, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 5 }] },
-  { result: ITEMS.RIOT_CHESTPLATE, resultCount: 1, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 8 }] },
-  { result: ITEMS.RIOT_LEGGINGS,   resultCount: 1, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 7 }] },
-  { result: ITEMS.RIOT_BOOTS,      resultCount: 1, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 4 }] },
+  { result: ITEMS.RIOT_HELMET,     resultCount: 1, ingredients: [{ id: ITEMS.TITANIUM_INGOT, count: 5 }] },
+  { result: ITEMS.RIOT_CHESTPLATE, resultCount: 1, ingredients: [{ id: ITEMS.TITANIUM_INGOT, count: 8 }] },
+  { result: ITEMS.RIOT_LEGGINGS,   resultCount: 1, ingredients: [{ id: ITEMS.TITANIUM_INGOT, count: 7 }] },
+  { result: ITEMS.RIOT_BOOTS,      resultCount: 1, ingredients: [{ id: ITEMS.TITANIUM_INGOT, count: 4 }] },
   // Bucket
   { result: ITEMS.BUCKET, resultCount: 1, ingredients: [{ id: ITEMS.IRON_INGOT, count: 3 }] },
 ];

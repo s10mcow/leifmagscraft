@@ -234,25 +234,25 @@ export function generateWastelandWorld() {
             if (b !== BLOCKS.STONE && b !== BLOCKS.NETHERRACK) continue;
             const depth = y - surfY;
             const r = Math.abs(Math.sin(x * 43.7 + y * 17.3 + seed * 3.1)) % 1;
-            if (depth > 12 && r < 0.028) {
-                // Raw steel ore clump (2-3 blocks)
+            if (depth > 12 && r < 0.004) {
+                // Raw steel ore — rare (equiv. to overworld iron)
                 state.wastelandWorld[x][y] = BLOCKS.RAW_STEEL_ORE;
                 for (const [ox, oy] of [[-1,0],[1,0],[0,-1],[0,1]]) {
                     const nx = x + ox, ny = y + oy;
                     if (nx >= 1 && nx < WORLD_WIDTH-1 && ny > surfY+3 && ny < WORLD_HEIGHT-1) {
                         const nb = state.wastelandWorld[nx][ny];
-                        if ((nb === BLOCKS.STONE || nb === BLOCKS.NETHERRACK) && Math.random() < 0.6)
+                        if ((nb === BLOCKS.STONE || nb === BLOCKS.NETHERRACK) && Math.random() < 0.45)
                             state.wastelandWorld[nx][ny] = BLOCKS.RAW_STEEL_ORE;
                     }
                 }
-            } else if (depth > 12 && r < 0.056) {
-                // Titanium ore — same depth/frequency as steel
+            } else if (depth > 20 && r < 0.0055) {
+                // Titanium ore — very rare (equiv. to overworld diamond)
                 state.wastelandWorld[x][y] = BLOCKS.TITANIUM_ORE;
                 for (const [ox, oy] of [[-1,0],[1,0],[0,1]]) {
                     const nx = x + ox, ny = y + oy;
                     if (nx >= 1 && nx < WORLD_WIDTH-1 && ny > surfY+3 && ny < WORLD_HEIGHT-1) {
                         const nb = state.wastelandWorld[nx][ny];
-                        if ((nb === BLOCKS.STONE || nb === BLOCKS.NETHERRACK) && Math.random() < 0.5)
+                        if ((nb === BLOCKS.STONE || nb === BLOCKS.NETHERRACK) && Math.random() < 0.3)
                             state.wastelandWorld[nx][ny] = BLOCKS.TITANIUM_ORE;
                     }
                 }
