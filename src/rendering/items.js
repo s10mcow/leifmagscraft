@@ -174,6 +174,93 @@ export function drawItemIcon(itemId, x, y, size) {
         return;
     }
 
+    // Glass Bottle — Minecraft-style glass bottle shape
+    if (itemId === ITEMS.GLASS_BOTTLE) {
+        const ctx = state.ctx;
+        // Bottle body (rounded bottom)
+        ctx.fillStyle = "rgba(180, 216, 240, 0.5)";
+        ctx.beginPath();
+        ctx.moveTo(x + size * 0.3, y + size * 0.35);
+        ctx.lineTo(x + size * 0.7, y + size * 0.35);
+        ctx.lineTo(x + size * 0.75, y + size * 0.55);
+        ctx.lineTo(x + size * 0.7, y + size * 0.85);
+        ctx.quadraticCurveTo(x + size * 0.5, y + size * 0.95, x + size * 0.3, y + size * 0.85);
+        ctx.lineTo(x + size * 0.25, y + size * 0.55);
+        ctx.closePath();
+        ctx.fill();
+        // Neck
+        ctx.fillStyle = "rgba(180, 216, 240, 0.5)";
+        ctx.fillRect(x + size * 0.38, y + size * 0.1, size * 0.24, size * 0.28);
+        // Rim at top
+        ctx.fillStyle = "rgba(200, 232, 255, 0.7)";
+        ctx.fillRect(x + size * 0.34, y + size * 0.08, size * 0.32, size * 0.06);
+        // Shine highlight
+        ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+        ctx.fillRect(x + size * 0.33, y + size * 0.4, size * 0.12, size * 0.35);
+        // Outline
+        ctx.strokeStyle = "rgba(150, 200, 230, 0.6)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x + size * 0.34, y + size * 0.14);
+        ctx.lineTo(x + size * 0.3, y + size * 0.35);
+        ctx.lineTo(x + size * 0.25, y + size * 0.55);
+        ctx.lineTo(x + size * 0.3, y + size * 0.85);
+        ctx.quadraticCurveTo(x + size * 0.5, y + size * 0.95, x + size * 0.7, y + size * 0.85);
+        ctx.lineTo(x + size * 0.75, y + size * 0.55);
+        ctx.lineTo(x + size * 0.7, y + size * 0.35);
+        ctx.lineTo(x + size * 0.66, y + size * 0.14);
+        ctx.stroke();
+        return;
+    }
+
+    // Water Bottle — glass bottle with blue water inside
+    if (itemId === ITEMS.WATER_BOTTLE) {
+        const ctx = state.ctx;
+        // Water fill (bottom part)
+        ctx.fillStyle = "rgba(50, 120, 220, 0.7)";
+        ctx.beginPath();
+        ctx.moveTo(x + size * 0.3, y + size * 0.5);
+        ctx.lineTo(x + size * 0.7, y + size * 0.5);
+        ctx.lineTo(x + size * 0.7, y + size * 0.85);
+        ctx.quadraticCurveTo(x + size * 0.5, y + size * 0.95, x + size * 0.3, y + size * 0.85);
+        ctx.closePath();
+        ctx.fill();
+        // Bottle body (transparent glass over water)
+        ctx.fillStyle = "rgba(180, 216, 240, 0.35)";
+        ctx.beginPath();
+        ctx.moveTo(x + size * 0.3, y + size * 0.35);
+        ctx.lineTo(x + size * 0.7, y + size * 0.35);
+        ctx.lineTo(x + size * 0.75, y + size * 0.55);
+        ctx.lineTo(x + size * 0.7, y + size * 0.85);
+        ctx.quadraticCurveTo(x + size * 0.5, y + size * 0.95, x + size * 0.3, y + size * 0.85);
+        ctx.lineTo(x + size * 0.25, y + size * 0.55);
+        ctx.closePath();
+        ctx.fill();
+        // Neck
+        ctx.fillStyle = "rgba(180, 216, 240, 0.45)";
+        ctx.fillRect(x + size * 0.38, y + size * 0.1, size * 0.24, size * 0.28);
+        // Rim
+        ctx.fillStyle = "rgba(200, 232, 255, 0.7)";
+        ctx.fillRect(x + size * 0.34, y + size * 0.08, size * 0.32, size * 0.06);
+        // Shine
+        ctx.fillStyle = "rgba(255, 255, 255, 0.35)";
+        ctx.fillRect(x + size * 0.33, y + size * 0.4, size * 0.12, size * 0.35);
+        // Outline
+        ctx.strokeStyle = "rgba(100, 160, 210, 0.6)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(x + size * 0.34, y + size * 0.14);
+        ctx.lineTo(x + size * 0.3, y + size * 0.35);
+        ctx.lineTo(x + size * 0.25, y + size * 0.55);
+        ctx.lineTo(x + size * 0.3, y + size * 0.85);
+        ctx.quadraticCurveTo(x + size * 0.5, y + size * 0.95, x + size * 0.7, y + size * 0.85);
+        ctx.lineTo(x + size * 0.75, y + size * 0.55);
+        ctx.lineTo(x + size * 0.7, y + size * 0.35);
+        ctx.lineTo(x + size * 0.66, y + size * 0.14);
+        ctx.stroke();
+        return;
+    }
+
     // Possum Candy — classic wrapped candy (pink body, white twist ends)
     if (itemId === ITEMS.POSSUM_CANDY) {
         const ctx = state.ctx;

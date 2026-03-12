@@ -6,7 +6,7 @@
 // ============================================================
 
 import { state } from './state.js';
-import { BLOCKS, ITEMS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, GRAVITY, MAX_FALL_SPEED, PLAYER_REACH, SAFE_FALL_BLOCKS, MOB_DEFS, ITEM_INFO, BIOMES } from './constants.js';
+import { BLOCKS, ITEMS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, GRAVITY, MAX_FALL_SPEED, PLAYER_REACH, SAFE_FALL_BLOCKS, MOB_DEFS, ITEM_INFO, BIOMES, getItemName } from './constants.js';
 import { isBlockSolid, findSurfaceY } from './world.js';
 import { addFloatingText, getEquippedTool, getEquippedTier, getArmorDefense, damageAllArmor, damageEquippedTool } from './inventory.js';
 import { playJump, playFootstep, playLand, playHurt, playMobHit, playBlockPlace, playSelect, playToolBreak } from './audio.js';
@@ -268,10 +268,77 @@ export function updatePlayer(dt) {
         }
     }
 
+    // Pick up dropped items
+    for (let di = state.droppedItems.length - 1; di >= 0; di--) {
+        const item = state.droppedItems[di];
+        item.timer -= dt;
+        if (item.timer <= 0) { state.droppedItems.splice(di, 1); continue; }
+        // Physics: gravity + friction
+        item.velY = Math.min((item.velY || 0) + 0.3, 8);
+        item.x += (item.velX || 0);
+        item.y += item.velY;
+        item.velX *= 0.95;
+        // Ground collision
+        const bx = Math.floor(item.x / BLOCK_SIZE);
+        const by = Math.floor((item.y + 8) / BLOCK_SIZE);
+        if (bx >= 0 && bx < WORLD_WIDTH && by >= 0 && by < WORLD_HEIGHT && isBlockSolid(bx, by)) {
+            item.y = by * BLOCK_SIZE - 8;
+            item.velY = 0;
+            item.velX *= 0.8;
+        }
+        // Pickup check
+        const dx = (state.player.x + state.player.width / 2) - item.x;
+        const dy = (state.player.y + state.player.height / 2) - item.y;
+        if (Math.sqrt(dx * dx + dy * dy) < BLOCK_SIZE * 1.5) {
+            addToInventory(item.itemId, item.count, item.durability);
+            addFloatingText(item.x, item.y - 10, `+${item.count} ${getItemName(item.itemId)}`, "#4ade80");
+            state.droppedItems.splice(di, 1);
+        }
+    }
+
     // Check if dead
     if (state.player.health <= 0 && !state.gameOver) {
         state.gameOver = true;
         createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 20, "#ff0000", 5);
+
+        // Drop all items if keep inventory is off
+        if (!state.keepInventory) {
+            const dropX = state.player.x + state.player.width / 2;
+            const dropY = state.player.y;
+            for (let i = 0; i < state.inventory.slots.length; i++) {
+                const slot = state.inventory.slots[i];
+                if (slot.itemId !== 0 && slot.count > 0) {
+                    state.droppedItems.push({
+                        x: dropX + (Math.random() - 0.5) * 40,
+                        y: dropY + (Math.random() - 0.5) * 20,
+                        velX: (Math.random() - 0.5) * 6,
+                        velY: -3 - Math.random() * 4,
+                        itemId: slot.itemId,
+                        count: slot.count,
+                        durability: slot.durability || 0,
+                        timer: 120000 // 2 minutes
+                    });
+                    slot.itemId = 0; slot.count = 0; slot.durability = 0;
+                }
+            }
+            // Drop armor too
+            for (const type of ["helmet", "chestplate", "leggings", "boots"]) {
+                const slot = state.inventory.armor[type];
+                if (slot.itemId !== 0) {
+                    state.droppedItems.push({
+                        x: dropX + (Math.random() - 0.5) * 40,
+                        y: dropY + (Math.random() - 0.5) * 20,
+                        velX: (Math.random() - 0.5) * 6,
+                        velY: -3 - Math.random() * 4,
+                        itemId: slot.itemId,
+                        count: 1,
+                        durability: slot.durability || 0,
+                        timer: 120000
+                    });
+                    slot.itemId = 0; slot.count = 0; slot.durability = 0;
+                }
+            }
+        }
     }
 }
 
@@ -421,9 +488,35 @@ export function hurtPlayer(damage, knockFromX, damageType = "melee") {
     createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 5, "#ff0000");
 }
 
+// Line-of-sight check: returns true if there's a clear path between two points (no solid blocks)
+export function hasLineOfSight(x1, y1, x2, y2) {
+    const dx = x2 - x1, dy = y2 - y1;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const steps = Math.ceil(dist / (BLOCK_SIZE * 0.5));
+    for (let i = 1; i < steps; i++) {
+        const t = i / steps;
+        const bx = Math.floor((x1 + dx * t) / BLOCK_SIZE);
+        const by = Math.floor((y1 + dy * t) / BLOCK_SIZE);
+        if (bx >= 0 && bx < WORLD_WIDTH && by >= 0 && by < WORLD_HEIGHT) {
+            if (isBlockSolid(bx, by)) return false;
+        }
+    }
+    return true;
+}
+
 export function attackMob(mob) {
     if (state.player.attackCooldown > 0) return;
     const def = MOB_DEFS[mob.type];
+
+    // Can't hit through walls
+    const pcx = state.player.x + state.player.width / 2;
+    const pcy = state.player.y + state.player.height / 2;
+    const mcx = mob.x + def.width / 2;
+    const mcy = mob.y + def.height / 2;
+    if (!hasLineOfSight(pcx, pcy, mcx, mcy)) {
+        addFloatingText(state.player.x, state.player.y - 20, "Blocked by wall!", "#999999");
+        return;
+    }
 
     const tool = getEquippedTool();
     let damage = 1;

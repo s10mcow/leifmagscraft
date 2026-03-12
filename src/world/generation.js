@@ -126,6 +126,38 @@ export function generateWorld() {
         }
     }
 
+    // Small water puddles on the surface (1-3 blocks wide, every ~80 blocks)
+    for (let x = 10; x < WORLD_WIDTH - 10; x++) {
+        if (Math.random() < 0.012) { // ~1.2% chance per column
+            const biome = state.biomeMap[x];
+            if (biome === BIOMES.DESERT) { x += 5; continue; } // skip desert
+            // Find surface
+            let surfY = -1;
+            for (let y = 0; y < WORLD_HEIGHT; y++) {
+                const b = state.world[x][y];
+                if (b !== BLOCKS.AIR && b !== BLOCKS.WATER && b !== BLOCKS.ICE) {
+                    surfY = y; break;
+                }
+            }
+            if (surfY <= 0 || surfY >= WORLD_HEIGHT - 2) continue;
+            // Dig a small 1-3 block wide puddle, 1 block deep
+            const puddleWidth = 1 + Math.floor(Math.random() * 3);
+            for (let px = 0; px < puddleWidth; px++) {
+                const wx = x + px;
+                if (wx >= WORLD_WIDTH) break;
+                // Replace surface block with water, push dirt down
+                if (state.world[wx][surfY] !== BLOCKS.AIR && state.world[wx][surfY] !== BLOCKS.WATER) {
+                    if (biome === BIOMES.TUNDRA) {
+                        state.world[wx][surfY] = BLOCKS.ICE;
+                    } else {
+                        state.world[wx][surfY] = BLOCKS.WATER;
+                    }
+                }
+            }
+            x += puddleWidth + 5; // skip ahead so puddles don't cluster
+        }
+    }
+
     // Generate caves (carves through stone, adds gravel and lava)
     generateCaves(seed);
 

@@ -219,6 +219,29 @@ export function interact() {
 
     const heldSlot = state.inventory.slots[state.inventory.selectedSlot];
 
+    // Possum Realm: eat any block nearby with F to fill health
+    if (state.inPossum) {
+        const px = Math.floor((state.player.x + state.player.width / 2) / BLOCK_SIZE);
+        const py = Math.floor((state.player.y + state.player.height / 2) / BLOCK_SIZE);
+        // Find nearest breakable block within 2 blocks
+        for (let dx = -2; dx <= 2; dx++) {
+            for (let dy = -2; dy <= 2; dy++) {
+                const bx = px + dx, by = py + dy;
+                if (bx >= 0 && bx < WORLD_WIDTH && by >= 0 && by < WORLD_HEIGHT) {
+                    const block = state.activeWorld[bx][by];
+                    if (block !== BLOCKS.AIR && block !== BLOCKS.BEDROCK && BLOCK_INFO[block] && BLOCK_INFO[block].breakable) {
+                        state.activeWorld[bx][by] = BLOCKS.AIR;
+                        const heal = 2;
+                        state.player.health = Math.min(state.player.maxHealth, state.player.health + heal);
+                        addFloatingText(state.player.x, state.player.y - 20, `+${heal} HP (yum!)`, "#ff88dd");
+                        createParticles(bx * BLOCK_SIZE + BLOCK_SIZE / 2, by * BLOCK_SIZE + BLOCK_SIZE / 2, 6, "#ff88cc", 2);
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
     // Glass Bottle: fill from nearby water
     if (heldSlot.itemId === ITEMS.GLASS_BOTTLE) {
         const px = Math.floor((state.player.x + state.player.width / 2) / BLOCK_SIZE);
@@ -343,13 +366,14 @@ export function interact() {
         if (Math.sqrt((pcx - mcx) ** 2 + (pcy - mcy) ** 2) < BLOCK_SIZE * 4) {
             if (!mob.petCooldown || mob.petCooldown <= 0) {
                 mob.petCooldown = 8000; // 8s between pets
-                if (Math.random() < 0.35) {
-                    addToInventory(ITEMS.POSSUM_CANDY, 1);
-                    addFloatingText(mob.x + possDef.width / 2, mob.y - 20, "Got possum candy!", "#ff44cc");
-                    createParticles(mob.x + possDef.width / 2, mob.y + possDef.height / 2, 8, "#ff88dd", 2);
-                } else {
-                    addFloatingText(mob.x + possDef.width / 2, mob.y - 16, "...", "#ccaacc");
-                }
+                // Always give possum candy + heal on pet
+                addToInventory(ITEMS.POSSUM_CANDY, 1);
+                addFloatingText(mob.x + possDef.width / 2, mob.y - 20, "Got possum candy!", "#ff44cc");
+                createParticles(mob.x + possDef.width / 2, mob.y + possDef.height / 2, 8, "#ff88dd", 2);
+                // Fill health
+                const heal = 4;
+                state.player.health = Math.min(state.player.maxHealth, state.player.health + heal);
+                addFloatingText(state.player.x, state.player.y - 40, `+${heal} HP`, "#ff88dd");
                 addFloatingText(state.player.x, state.player.y - 28, "Petted the possum!", "#ffbbee");
             } else {
                 addFloatingText(state.player.x, state.player.y - 20, "The possum needs space!", "#ccaacc");

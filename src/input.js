@@ -535,18 +535,15 @@ export function setupInput() {
         }
         if (state.gameState === "modeSelect") {
             state.menuHover = null;
-            const sp = state.MENU_BUTTONS.modeSP;
-            if (sp && state.mouse.x >= sp.x && state.mouse.x <= sp.x + sp.w && state.mouse.y >= sp.y && state.mouse.y <= sp.y + sp.h) {
-                state.menuHover = "modeSP";
-            }
-            const mp = state.MENU_BUTTONS.modeMP;
-            if (mp && state.mouse.x >= mp.x && state.mouse.x <= mp.x + mp.w && state.mouse.y >= mp.y && state.mouse.y <= mp.y + mp.h) {
-                state.menuHover = "modeMP";
-            }
-            const bk = state.MENU_BUTTONS.modeBack;
-            if (bk && state.mouse.x >= bk.x && state.mouse.x <= bk.x + bk.w && state.mouse.y >= bk.y && state.mouse.y <= bk.y + bk.h) {
-                state.menuHover = "modeBack";
-            }
+            const hov = (b, name) => { if (b && state.mouse.x >= b.x && state.mouse.x <= b.x + b.w && state.mouse.y >= b.y && state.mouse.y <= b.y + b.h) state.menuHover = name; };
+            hov(state.MENU_BUTTONS.modeSP, "modeSP");
+            hov(state.MENU_BUTTONS.modeMP, "modeMP");
+            hov(state.MENU_BUTTONS.modeBack, "modeBack");
+            hov(state.MENU_BUTTONS.diffEasy, "diff_easy");
+            hov(state.MENU_BUTTONS.diffNormal, "diff_normal");
+            hov(state.MENU_BUTTONS.diffHard, "diff_hard");
+            hov(state.MENU_BUTTONS.keepInv, "keepInv");
+            hov(state.MENU_BUTTONS.createWorld, "createWorld");
             return;
         }
         if (state.gameState === "paused") {
@@ -756,18 +753,33 @@ export function setupInput() {
 
         // Mode select screen taps
         if (state.gameState === "modeSelect") {
-            const sp = state.MENU_BUTTONS.modeSP;
-            if (sp && state.mouse.x >= sp.x && state.mouse.x <= sp.x + sp.w && state.mouse.y >= sp.y && state.mouse.y <= sp.y + sp.h) {
-                fn.startNewWorld(state.pendingWorldName);
-                return;
-            }
-            const mp = state.MENU_BUTTONS.modeMP;
-            if (mp && state.mouse.x >= mp.x && state.mouse.x <= mp.x + mp.w && state.mouse.y >= mp.y && state.mouse.y <= mp.y + mp.h) {
+            // Helper for button hit test
+            const hit = (b) => b && state.mouse.x >= b.x && state.mouse.x <= b.x + b.w && state.mouse.y >= b.y && state.mouse.y <= b.y + b.h;
+
+            // Multiplayer — starts immediately (no difficulty/keepInv options)
+            if (hit(state.MENU_BUTTONS.modeMP)) {
                 fn.startMultiplayerWorld(state.pendingWorldName);
                 return;
             }
-            const bk = state.MENU_BUTTONS.modeBack;
-            if (bk && state.mouse.x >= bk.x && state.mouse.x <= bk.x + bk.w && state.mouse.y >= bk.y && state.mouse.y <= bk.y + bk.h) {
+            // Difficulty buttons
+            if (hit(state.MENU_BUTTONS.diffEasy))   { state.pendingDifficulty = "easy";   playSelect(); return; }
+            if (hit(state.MENU_BUTTONS.diffNormal))  { state.pendingDifficulty = "normal"; playSelect(); return; }
+            if (hit(state.MENU_BUTTONS.diffHard))    { state.pendingDifficulty = "hard";   playSelect(); return; }
+            // Keep Inventory toggle
+            if (hit(state.MENU_BUTTONS.keepInv)) {
+                state.pendingKeepInventory = !state.pendingKeepInventory;
+                playSelect();
+                return;
+            }
+            // Create World — starts single player with chosen settings
+            if (hit(state.MENU_BUTTONS.createWorld)) {
+                state.difficulty = state.pendingDifficulty;
+                state.keepInventory = state.pendingKeepInventory;
+                fn.startNewWorld(state.pendingWorldName);
+                return;
+            }
+            // Back
+            if (hit(state.MENU_BUTTONS.modeBack)) {
                 state.gameState = "menu";
                 state.menuHover = null;
                 return;

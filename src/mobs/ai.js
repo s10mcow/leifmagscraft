@@ -5,7 +5,7 @@
 import { state } from '../state.js';
 import { BLOCKS, ITEMS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, GRAVITY, MAX_FALL_SPEED, NIGHT_THRESHOLD, MOB_DEFS, getItemName } from '../constants.js';
 import { isBlockSolid } from '../world.js';
-import { hurtPlayer } from '../player.js';
+import { hurtPlayer, hasLineOfSight } from '../player.js';
 import { addToInventory, addFloatingText } from '../inventory.js';
 import { playMobHit, playGruntureRoar, speakPossumGod } from '../audio.js';
 import { createParticles } from './effects.js';
@@ -18,6 +18,25 @@ import { createMob } from './entities.js';
 // ============================================================
 
 const SAFE_FALL_BLOCKS = 3;
+
+// Difficulty damage multiplier for mob attacks
+function getDifficultyDamageMult() {
+    if (state.difficulty === "easy") return 0.5;
+    if (state.difficulty === "hard") return 2.0;
+    return 1.0;
+}
+
+// Melee attack with wall check — returns true if attack connected
+function meleeHurtPlayer(damage, mobX, mob, damageType) {
+    const mcx = mob.x + (MOB_DEFS[mob.type].width / 2);
+    const mcy = mob.y + (MOB_DEFS[mob.type].height / 2);
+    const pcx = state.player.x + state.player.width / 2;
+    const pcy = state.player.y + state.player.height / 2;
+    if (!hasLineOfSight(mcx, mcy, pcx, pcy)) return false;
+    const scaledDmg = Math.max(1, Math.round(damage * getDifficultyDamageMult()));
+    hurtPlayer(scaledDmg, mobX, damageType);
+    return true;
+}
 
 function mobPhysics(mob, def) {
     // Track fall start for fall damage
@@ -243,8 +262,36 @@ export function updateMobs(dt, dayBrightness) {
                 mob.velX = dirToPlayer * def.speed;
                 mob.facing = dirToPlayer;
                 if (dist < def.attackRange && mob.attackCooldown <= 0) {
-                    hurtPlayer(def.damage, mob.x);
+                    meleeHurtPlayer(def.damage, mob.x, mob);
                     mob.attackCooldown = 1000;
+                }
+                // Hard mode: zombies break down doors
+                if (state.difficulty === "hard") {
+                    const mobFrontX = mob.facing > 0 ? mob.x + def.width : mob.x;
+                    const bx = Math.floor(mobFrontX / BLOCK_SIZE);
+                    const by = Math.floor((mob.y + def.height / 2) / BLOCK_SIZE);
+                    if (bx >= 0 && bx < WORLD_WIDTH && by >= 0 && by < WORLD_HEIGHT) {
+                        const fb = state.activeWorld[bx][by];
+                        if (fb === BLOCKS.DOOR_CLOSED) {
+                            let existing = state.doorBreakTimers.find(t => t.x === bx && t.y === by);
+                            if (!existing) {
+                                existing = { x: bx, y: by, timer: 0 };
+                                state.doorBreakTimers.push(existing);
+                            }
+                            existing.timer += dt;
+                            if (existing.timer >= 7000) { // 7 seconds to break
+                                // Break the door
+                                state.activeWorld[bx][by] = BLOCKS.AIR;
+                                if (by > 0 && (state.activeWorld[bx][by-1] === BLOCKS.DOOR_CLOSED || state.activeWorld[bx][by-1] === BLOCKS.DOOR_OPEN))
+                                    state.activeWorld[bx][by-1] = BLOCKS.AIR;
+                                if (by < WORLD_HEIGHT - 1 && (state.activeWorld[bx][by+1] === BLOCKS.DOOR_CLOSED || state.activeWorld[bx][by+1] === BLOCKS.DOOR_OPEN))
+                                    state.activeWorld[bx][by+1] = BLOCKS.AIR;
+                                state.doorBreakTimers = state.doorBreakTimers.filter(t => t.x !== bx || t.y !== by);
+                                addFloatingText(bx * BLOCK_SIZE, by * BLOCK_SIZE - 10, "Door broken!", "#ef4444");
+                                createParticles(bx * BLOCK_SIZE + BLOCK_SIZE / 2, by * BLOCK_SIZE + BLOCK_SIZE / 2, 8, "#8b6c42");
+                            }
+                        }
+                    }
                 }
             } else {
                 // Try to find a nearby villager to attack
@@ -386,7 +433,7 @@ export function updateMobs(dt, dayBrightness) {
                 mob.facing = dirToPlayer;
                 if (dist < def.attackRange && mob.attackCooldown <= 0) {
                     const dmg = def.damage + (mob.equipment && mob.equipment.weapon ? 3 : 0);
-                    hurtPlayer(dmg, mob.x);
+                    meleeHurtPlayer(dmg, mob.x, mob);
                     mob.attackCooldown = 1000;
                 }
             } else {
@@ -462,7 +509,7 @@ export function updateMobs(dt, dayBrightness) {
                     mob.velX *= 0.5;
                 }
                 if (dist < def.attackRange && mob.attackCooldown <= 0) {
-                    hurtPlayer(def.damage, mob.x);
+                    meleeHurtPlayer(def.damage, mob.x, mob);
                     mob.attackCooldown = 800;
                 }
             } else {
@@ -485,7 +532,7 @@ export function updateMobs(dt, dayBrightness) {
                 mob.velX = dirToPlayer * def.speed;
                 mob.facing = dirToPlayer;
                 if (dist < def.attackRange && mob.attackCooldown <= 0) {
-                    hurtPlayer(def.damage, mob.x);
+                    meleeHurtPlayer(def.damage, mob.x, mob);
                     mob.attackCooldown = 800;
                 }
             } else {

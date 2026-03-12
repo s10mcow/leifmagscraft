@@ -92,6 +92,10 @@ export function resetAllGameState() {
     state.timeOfDay = 0;
     state.cachedDayBrightness = 1;
 
+    // Dropped items & door break timers
+    state.droppedItems.length = 0;
+    state.doorBreakTimers.length = 0;
+
     // Village/structure tracking
     state.villageLocations.length = 0;
     state.structureLocations.length = 0;
@@ -184,6 +188,8 @@ export function saveWorld() {
             health: state.player.health, facing: state.player.facing
         },
         timeOfDay: state.timeOfDay,
+        difficulty: state.difficulty,
+        keepInventory: state.keepInventory,
         inNether: state.inNether,
         inWasteland: state.inWasteland,
         inPossum: state.inPossum,
@@ -302,8 +308,10 @@ export function loadWorld(worldName) {
             state.player.health = data.player.health;
             state.player.facing = data.player.facing;
 
-            // Dimension
+            // Dimension & settings
             state.timeOfDay = data.timeOfDay;
+            state.difficulty = data.difficulty || "normal";
+            state.keepInventory = data.keepInventory !== undefined ? data.keepInventory : true;
             state.inNether = data.inNether;
             state.inWasteland = data.inWasteland || false;
             state.inPossum = data.inPossum || false;

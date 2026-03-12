@@ -7,7 +7,7 @@
 // ============================================================
 
 import { state } from '../state.js';
-import { BLOCKS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, TORCH_LIGHT_RADIUS, ITEMS } from '../constants.js';
+import { BLOCKS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, TORCH_LIGHT_RADIUS, ITEMS, getItemColor, isBlockId } from '../constants.js';
 import { drawSky, drawBackgroundTrees, drawBlock, drawAllMobs, drawProjectiles, drawParticles, drawPlayer } from '../rendering.js';
 import { drawFloatingTexts, drawHotbar, drawHealthBar, drawBlockHighlight, drawMiningProgress, drawCraftingMenu, drawChestMenu, drawBlastFurnaceMenu, drawFurnaceMenu, drawSmokerMenu, drawTradingMenu, drawDeathScreen, drawHUD, drawChat } from '../ui.js';
 
@@ -148,6 +148,17 @@ export function drawGameFrame(timestamp) {
 
     // 8. Particles
     drawParticles();
+
+    // 8.5. Dropped items (floating on ground)
+    for (const item of state.droppedItems) {
+        const sx = item.x - camX - 6;
+        const sy = item.y - camY - 6 + Math.sin(timestamp * 0.003 + item.x) * 3; // bob up and down
+        state.ctx.fillStyle = getItemColor(item.itemId);
+        state.ctx.fillRect(sx, sy, 12, 12);
+        state.ctx.strokeStyle = "rgba(255,255,255,0.5)";
+        state.ctx.lineWidth = 1;
+        state.ctx.strokeRect(sx, sy, 12, 12);
+    }
 
     // 9. Other players (multiplayer)
     drawOtherPlayers();

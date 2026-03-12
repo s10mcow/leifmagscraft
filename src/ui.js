@@ -935,6 +935,15 @@ export function drawHUD() {
     const dimName  = state.inNether ? "NETHER"  : state.inWasteland ? "WASTELAND" : state.inPossum ? "POSSUM REALM" : "Overworld";
     state.ctx.fillStyle = dimColor; state.ctx.font = "bold 11px 'Courier New', monospace";
     state.ctx.fillText(dimName, state.canvas.width - 10, statusY + 14);
+
+    // Show difficulty on HUD (single player only)
+    if (!state.multiplayerMode && state.difficulty !== "normal") {
+        const diffLabel = state.difficulty === "easy" ? "EASY" : "HARD";
+        const diffCol = state.difficulty === "easy" ? "#4ade80" : "#ef4444";
+        state.ctx.fillStyle = "rgba(0,0,0,0.4)"; state.ctx.fillRect(state.canvas.width - 150, statusY - 18, 145, 16);
+        state.ctx.fillStyle = diffCol; state.ctx.font = "bold 10px 'Courier New', monospace";
+        state.ctx.fillText(diffLabel + " MODE", state.canvas.width - 10, statusY - 6);
+    }
 }
 
 // --- TITLE SCREEN ---
@@ -1055,15 +1064,15 @@ export function drawModeSelectScreen() {
     state.ctx.fillStyle = "#4ade80";
     state.ctx.font = "bold 28px 'Courier New', monospace";
     state.ctx.textAlign = "center";
-    state.ctx.fillText("Choose Mode", w / 2, h * 0.32);
+    state.ctx.fillText("Choose Mode", w / 2, h * 0.15);
     state.ctx.fillStyle = "#6b7280";
     state.ctx.font = "13px 'Courier New', monospace";
-    state.ctx.fillText(`World: ${state.pendingWorldName || 'New World'}`, w / 2, h * 0.32 + 26);
+    state.ctx.fillText(`World: ${state.pendingWorldName || 'New World'}`, w / 2, h * 0.15 + 26);
 
-    const btnW = 300, btnH = 72, btnX = w / 2 - btnW / 2;
+    const btnW = 300, btnH = 52, btnX = w / 2 - btnW / 2;
 
     // --- Single Player ---
-    const spY = h * 0.44;
+    const spY = h * 0.26;
     const hSP = state.menuHover === "modeSP";
     state.ctx.fillStyle = hSP ? "rgba(74,222,128,0.25)" : "rgba(74,222,128,0.10)";
     state.ctx.fillRect(btnX, spY, btnW, btnH);
@@ -1071,14 +1080,14 @@ export function drawModeSelectScreen() {
     state.ctx.lineWidth = hSP ? 3 : 2;
     state.ctx.strokeRect(btnX, spY, btnW, btnH);
     state.ctx.fillStyle = "#4ade80";
-    state.ctx.font = "bold 18px 'Courier New', monospace";
-    state.ctx.fillText("Single Player", w / 2, spY + 32);
+    state.ctx.font = "bold 16px 'Courier New', monospace";
+    state.ctx.fillText("Single Player", w / 2, spY + 22);
     state.ctx.fillStyle = "#9ca3af";
-    state.ctx.font = "11px 'Courier New', monospace";
-    state.ctx.fillText("Just you, your world", w / 2, spY + 52);
+    state.ctx.font = "10px 'Courier New', monospace";
+    state.ctx.fillText("Just you, your world", w / 2, spY + 40);
 
     // --- Multiplayer ---
-    const mpY = spY + btnH + 18;
+    const mpY = spY + btnH + 12;
     const hMP = state.menuHover === "modeMP";
     state.ctx.fillStyle = hMP ? "rgba(96,165,250,0.25)" : "rgba(96,165,250,0.10)";
     state.ctx.fillRect(btnX, mpY, btnW, btnH);
@@ -1086,28 +1095,114 @@ export function drawModeSelectScreen() {
     state.ctx.lineWidth = hMP ? 3 : 2;
     state.ctx.strokeRect(btnX, mpY, btnW, btnH);
     state.ctx.fillStyle = "#60a5fa";
-    state.ctx.font = "bold 18px 'Courier New', monospace";
-    state.ctx.fillText("Multiplayer", w / 2, mpY + 32);
+    state.ctx.font = "bold 16px 'Courier New', monospace";
+    state.ctx.fillText("Multiplayer", w / 2, mpY + 22);
     state.ctx.fillStyle = "#9ca3af";
+    state.ctx.font = "10px 'Courier New', monospace";
+    state.ctx.fillText("Shared world with others online", w / 2, mpY + 40);
+
+    // --- Difficulty selection (single player only) ---
+    const diffY = mpY + btnH + 24;
+    state.ctx.fillStyle = "#e5e7eb";
+    state.ctx.font = "bold 14px 'Courier New', monospace";
+    state.ctx.fillText("Difficulty", w / 2, diffY);
+
+    const diffBtnW = 90, diffBtnH = 38, diffGap = 10;
+    const diffTotalW = diffBtnW * 3 + diffGap * 2;
+    const diffStartX = w / 2 - diffTotalW / 2;
+    const diffBtnY = diffY + 8;
+
+    const difficulties = [
+        { key: "easy", label: "Easy", color: "#4ade80", desc: "More ores, less damage" },
+        { key: "normal", label: "Normal", color: "#facc15", desc: "Standard game" },
+        { key: "hard", label: "Hard", color: "#ef4444", desc: "Rare ores, more damage" },
+    ];
+
+    for (let di = 0; di < difficulties.length; di++) {
+        const d = difficulties[di];
+        const dx = diffStartX + di * (diffBtnW + diffGap);
+        const isSelected = state.pendingDifficulty === d.key;
+        const isHover = state.menuHover === "diff_" + d.key;
+
+        state.ctx.fillStyle = isSelected ? d.color + "40" : (isHover ? d.color + "20" : "rgba(255,255,255,0.04)");
+        state.ctx.fillRect(dx, diffBtnY, diffBtnW, diffBtnH);
+        state.ctx.strokeStyle = isSelected ? d.color : (isHover ? d.color + "80" : "#444");
+        state.ctx.lineWidth = isSelected ? 2 : 1;
+        state.ctx.strokeRect(dx, diffBtnY, diffBtnW, diffBtnH);
+        state.ctx.fillStyle = isSelected ? d.color : "#9ca3af";
+        state.ctx.font = "bold 13px 'Courier New', monospace";
+        state.ctx.fillText(d.label, dx + diffBtnW / 2, diffBtnY + 24);
+    }
+
+    // Difficulty description
+    const descMap = { easy: "Ores more common, mobs deal less damage", normal: "The standard experience", hard: "Rare ores, double damage, mobs break doors" };
+    state.ctx.fillStyle = "#6b7280";
     state.ctx.font = "11px 'Courier New', monospace";
-    state.ctx.fillText("Shared world with others online", w / 2, mpY + 52);
+    state.ctx.fillText(descMap[state.pendingDifficulty], w / 2, diffBtnY + diffBtnH + 16);
+
+    // Store difficulty button hit areas
+    state.MENU_BUTTONS.diffEasy   = { x: diffStartX, y: diffBtnY, w: diffBtnW, h: diffBtnH };
+    state.MENU_BUTTONS.diffNormal = { x: diffStartX + diffBtnW + diffGap, y: diffBtnY, w: diffBtnW, h: diffBtnH };
+    state.MENU_BUTTONS.diffHard   = { x: diffStartX + 2 * (diffBtnW + diffGap), y: diffBtnY, w: diffBtnW, h: diffBtnH };
+
+    // --- Keep Inventory toggle ---
+    const kiY = diffBtnY + diffBtnH + 32;
+    const kiW = 250, kiH = 36;
+    const kiX = w / 2 - kiW / 2;
+    const hKI = state.menuHover === "keepInv";
+    const kiOn = state.pendingKeepInventory;
+
+    state.ctx.fillStyle = hKI ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.03)";
+    state.ctx.fillRect(kiX, kiY, kiW, kiH);
+    state.ctx.strokeStyle = hKI ? "#9ca3af" : "#444";
+    state.ctx.lineWidth = 1;
+    state.ctx.strokeRect(kiX, kiY, kiW, kiH);
+    state.ctx.fillStyle = "#e5e7eb";
+    state.ctx.font = "13px 'Courier New', monospace";
+    state.ctx.fillText("Keep Inventory", w / 2 - 30, kiY + 23);
+    // Toggle indicator
+    const toggleX = kiX + kiW - 50, toggleY = kiY + 9, toggleW = 36, toggleH = 18;
+    state.ctx.fillStyle = kiOn ? "#4ade80" : "#374151";
+    state.ctx.fillRect(toggleX, toggleY, toggleW, toggleH);
+    state.ctx.fillStyle = "#ffffff";
+    state.ctx.fillRect(kiOn ? toggleX + toggleW - 16 : toggleX + 2, toggleY + 2, 14, 14);
+    state.MENU_BUTTONS.keepInv = { x: kiX, y: kiY, w: kiW, h: kiH };
+
+    state.ctx.fillStyle = "#6b7280";
+    state.ctx.font = "10px 'Courier New', monospace";
+    state.ctx.fillText(kiOn ? "Keep items on death" : "Drop items on death (2 min to recover)", w / 2, kiY + kiH + 14);
+
+    // --- Create World button ---
+    const cwY = kiY + kiH + 28;
+    const cwW = 250, cwH = 48;
+    const cwX = w / 2 - cwW / 2;
+    const hCW = state.menuHover === "createWorld";
+    state.ctx.fillStyle = hCW ? "rgba(74,222,128,0.3)" : "rgba(74,222,128,0.15)";
+    state.ctx.fillRect(cwX, cwY, cwW, cwH);
+    state.ctx.strokeStyle = "#4ade80";
+    state.ctx.lineWidth = hCW ? 3 : 2;
+    state.ctx.strokeRect(cwX, cwY, cwW, cwH);
+    state.ctx.fillStyle = "#4ade80";
+    state.ctx.font = "bold 16px 'Courier New', monospace";
+    state.ctx.fillText("Create World", w / 2, cwY + 30);
+    state.MENU_BUTTONS.createWorld = { x: cwX, y: cwY, w: cwW, h: cwH };
 
     // --- Back ---
-    const backY = mpY + btnH + 18;
+    const backY = cwY + cwH + 14;
     const hBack = state.menuHover === "modeBack";
     state.ctx.fillStyle = hBack ? "rgba(156,163,175,0.2)" : "rgba(156,163,175,0.06)";
-    state.ctx.fillRect(btnX, backY, btnW, 44);
+    state.ctx.fillRect(btnX, backY, btnW, 36);
     state.ctx.strokeStyle = hBack ? "#9ca3af" : "#444";
     state.ctx.lineWidth = hBack ? 2 : 1;
-    state.ctx.strokeRect(btnX, backY, btnW, 44);
+    state.ctx.strokeRect(btnX, backY, btnW, 36);
     state.ctx.fillStyle = "#9ca3af";
     state.ctx.font = "13px 'Courier New', monospace";
-    state.ctx.fillText("← Back", w / 2, backY + 27);
+    state.ctx.fillText("\u2190 Back", w / 2, backY + 23);
 
     // Store hit areas
     state.MENU_BUTTONS.modeSP   = { x: btnX, y: spY,   w: btnW, h: btnH };
     state.MENU_BUTTONS.modeMP   = { x: btnX, y: mpY,   w: btnW, h: btnH };
-    state.MENU_BUTTONS.modeBack = { x: btnX, y: backY, w: btnW, h: 44   };
+    state.MENU_BUTTONS.modeBack = { x: btnX, y: backY, w: btnW, h: 36   };
 
     state.ctx.lineWidth = 1;
     state.ctx.textAlign = "center";

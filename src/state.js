@@ -165,12 +165,21 @@ export const state = {
     menuSaveList: [],
     menuScrollOffset: 0,
     MENU_BUTTONS: { newWorld: null, savedWorlds: [], modeSP: null, modeMP: null, modeBack: null,
+                    diffEasy: null, diffNormal: null, diffHard: null, keepInv: null, createWorld: null,
                     accountCreate: null, accountLogin: null, accountChange: null,
                     accountUsernameField: null, accountPasswordField: null },
     PAUSE_BUTTONS: { resume: null, saveQuit: null },
 
     // Mode selection
     pendingWorldName: null,
+    pendingDifficulty: "normal",  // "easy" | "normal" | "hard"
+    pendingKeepInventory: true,
+
+    // World settings (per-world)
+    difficulty: "normal",
+    keepInventory: true,
+    droppedItems: [],       // items dropped on death [{x, y, velX, velY, itemId, count, durability, timer}]
+    doorBreakTimers: [],    // mobs breaking doors on hard [{x, y, timer, mobId}]
 
     // Multiplayer
     multiplayerMode: false,

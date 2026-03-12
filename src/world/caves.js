@@ -120,6 +120,9 @@ export function generateCaves(seed) {
 // ============================================================
 
 export function placeOres(seed) {
+    // Difficulty ore multiplier: easy=1.4x more, normal=1x, hard=0.5x
+    const oreMultiplier = state.difficulty === "easy" ? 1.4 : state.difficulty === "hard" ? 0.5 : 1;
+
     for (let x = 0; x < WORLD_WIDTH; x++) {
         // Find real surface for depth calc
         let surfY = 0;
@@ -144,7 +147,7 @@ export function placeOres(seed) {
                     if (state.world[nx][ny] === BLOCKS.AIR && depth > 3) { nearCave = true; break; }
                 }
             }
-            const mult = nearCave ? 2 : 1;
+            const mult = (nearCave ? 2 : 1) * oreMultiplier;
             const rand = Math.random();
 
             if (depth > 5 && rand < 0.002 * mult) state.world[x][y] = BLOCKS.COAL;
