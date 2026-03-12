@@ -92,9 +92,10 @@ export function resetAllGameState() {
     state.timeOfDay = 0;
     state.cachedDayBrightness = 1;
 
-    // Dropped items & door break timers
+    // Dropped items, door break timers, bunker regions
     state.droppedItems.length = 0;
     state.doorBreakTimers.length = 0;
+    state.bunkerRegions.length = 0;
 
     // Village/structure tracking
     state.villageLocations.length = 0;
@@ -205,6 +206,7 @@ export function saveWorld() {
         possumReturnX: state.possumReturnX,
         possumReturnY: state.possumReturnY,
         possumReturnDim: state.possumReturnDim || 'overworld',
+        bunkerRegions: state.bunkerRegions.slice(),
         mobs: state.mobs.filter(function(m) { return !MOB_DEFS[m.type].hostile; }).map(function(m) {
             const md = { type: m.type, x: m.x, y: m.y, health: m.health, facing: m.facing };
             if (m.type === "wolf") { md.tamed = m.tamed; md.sitting = m.sitting; }
@@ -340,6 +342,9 @@ export function loadWorld(worldName) {
             state.possumReturnX = data.possumReturnX || 0;
             state.possumReturnY = data.possumReturnY || 0;
             state.possumReturnDim = data.possumReturnDim || 'overworld';
+            if (data.bunkerRegions) {
+                for (const r of data.bunkerRegions) state.bunkerRegions.push(r);
+            }
 
             // Mobs (passive only, hostile will respawn)
             if (data.mobs) {

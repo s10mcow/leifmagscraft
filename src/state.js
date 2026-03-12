@@ -180,6 +180,7 @@ export const state = {
     keepInventory: true,
     droppedItems: [],       // items dropped on death [{x, y, velX, velY, itemId, count, durability, timer}]
     doorBreakTimers: [],    // mobs breaking doors on hard [{x, y, timer, mobId}]
+    bunkerRegions: [],      // [{x1, y1, x2, y2}] — radiation-safe zones in wasteland
 
     // Multiplayer
     multiplayerMode: false,

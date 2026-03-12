@@ -84,7 +84,7 @@ export function gameLoop(timestamp) {
                     }
                 }
 
-                // Radiation damage in Wasteland (requires full hazmat suit)
+                // Radiation damage in Wasteland (requires full hazmat suit OR being inside a bunker)
                 if (state.inWasteland) {
                     const armor = state.inventory.armor;
                     const fullHazmat =
@@ -92,7 +92,17 @@ export function gameLoop(timestamp) {
                         armor.chestplate.itemId === ITEMS.HAZMAT_CHESTPLATE &&
                         armor.leggings.itemId   === ITEMS.HAZMAT_LEGGINGS &&
                         armor.boots.itemId      === ITEMS.HAZMAT_BOOTS;
-                    if (!fullHazmat) {
+                    // Check if player is inside a bunker region
+                    let inBunker = false;
+                    const px = Math.floor(state.player.x / BLOCK_SIZE);
+                    const py = Math.floor(state.player.y / BLOCK_SIZE);
+                    for (const r of state.bunkerRegions) {
+                        if (px >= r.x1 && px <= r.x2 && py >= r.y1 && py <= r.y2) {
+                            inBunker = true;
+                            break;
+                        }
+                    }
+                    if (!fullHazmat && !inBunker) {
                         state.radiationTimer -= dt;
                         if (state.radiationTimer <= 0) {
                             state.radiationTimer = 3000;
