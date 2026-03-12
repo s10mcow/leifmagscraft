@@ -390,8 +390,18 @@ export function startNewWorld(worldName) {
             state.player.y = (findSurfaceY(startX) - 2) * BLOCK_SIZE;
             console.log("Player placed at x:", startX, "y:", state.player.y / BLOCK_SIZE);
 
-            // Spawn with a water bottle
+            // Spawn loadout
             state.inventory.slots[0] = { itemId: ITEMS.WATER_BOTTLE, count: 1, durability: 4 };
+            state.inventory.slots[1] = { itemId: ITEMS.POSSUM_TELEPORTER, count: 1, durability: 0 };
+            state.inventory.slots[2] = { itemId: ITEMS.ROCKET_LAUNCHER, count: 1, durability: 100, magAmmo: 1 };
+            state.inventory.slots[3] = { itemId: ITEMS.ROCKET, count: 16, durability: 0 };
+            state.inventory.slots[4] = { itemId: ITEMS.FLAMETHROWER, count: 1, durability: 300, magAmmo: 60 };
+            state.inventory.slots[5] = { itemId: ITEMS.FUEL_CANISTER, count: 10, durability: 0 };
+            // Diamond armor
+            state.inventory.armor.helmet =     { itemId: ITEMS.DIAMOND_HELMET,     count: 1, durability: 363 };
+            state.inventory.armor.chestplate = { itemId: ITEMS.DIAMOND_CHESTPLATE, count: 1, durability: 528 };
+            state.inventory.armor.leggings =   { itemId: ITEMS.DIAMOND_LEGGINGS,   count: 1, durability: 495 };
+            state.inventory.armor.boots =      { itemId: ITEMS.DIAMOND_BOOTS,      count: 1, durability: 429 };
 
             state.currentWorldName = worldName || ("World " + Date.now());
             state.gameState = "playing";
@@ -439,8 +449,17 @@ export function startMultiplayerWorld(worldName) {
             state.player.x = startX * BLOCK_SIZE;
             state.player.y = (findSurfaceY(startX) - 2) * BLOCK_SIZE;
 
-            // Spawn with a water bottle
+            // Spawn loadout
             state.inventory.slots[0] = { itemId: ITEMS.WATER_BOTTLE, count: 1, durability: 4 };
+            state.inventory.slots[1] = { itemId: ITEMS.POSSUM_TELEPORTER, count: 1, durability: 0 };
+            state.inventory.slots[2] = { itemId: ITEMS.ROCKET_LAUNCHER, count: 1, durability: 100, magAmmo: 1 };
+            state.inventory.slots[3] = { itemId: ITEMS.ROCKET, count: 16, durability: 0 };
+            state.inventory.slots[4] = { itemId: ITEMS.FLAMETHROWER, count: 1, durability: 300, magAmmo: 60 };
+            state.inventory.slots[5] = { itemId: ITEMS.FUEL_CANISTER, count: 10, durability: 0 };
+            state.inventory.armor.helmet =     { itemId: ITEMS.DIAMOND_HELMET,     count: 1, durability: 363 };
+            state.inventory.armor.chestplate = { itemId: ITEMS.DIAMOND_CHESTPLATE, count: 1, durability: 528 };
+            state.inventory.armor.leggings =   { itemId: ITEMS.DIAMOND_LEGGINGS,   count: 1, durability: 495 };
+            state.inventory.armor.boots =      { itemId: ITEMS.DIAMOND_BOOTS,      count: 1, durability: 429 };
 
             state.currentWorldName = worldName || ("World " + Date.now());
             state.gameState = "playing";
