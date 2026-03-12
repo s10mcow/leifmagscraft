@@ -18,7 +18,7 @@ import { updateSleep, updateLeafDecay, updateFurnaces, updateSmokers } from './s
 import { drawGameFrame } from './frame-renderer.js';
 
 // --- LOCAL CONSTANTS ---
-const DAY_CYCLE_SPEED = 0.00004; // Slower = longer days and nights
+const DAY_CYCLE_SPEED = 0.0000033; // very long days and nights
 
 // ============================================================
 // MAIN GAME LOOP - runs ~60 times per second!
