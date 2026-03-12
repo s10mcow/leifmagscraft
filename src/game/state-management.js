@@ -390,6 +390,8 @@ export function startNewWorld(worldName) {
             state.player.y = (findSurfaceY(startX) - 2) * BLOCK_SIZE;
             console.log("Player placed at x:", startX, "y:", state.player.y / BLOCK_SIZE);
 
+            // Spawn with a water bottle
+            state.inventory.slots[0] = { itemId: ITEMS.WATER_BOTTLE, count: 1, durability: 4 };
 
             state.currentWorldName = worldName || ("World " + Date.now());
             state.gameState = "playing";
