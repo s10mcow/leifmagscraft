@@ -412,7 +412,7 @@ export const RECIPES = [
   { result: ITEMS.ROCKET, resultCount: 4, ingredients: [{ id: ITEMS.IRON_INGOT, count: 1 }, { id: ITEMS.GUNPOWDER, count: 1 }] },
   { result: ITEMS.MINIATURE_NETHER_PORTAL, resultCount: 1, ingredients: [{ id: BLOCKS.OBSIDIAN, count: 4 }, { id: ITEMS.FLINT_AND_STEEL, count: 1 }] },
   { result: ITEMS.WASTELAND_TELEPORTER, resultCount: 1, ingredients: [{ id: BLOCKS.COBBLESTONE, count: 24 }, { id: BLOCKS.OBSIDIAN, count: 4 }] },
-  { result: ITEMS.POSSUM_TELEPORTER, resultCount: 1, ingredients: [{ id: ITEMS.RAW_PORKCHOP, count: 10 }, { id: ITEMS.STEAK, count: 10 }, { id: BLOCKS.GLOWSTONE, count: 5 }, { id: ITEMS.STEEL_INGOT, count: 2 }, { id: ITEMS.TITANIUM_INGOT, count: 2 }] },
+  { result: ITEMS.POSSUM_TELEPORTER, resultCount: 1, ingredients: [{ id: ITEMS.RAW_PORKCHOP, count: 10 }, { id: ITEMS.STEAK, count: 10 }, { id: BLOCKS.GLOWSTONE, count: 5 }] },
   { result: ITEMS.SHIELD, resultCount: 1, ingredients: [{ id: BLOCKS.PLANKS, count: 6 }, { id: ITEMS.IRON_INGOT, count: 1 }] },
   // Furnace
   { result: BLOCKS.FURNACE, resultCount: 1, ingredients: [{ id: BLOCKS.COBBLESTONE, count: 8 }] },
