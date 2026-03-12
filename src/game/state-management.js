@@ -397,11 +397,17 @@ export function startNewWorld(worldName) {
             state.inventory.slots[3] = { itemId: ITEMS.ROCKET, count: 16, durability: 0 };
             state.inventory.slots[4] = { itemId: ITEMS.FLAMETHROWER, count: 1, durability: 300, magAmmo: 60 };
             state.inventory.slots[5] = { itemId: ITEMS.FUEL_CANISTER, count: 10, durability: 0 };
-            // Diamond armor
-            state.inventory.armor.helmet =     { itemId: ITEMS.DIAMOND_HELMET,     count: 1, durability: 363 };
-            state.inventory.armor.chestplate = { itemId: ITEMS.DIAMOND_CHESTPLATE, count: 1, durability: 528 };
-            state.inventory.armor.leggings =   { itemId: ITEMS.DIAMOND_LEGGINGS,   count: 1, durability: 495 };
-            state.inventory.armor.boots =      { itemId: ITEMS.DIAMOND_BOOTS,      count: 1, durability: 429 };
+            state.inventory.slots[6] = { itemId: ITEMS.WASTELAND_TELEPORTER, count: 1, durability: 0 };
+            // Hazmat suit in backpack
+            state.inventory.slots[9]  = { itemId: ITEMS.HAZMAT_HELMET,     count: 1, durability: 180 };
+            state.inventory.slots[10] = { itemId: ITEMS.HAZMAT_CHESTPLATE, count: 1, durability: 270 };
+            state.inventory.slots[11] = { itemId: ITEMS.HAZMAT_LEGGINGS,   count: 1, durability: 240 };
+            state.inventory.slots[12] = { itemId: ITEMS.HAZMAT_BOOTS,      count: 1, durability: 210 };
+            // Riot armor equipped
+            state.inventory.armor.helmet =     { itemId: ITEMS.RIOT_HELMET,     count: 1, durability: 350 };
+            state.inventory.armor.chestplate = { itemId: ITEMS.RIOT_CHESTPLATE, count: 1, durability: 520 };
+            state.inventory.armor.leggings =   { itemId: ITEMS.RIOT_LEGGINGS,   count: 1, durability: 480 };
+            state.inventory.armor.boots =      { itemId: ITEMS.RIOT_BOOTS,      count: 1, durability: 400 };
 
             state.currentWorldName = worldName || ("World " + Date.now());
             state.gameState = "playing";
@@ -456,10 +462,17 @@ export function startMultiplayerWorld(worldName) {
             state.inventory.slots[3] = { itemId: ITEMS.ROCKET, count: 16, durability: 0 };
             state.inventory.slots[4] = { itemId: ITEMS.FLAMETHROWER, count: 1, durability: 300, magAmmo: 60 };
             state.inventory.slots[5] = { itemId: ITEMS.FUEL_CANISTER, count: 10, durability: 0 };
-            state.inventory.armor.helmet =     { itemId: ITEMS.DIAMOND_HELMET,     count: 1, durability: 363 };
-            state.inventory.armor.chestplate = { itemId: ITEMS.DIAMOND_CHESTPLATE, count: 1, durability: 528 };
-            state.inventory.armor.leggings =   { itemId: ITEMS.DIAMOND_LEGGINGS,   count: 1, durability: 495 };
-            state.inventory.armor.boots =      { itemId: ITEMS.DIAMOND_BOOTS,      count: 1, durability: 429 };
+            state.inventory.slots[6] = { itemId: ITEMS.WASTELAND_TELEPORTER, count: 1, durability: 0 };
+            // Hazmat suit in backpack
+            state.inventory.slots[9]  = { itemId: ITEMS.HAZMAT_HELMET,     count: 1, durability: 180 };
+            state.inventory.slots[10] = { itemId: ITEMS.HAZMAT_CHESTPLATE, count: 1, durability: 270 };
+            state.inventory.slots[11] = { itemId: ITEMS.HAZMAT_LEGGINGS,   count: 1, durability: 240 };
+            state.inventory.slots[12] = { itemId: ITEMS.HAZMAT_BOOTS,      count: 1, durability: 210 };
+            // Riot armor equipped
+            state.inventory.armor.helmet =     { itemId: ITEMS.RIOT_HELMET,     count: 1, durability: 350 };
+            state.inventory.armor.chestplate = { itemId: ITEMS.RIOT_CHESTPLATE, count: 1, durability: 520 };
+            state.inventory.armor.leggings =   { itemId: ITEMS.RIOT_LEGGINGS,   count: 1, durability: 480 };
+            state.inventory.armor.boots =      { itemId: ITEMS.RIOT_BOOTS,      count: 1, durability: 400 };
 
             state.currentWorldName = worldName || ("World " + Date.now());
             state.gameState = "playing";
