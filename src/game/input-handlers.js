@@ -219,23 +219,27 @@ export function interact() {
 
     const heldSlot = state.inventory.slots[state.inventory.selectedSlot];
 
-    // Possum Realm: eat any block nearby with F to fill health
+    // Possum Realm: eat candy blocks nearby with F — only if holding candy or the candy block itself
     if (state.inPossum) {
-        const px = Math.floor((state.player.x + state.player.width / 2) / BLOCK_SIZE);
-        const py = Math.floor((state.player.y + state.player.height / 2) / BLOCK_SIZE);
-        // Find nearest breakable block within 2 blocks
-        for (let dx = -2; dx <= 2; dx++) {
-            for (let dy = -2; dy <= 2; dy++) {
-                const bx = px + dx, by = py + dy;
-                if (bx >= 0 && bx < WORLD_WIDTH && by >= 0 && by < WORLD_HEIGHT) {
-                    const block = state.activeWorld[bx][by];
-                    if (block !== BLOCKS.AIR && block !== BLOCKS.BEDROCK && BLOCK_INFO[block] && BLOCK_INFO[block].breakable) {
-                        state.activeWorld[bx][by] = BLOCKS.AIR;
-                        const heal = 2;
-                        state.player.health = Math.min(state.player.maxHealth, state.player.health + heal);
-                        addFloatingText(state.player.x, state.player.y - 20, `+${heal} HP (yum!)`, "#ff88dd");
-                        createParticles(bx * BLOCK_SIZE + BLOCK_SIZE / 2, by * BLOCK_SIZE + BLOCK_SIZE / 2, 6, "#ff88cc", 2);
-                        return;
+        const CANDY_BLOCKS = new Set([BLOCKS.CANDY_GROUND, BLOCKS.CANDY_CANE, BLOCKS.LOLLIPOP_TOP]);
+        const holdingCandy = heldSlot.itemId === ITEMS.POSSUM_CANDY;
+        const holdingCandyBlock = CANDY_BLOCKS.has(heldSlot.itemId);
+        if (holdingCandy || holdingCandyBlock) {
+            const px = Math.floor((state.player.x + state.player.width / 2) / BLOCK_SIZE);
+            const py = Math.floor((state.player.y + state.player.height / 2) / BLOCK_SIZE);
+            for (let dx = -2; dx <= 2; dx++) {
+                for (let dy = -2; dy <= 2; dy++) {
+                    const bx = px + dx, by = py + dy;
+                    if (bx >= 0 && bx < WORLD_WIDTH && by >= 0 && by < WORLD_HEIGHT) {
+                        const block = state.activeWorld[bx][by];
+                        if (CANDY_BLOCKS.has(block)) {
+                            state.activeWorld[bx][by] = BLOCKS.AIR;
+                            const heal = 2;
+                            state.player.health = Math.min(state.player.maxHealth, state.player.health + heal);
+                            addFloatingText(state.player.x, state.player.y - 20, `+${heal} HP (yum!)`, "#ff88dd");
+                            createParticles(bx * BLOCK_SIZE + BLOCK_SIZE / 2, by * BLOCK_SIZE + BLOCK_SIZE / 2, 6, "#ff88cc", 2);
+                            return;
+                        }
                     }
                 }
             }
