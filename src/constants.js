@@ -81,6 +81,7 @@ export const ITEMS = {
   // Wool armor (warmth in cold climates)
   WOOL_HELMET: 183, WOOL_CHESTPLATE: 184, WOOL_LEGGINGS: 185, WOOL_BOOTS: 186,
   POSSUM_CANDY: 187,
+  COOL_PACK: 188,
 };
 
 // --- WORLD SETTINGS ---
@@ -132,7 +133,7 @@ export const BIOME_INFO = {
 // --- HELPER FUNCTIONS ---
 export function isBlockId(id) { return id >= 0 && id < 100; }
 export function isTool(id) { return id >= 101 && id <= 115; }
-export function isArmor(id) { return (id >= 120 && id <= 131) || (id >= 151 && id <= 154) || (id >= 158 && id <= 161) || (id >= 183 && id <= 186); }
+export function isArmor(id) { return (id >= 120 && id <= 131) || (id >= 151 && id <= 154) || (id >= 158 && id <= 161) || (id >= 183 && id <= 186) || id === 188; }
 export function isFood(id) {
   return id === ITEMS.RAW_PORKCHOP || id === ITEMS.ROTTEN_FLESH ||
          id === ITEMS.MUTTON || id === ITEMS.STEAK ||
@@ -322,6 +323,7 @@ export const ITEM_INFO = {
   [ITEMS.WOOL_LEGGINGS]:   { name: "Wool Pants",    stackable: false, armorType: "leggings",   defense: 1, durability: 100, color: "#f0f0f0", warmth: true },
   [ITEMS.WOOL_BOOTS]:      { name: "Wool Boots",    stackable: false, armorType: "boots",      defense: 1, durability: 70,  color: "#f0f0f0", warmth: true },
   [ITEMS.POSSUM_CANDY]:   { name: "Possum Candy",  stackable: true,  maxStack: 16, food: true, healAmount: 2, candyBuff: true, color: "#ff44cc" },
+  [ITEMS.COOL_PACK]:      { name: "Cool Pack",     stackable: false, armorType: "boots", defense: 1, durability: 300, color: "#c0c8d8", coolPack: true },
   // Cooked meats
   [ITEMS.COOKED_PORKCHOP]: { name: "Cooked Porkchop", stackable: true, maxStack: 64, food: true, healAmount: 6 },
   [ITEMS.COOKED_BEEF]:     { name: "Cooked Beef",     stackable: true, maxStack: 64, food: true, healAmount: 8 },
@@ -434,6 +436,8 @@ export const RECIPES = [
   { result: ITEMS.WOOL_CHESTPLATE, resultCount: 1, ingredients: [{ id: ITEMS.WOOL, count: 8 }] },
   { result: ITEMS.WOOL_LEGGINGS,   resultCount: 1, ingredients: [{ id: ITEMS.WOOL, count: 7 }] },
   { result: ITEMS.WOOL_BOOTS,      resultCount: 1, ingredients: [{ id: ITEMS.WOOL, count: 4 }] },
+  // Cool Pack (silver boots — keeps you cool)
+  { result: ITEMS.COOL_PACK, resultCount: 1, ingredients: [{ id: ITEMS.SILVER_INGOT, count: 6 }] },
 ];
 
 // --- SMELTING RECIPES (blast furnace) ---

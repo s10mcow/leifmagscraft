@@ -66,6 +66,15 @@ export function updatePlayer(dt) {
             else if (biome === BIOMES.SAVANNAH) targetTemp = 65;
             else if (biome === BIOMES.TUNDRA) targetTemp = 20;
         }
+        // Cool Pack — always keeps temperature at 50 (moderate)
+        {
+            let hasCoolPack = false;
+            for (const type of ["helmet", "chestplate", "leggings", "boots"]) {
+                const slot = state.inventory.armor[type];
+                if (slot.itemId !== 0 && ITEM_INFO[slot.itemId]?.coolPack) { hasCoolPack = true; break; }
+            }
+            if (hasCoolPack) targetTemp = 50;
+        }
         // Wool armor warms you up in cold climates
         if (targetTemp < 50) {
             let warmthCount = 0;
