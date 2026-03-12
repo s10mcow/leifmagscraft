@@ -154,7 +154,7 @@ export function placeOres(seed) {
             else if (depth > 5 && Math.random() < 0.003 * mult) state.world[x][y] = BLOCKS.COPPER;
             else if (depth > 10 && Math.random() < 0.003 * mult) state.world[x][y] = BLOCKS.IRON;
             else if (depth > 10 && Math.random() < 0.0008 * mult) state.world[x][y] = BLOCKS.EMERALD;
-            else if (depth > 15 && Math.random() < 0.0005 * mult) state.world[x][y] = BLOCKS.SILVER_ORE;
+            else if (depth > 15 && Math.random() < 0.003 * mult) state.world[x][y] = BLOCKS.SILVER_ORE;
             else if (depth > 20 && Math.random() < 0.0006 * mult) {
                 // Gold — place as a small clump (seed the neighbour cells too)
                 state.world[x][y] = BLOCKS.GOLD;
