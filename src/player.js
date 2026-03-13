@@ -375,7 +375,7 @@ export function activatePressurePlate(px, py) {
             const bx = px + dx, by = py + dy;
             if (bx < 0 || bx >= WORLD_WIDTH || by < 0 || by >= WORLD_HEIGHT) continue;
             const block = state.activeWorld[bx][by];
-            if (block === BLOCKS.DOOR_CLOSED) {
+            if (block === BLOCKS.DOOR_CLOSED || block === BLOCKS.IRON_DOOR_CLOSED) {
                 _toggleDoor(bx, by);
                 const existing = state.plateTimers.find(t => t.x === bx && t.y === by);
                 if (!existing) {
@@ -383,7 +383,7 @@ export function activatePressurePlate(px, py) {
                 } else {
                     existing.timer = 3000;
                 }
-            } else if (block === BLOCKS.DOOR_OPEN) {
+            } else if (block === BLOCKS.DOOR_OPEN || block === BLOCKS.IRON_DOOR_OPEN) {
                 // Door already open (opened from inside) — refresh the auto-close timer
                 const existing = state.plateTimers.find(t => t.x === bx && t.y === by);
                 if (!existing) {
@@ -403,7 +403,7 @@ export function updatePlateTimers(dt) {
         if (t.timer <= 0) {
             // Auto-close if door is still open
             if (t.x >= 0 && t.x < WORLD_WIDTH && t.y >= 0 && t.y < WORLD_HEIGHT) {
-                if (state.activeWorld[t.x][t.y] === BLOCKS.DOOR_OPEN) {
+                if (state.activeWorld[t.x][t.y] === BLOCKS.DOOR_OPEN || state.activeWorld[t.x][t.y] === BLOCKS.IRON_DOOR_OPEN) {
                     _toggleDoor(t.x, t.y);
                 }
             }

@@ -92,191 +92,306 @@ function generateWastelandRuin(x, surfaceY) {
 // BUNKER + CAMP GENERATION
 // ============================================================
 
-function generateWastelandBunker(x, surfaceY) {
-    const w = state.wastelandWorld;
-    const WALL = BLOCKS.COBBLESTONE;
-    const FLOOR = BLOCKS.WASTELAND_STONE;
+// Helper: carve a rectangular room and return its bounds
+function carveRoom(wld, left, top, width, height, wallBlock) {
+    const right = left + width - 1;
+    const bottom = top + height - 1;
+    for (let bx = left; bx <= right; bx++) {
+        if (bx < 0 || bx >= WORLD_WIDTH) continue;
+        for (let by = top; by <= bottom; by++) {
+            if (by < 0 || by >= WORLD_HEIGHT) continue;
+            const isWall = bx === left || bx === right;
+            const isCeil = by === top;
+            const isFloor = by === bottom;
+            if (isWall || isCeil || isFloor) {
+                wld[bx][by] = wallBlock;
+            } else {
+                wld[bx][by] = BLOCKS.AIR;
+            }
+        }
+    }
+    return { left, top, right, bottom };
+}
 
-    // --- Surface camp (barricade with gun chest) ---
-    const campW = 10;
-    const campLeft = x - 2;
-    // Barricade walls (3 blocks tall)
+// Helper: place a 2-block-tall iron door at (dx, floorY-1) and (dx, floorY-2)
+function placeIronDoor(wld, dx, floorY) {
+    if (dx < 0 || dx >= WORLD_WIDTH) return;
+    if (floorY - 1 >= 0 && floorY - 1 < WORLD_HEIGHT) wld[dx][floorY - 1] = BLOCKS.IRON_DOOR_CLOSED;
+    if (floorY - 2 >= 0 && floorY - 2 < WORLD_HEIGHT) wld[dx][floorY - 2] = BLOCKS.IRON_DOOR_CLOSED;
+}
+
+function generateWastelandBunker(x, surfaceY) {
+    const wld = state.wastelandWorld;
+    const WALL = BLOCKS.COBBLESTONE;
+    const FLR  = BLOCKS.WASTELAND_STONE;
+
+    // ==========================================================
+    // SURFACE CAMP — barricade with gun chests
+    // ==========================================================
+    const campW = 16;
+    const campLeft = x - 4;
     for (let bx = campLeft; bx < campLeft + campW; bx++) {
         if (bx < 0 || bx >= WORLD_WIDTH) continue;
         const isEdge = bx === campLeft || bx === campLeft + campW - 1;
         for (let dy = 1; dy <= 3; dy++) {
             const by = surfaceY - dy;
             if (by >= 0 && by < WORLD_HEIGHT) {
-                if (isEdge) {
-                    w[bx][by] = WALL;
-                } else {
-                    w[bx][by] = BLOCKS.AIR;
-                }
+                wld[bx][by] = isEdge ? WALL : BLOCKS.AIR;
             }
         }
-        // Floor inside camp
-        if (surfaceY < WORLD_HEIGHT) w[bx][surfaceY] = FLOOR;
+        if (surfaceY < WORLD_HEIGHT) wld[bx][surfaceY] = FLR;
     }
     // Opening in left wall
-    const doorX = campLeft;
-    if (doorX >= 0 && doorX < WORLD_WIDTH) {
-        if (surfaceY - 1 >= 0) w[doorX][surfaceY - 1] = BLOCKS.AIR;
-        if (surfaceY - 2 >= 0) w[doorX][surfaceY - 2] = BLOCKS.AIR;
+    if (campLeft >= 0) {
+        if (surfaceY - 1 >= 0) wld[campLeft][surfaceY - 1] = BLOCKS.AIR;
+        if (surfaceY - 2 >= 0) wld[campLeft][surfaceY - 2] = BLOCKS.AIR;
     }
-    // Camp gun chest
-    const campChestX = campLeft + 5;
-    const campChestY = surfaceY - 1;
-    if (campChestX >= 0 && campChestX < WORLD_WIDTH && campChestY >= 0 && campChestY < WORLD_HEIGHT) {
-        w[campChestX][campChestY] = BLOCKS.CHEST;
-        initChestData(campChestX, campChestY, "wasteland_camp");
+    // Two gun chests + torches
+    const campSpots = [campLeft + 4, campLeft + 10];
+    for (const cx of campSpots) {
+        if (cx >= 0 && cx < WORLD_WIDTH && surfaceY - 1 >= 0) {
+            wld[cx][surfaceY - 1] = BLOCKS.CHEST;
+            initChestData(cx, surfaceY - 1, "wasteland_camp");
+        }
     }
-    // Torch in camp
-    const torchX = campLeft + 3;
-    if (torchX >= 0 && torchX < WORLD_WIDTH && surfaceY - 1 >= 0) {
-        w[torchX][surfaceY - 1] = BLOCKS.TORCH;
+    for (const tx of [campLeft + 2, campLeft + 8, campLeft + 13]) {
+        if (tx >= 0 && tx < WORLD_WIDTH && surfaceY - 1 >= 0) wld[tx][surfaceY - 1] = BLOCKS.TORCH;
     }
 
-    // --- Bunker entrance (stairs going down) ---
-    const stairX = x;
-    const stairDepth = 8; // how far down the stairs go
-    // Carve stairwell — 3 blocks wide, descending right
+    // ==========================================================
+    // STAIRWELL DOWN — entrance to floor 1
+    // ==========================================================
+    const stairDepth = 10;
     for (let step = 0; step < stairDepth; step++) {
-        const sx = stairX + step;
+        const sx = x + step;
         const sy = surfaceY + step;
         for (let dx = 0; dx < 3; dx++) {
             const bx = sx + dx;
             if (bx < 0 || bx >= WORLD_WIDTH) continue;
-            // Clear 3 blocks of headroom above each step
             for (let dy = 0; dy < 3; dy++) {
                 const by = sy - dy;
-                if (by >= 0 && by < WORLD_HEIGHT) w[bx][by] = BLOCKS.AIR;
+                if (by >= 0 && by < WORLD_HEIGHT) wld[bx][by] = BLOCKS.AIR;
             }
-            // Step block
-            if (sy + 1 < WORLD_HEIGHT) w[bx][sy + 1] = FLOOR;
+            if (sy + 1 < WORLD_HEIGHT) wld[bx][sy + 1] = FLR;
         }
-        // Walls on sides of stairwell
-        const wallLeft = sx - 1;
-        const wallRight = sx + 3;
+        const wl = sx - 1, wr = sx + 3;
         for (let dy = -2; dy <= 1; dy++) {
             const by = sy + dy;
             if (by >= 0 && by < WORLD_HEIGHT) {
-                if (wallLeft >= 0) w[wallLeft][by] = WALL;
-                if (wallRight < WORLD_WIDTH) w[wallRight][by] = WALL;
+                if (wl >= 0) wld[wl][by] = WALL;
+                if (wr < WORLD_WIDTH) wld[wr][by] = WALL;
             }
         }
     }
 
-    // --- Underground bunker rooms ---
-    const bunkerTop = surfaceY + stairDepth - 2;
-    const roomW = 20;
-    const roomH = 7;
-    const bunkerLeft = stairX - 2;
-    const bunkerBottom = bunkerTop + roomH;
+    // ==========================================================
+    // FLOOR 1 — large hallway with rooms on both sides
+    // ==========================================================
+    const f1Top = surfaceY + stairDepth - 2;
+    const hallW = 40;
+    const hallH = 8;
+    const hallLeft = x - 10;
+    const hall = carveRoom(wld, hallLeft, f1Top, hallW, hallH, WALL);
 
-    // Carve main room
-    for (let bx = bunkerLeft; bx < bunkerLeft + roomW; bx++) {
-        if (bx < 0 || bx >= WORLD_WIDTH) continue;
-        for (let by = bunkerTop; by <= bunkerBottom; by++) {
-            if (by < 0 || by >= WORLD_HEIGHT) continue;
-            const isWall = bx === bunkerLeft || bx === bunkerLeft + roomW - 1;
-            const isCeil = by === bunkerTop;
-            const isFloor = by === bunkerBottom;
-            if (isWall || isCeil || isFloor) {
-                w[bx][by] = WALL;
-            } else {
-                w[bx][by] = BLOCKS.AIR;
+    // Room A (left wing) — storage
+    const roomA = carveRoom(wld, hallLeft - 14, f1Top, 15, hallH, WALL);
+    // Connect with iron door
+    for (let dy = 1; dy <= 2; dy++) {
+        const by = hall.bottom - dy;
+        if (by >= 0 && by < WORLD_HEIGHT) wld[hall.left][by] = BLOCKS.AIR;
+    }
+    placeIronDoor(wld, hall.left, hall.bottom);
+
+    // Room B (right wing) — armory
+    const roomB = carveRoom(wld, hall.right, f1Top, 15, hallH, WALL);
+    // Connect with iron door
+    for (let dy = 1; dy <= 2; dy++) {
+        const by = hall.bottom - dy;
+        if (by >= 0 && by < WORLD_HEIGHT) wld[hall.right][by] = BLOCKS.AIR;
+    }
+    placeIronDoor(wld, hall.right, hall.bottom);
+
+    // Room C (mid-left alcove)
+    const roomCLeft = hallLeft + 8;
+    const roomC = carveRoom(wld, roomCLeft, f1Top - 7, 10, 8, WALL);
+    // Connect from hall ceiling
+    for (let dy = 0; dy <= 1; dy++) {
+        const by = roomC.bottom - dy;
+        if (by >= 0 && by < WORLD_HEIGHT) wld[roomCLeft + 5][by] = BLOCKS.AIR;
+    }
+    // Iron door between room C and hall
+    placeIronDoor(wld, roomCLeft + 5, roomC.bottom);
+
+    // Room D (mid-right alcove)
+    const roomDLeft = hallLeft + 22;
+    const roomD = carveRoom(wld, roomDLeft, f1Top - 7, 10, 8, WALL);
+    for (let dy = 0; dy <= 1; dy++) {
+        const by = roomD.bottom - dy;
+        if (by >= 0 && by < WORLD_HEIGHT) wld[roomDLeft + 5][by] = BLOCKS.AIR;
+    }
+    placeIronDoor(wld, roomDLeft + 5, roomD.bottom);
+
+    // Dividing walls in main hall with iron doors
+    const div1 = hallLeft + 13;
+    const div2 = hallLeft + 27;
+    for (const divX of [div1, div2]) {
+        if (divX >= 0 && divX < WORLD_WIDTH) {
+            for (let by = hall.top; by <= hall.bottom; by++) {
+                if (by >= 0 && by < WORLD_HEIGHT) wld[divX][by] = WALL;
+            }
+            placeIronDoor(wld, divX, hall.bottom);
+        }
+    }
+
+    // ==========================================================
+    // STAIRWELL DOWN TO FLOOR 2
+    // ==========================================================
+    const stair2X = hallLeft + hallW - 6;
+    const stair2Start = hall.bottom;
+    const stair2Depth = 10;
+    for (let step = 0; step < stair2Depth; step++) {
+        const sx = stair2X - step; // stairs go left this time
+        const sy = stair2Start + step;
+        for (let dx = 0; dx < 3; dx++) {
+            const bx = sx + dx;
+            if (bx < 0 || bx >= WORLD_WIDTH) continue;
+            for (let dy = 0; dy < 3; dy++) {
+                const by = sy - dy;
+                if (by >= 0 && by < WORLD_HEIGHT) wld[bx][by] = BLOCKS.AIR;
+            }
+            if (sy + 1 < WORLD_HEIGHT) wld[bx][sy + 1] = FLR;
+        }
+        const wl = sx - 1, wr = sx + 3;
+        for (let dy = -2; dy <= 1; dy++) {
+            const by = sy + dy;
+            if (by >= 0 && by < WORLD_HEIGHT) {
+                if (wl >= 0) wld[wl][by] = WALL;
+                if (wr < WORLD_WIDTH) wld[wr][by] = WALL;
             }
         }
     }
 
-    // Dividing wall to create two rooms, with a doorway
-    const divX = bunkerLeft + Math.floor(roomW / 2);
-    if (divX >= 0 && divX < WORLD_WIDTH) {
-        for (let by = bunkerTop; by <= bunkerBottom; by++) {
-            if (by >= 0 && by < WORLD_HEIGHT) w[divX][by] = WALL;
+    // ==========================================================
+    // FLOOR 2 — deeper level, more rooms
+    // ==========================================================
+    const f2Top = stair2Start + stair2Depth - 2;
+    const f2Left = hallLeft - 5;
+    const f2W = 50;
+    const f2H = 8;
+    const hall2 = carveRoom(wld, f2Left, f2Top, f2W, f2H, WALL);
+
+    // Room E (far left) — vault
+    const roomE = carveRoom(wld, f2Left - 12, f2Top, 13, f2H, WALL);
+    for (let dy = 1; dy <= 2; dy++) {
+        const by = hall2.bottom - dy;
+        if (by >= 0 && by < WORLD_HEIGHT) wld[hall2.left][by] = BLOCKS.AIR;
+    }
+    placeIronDoor(wld, hall2.left, hall2.bottom);
+
+    // Room F (far right) — command room
+    const roomF = carveRoom(wld, hall2.right, f2Top, 13, f2H, WALL);
+    for (let dy = 1; dy <= 2; dy++) {
+        const by = hall2.bottom - dy;
+        if (by >= 0 && by < WORLD_HEIGHT) wld[hall2.right][by] = BLOCKS.AIR;
+    }
+    placeIronDoor(wld, hall2.right, hall2.bottom);
+
+    // Room G (bottom extension)
+    const roomGLeft = f2Left + 15;
+    const roomG = carveRoom(wld, roomGLeft, hall2.bottom, 20, 7, WALL);
+    // Connect from floor 2 hall floor
+    for (let dx = roomGLeft + 3; dx < roomGLeft + 7; dx++) {
+        if (dx >= 0 && dx < WORLD_WIDTH && hall2.bottom >= 0 && hall2.bottom < WORLD_HEIGHT) {
+            wld[dx][hall2.bottom] = BLOCKS.AIR;
         }
-        // Doorway in divider
-        const doorY1 = bunkerBottom - 1;
-        const doorY2 = bunkerBottom - 2;
-        if (doorY1 >= 0 && doorY1 < WORLD_HEIGHT) w[divX][doorY1] = BLOCKS.AIR;
-        if (doorY2 >= 0 && doorY2 < WORLD_HEIGHT) w[divX][doorY2] = BLOCKS.AIR;
+    }
+    // Iron door at entrance to room G
+    placeIronDoor(wld, roomGLeft + 3, hall2.bottom + 1);
+
+    // Dividing walls in floor 2 hall
+    const f2Div1 = f2Left + 12;
+    const f2Div2 = f2Left + 25;
+    const f2Div3 = f2Left + 38;
+    for (const divX of [f2Div1, f2Div2, f2Div3]) {
+        if (divX >= 0 && divX < WORLD_WIDTH) {
+            for (let by = hall2.top; by <= hall2.bottom; by++) {
+                if (by >= 0 && by < WORLD_HEIGHT) wld[divX][by] = WALL;
+            }
+            placeIronDoor(wld, divX, hall2.bottom);
+        }
     }
 
-    // Side room (left extension)
-    const sideLeft = bunkerLeft - 8;
-    const sideTop = bunkerTop + 2;
-    const sideBottom = bunkerBottom;
-    const sideW = 9;
-    for (let bx = sideLeft; bx < sideLeft + sideW; bx++) {
-        if (bx < 0 || bx >= WORLD_WIDTH) continue;
-        for (let by = sideTop; by <= sideBottom; by++) {
-            if (by < 0 || by >= WORLD_HEIGHT) continue;
-            const isWall = bx === sideLeft || bx === sideLeft + sideW - 1;
-            const isCeil = by === sideTop;
-            const isFloor = by === sideBottom;
-            if (isWall || isCeil || isFloor) {
-                w[bx][by] = WALL;
-            } else {
-                w[bx][by] = BLOCKS.AIR;
+    // ==========================================================
+    // TORCHES — spread through all rooms
+    // ==========================================================
+    const allRooms = [hall, roomA, roomB, roomC, roomD, hall2, roomE, roomF, roomG];
+    for (const room of allRooms) {
+        // Place torches near walls, one block below ceiling
+        const ty = room.top + 1;
+        for (const tx of [room.left + 2, room.right - 2]) {
+            if (tx >= 0 && tx < WORLD_WIDTH && ty >= 0 && ty < WORLD_HEIGHT) {
+                wld[tx][ty] = BLOCKS.TORCH;
+            }
+        }
+        // Extra torches in wide rooms
+        const rw = room.right - room.left;
+        if (rw > 15) {
+            const mid = room.left + Math.floor(rw / 2);
+            if (mid >= 0 && mid < WORLD_WIDTH && ty >= 0 && ty < WORLD_HEIGHT) {
+                wld[mid][ty] = BLOCKS.TORCH;
             }
         }
     }
-    // Connect side room to main room — doorway
-    const connectX = bunkerLeft;
-    if (connectX >= 0 && connectX < WORLD_WIDTH) {
-        for (let dy = 1; dy <= 2; dy++) {
-            const by = sideBottom - dy;
-            if (by >= 0 && by < WORLD_HEIGHT) w[connectX][by] = BLOCKS.AIR;
-        }
-    }
 
-    // --- Place torches inside ---
-    const torchPositions = [
-        [bunkerLeft + 2, bunkerTop + 1],
-        [bunkerLeft + roomW - 3, bunkerTop + 1],
-        [sideLeft + 2, sideTop + 1],
-        [divX - 3, bunkerTop + 1],
-        [divX + 3, bunkerTop + 1],
+    // ==========================================================
+    // CHESTS — good loot spread across rooms
+    // ==========================================================
+    const chestRooms = [
+        { room: roomA, table: "wasteland_bunker" },
+        { room: roomB, table: "wasteland_bunker" },
+        { room: roomC, table: "wasteland_bunker" },
+        { room: roomD, table: "wasteland_bunker" },
+        { room: roomE, table: "wasteland_bunker" },
+        { room: roomF, table: "wasteland_bunker" },
+        { room: roomG, table: "wasteland_bunker" },
+        // Extra chests in main halls
+        { room: hall,  table: "wasteland_bunker" },
+        { room: hall2, table: "wasteland_bunker" },
     ];
-    for (const [tx, ty] of torchPositions) {
-        if (tx >= 0 && tx < WORLD_WIDTH && ty >= 0 && ty < WORLD_HEIGHT) {
-            w[tx][ty] = BLOCKS.TORCH;
+    for (const { room, table } of chestRooms) {
+        const cx = room.left + 2 + Math.floor(Math.random() * Math.max(1, room.right - room.left - 4));
+        const cy = room.bottom - 1;
+        if (cx > room.left && cx < room.right && cy >= 0 && cy < WORLD_HEIGHT) {
+            wld[cx][cy] = BLOCKS.CHEST;
+            initChestData(cx, cy, table);
         }
     }
 
-    // --- Chests with good loot ---
-    const chestPositions = [
-        [bunkerLeft + 3, bunkerBottom - 1],
-        [bunkerLeft + roomW - 4, bunkerBottom - 1],
-        [sideLeft + 3, sideBottom - 1],
-    ];
-    for (const [cx, cy] of chestPositions) {
-        if (cx >= 0 && cx < WORLD_WIDTH && cy >= 0 && cy < WORLD_HEIGHT) {
-            w[cx][cy] = BLOCKS.CHEST;
-            initChestData(cx, cy, "wasteland_bunker");
+    // ==========================================================
+    // RAIDERS — spawn throughout the bunker (not on surface)
+    // ==========================================================
+    const raiderRooms = [hall, roomA, roomB, roomC, roomD, hall2, roomE, roomF, roomG];
+    for (const room of raiderRooms) {
+        // 1-3 raiders per room depending on room width
+        const rw = room.right - room.left;
+        const count = rw > 15 ? 2 + Math.floor(Math.random() * 2) : 1 + Math.floor(Math.random() * 2);
+        for (let i = 0; i < count; i++) {
+            const rx = room.left + 2 + Math.floor(Math.random() * Math.max(1, rw - 4));
+            const ry = room.bottom - 2;
+            if (rx > room.left && rx < room.right && ry >= 0 && ry < WORLD_HEIGHT) {
+                const mob = createMob("raider", rx * BLOCK_SIZE, ry * BLOCK_SIZE);
+                state.mobs.push(mob);
+            }
         }
     }
 
-    // --- Spawn raiders inside the bunker ---
-    const raiderPositions = [
-        [bunkerLeft + 5, bunkerBottom - 2],
-        [bunkerLeft + roomW - 6, bunkerBottom - 2],
-        [divX + 4, bunkerBottom - 2],
-        [sideLeft + 4, sideBottom - 2],
-    ];
-    for (const [rx, ry] of raiderPositions) {
-        if (rx >= 0 && rx < WORLD_WIDTH && ry >= 0 && ry < WORLD_HEIGHT) {
-            const mob = createMob("raider", rx * BLOCK_SIZE, ry * BLOCK_SIZE);
-            state.mobs.push(mob);
-        }
-    }
-
-    // --- Register bunker region for radiation protection ---
-    // Include the camp, stairs, and all underground rooms
-    const regionX1 = Math.max(0, sideLeft - 1);
+    // ==========================================================
+    // RADIATION-SAFE REGION — covers camp + all underground
+    // ==========================================================
+    const regionX1 = Math.max(0, Math.min(roomE.left, roomA.left, campLeft) - 1);
     const regionY1 = Math.max(0, surfaceY - 3);
-    const regionX2 = Math.min(WORLD_WIDTH - 1, bunkerLeft + roomW);
-    const regionY2 = Math.min(WORLD_HEIGHT - 1, bunkerBottom + 1);
+    const regionX2 = Math.min(WORLD_WIDTH - 1, Math.max(roomF.right, roomB.right, campLeft + campW) + 1);
+    const regionY2 = Math.min(WORLD_HEIGHT - 1, roomG.bottom + 1);
     state.bunkerRegions.push({ x1: regionX1, y1: regionY1, x2: regionX2, y2: regionY2 });
 
     state.structureLocations.push({ x: x * BLOCK_SIZE, y: surfaceY * BLOCK_SIZE, type: "bunker" });
@@ -418,21 +533,21 @@ export function generateWastelandWorld() {
         }
     }
 
-    // Bunkers with camps — moderately common, spaced 80+ blocks apart
+    // Bunkers with camps — moderately common, spaced 150+ blocks apart
     let lastBunker = -999;
-    for (let x = 30; x < WORLD_WIDTH - 30; x++) {
-        if (x - lastBunker < 80) continue;
-        // ~6% chance per eligible column → roughly 1 bunker every 80-160 blocks
+    for (let x = 40; x < WORLD_WIDTH - 70; x++) {
+        if (x - lastBunker < 150) continue;
+        // ~6% chance per eligible column
         if (Math.random() > 0.06) continue;
         let surfY = -1;
         for (let y = 0; y < WORLD_HEIGHT; y++) {
             if (state.wastelandWorld[x][y] !== BLOCKS.AIR) { surfY = y; break; }
         }
-        if (surfY <= 0 || surfY > WORLD_HEIGHT - 20) continue;
+        if (surfY <= 0 || surfY > WORLD_HEIGHT - 35) continue;
         // Don't overlap with other structures
         let tooClose = false;
         for (const sl of state.structureLocations) {
-            if (Math.abs(x - sl.x / BLOCK_SIZE) < 30) { tooClose = true; break; }
+            if (Math.abs(x - sl.x / BLOCK_SIZE) < 60) { tooClose = true; break; }
         }
         if (tooClose) continue;
         generateWastelandBunker(x, surfY);

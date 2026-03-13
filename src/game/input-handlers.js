@@ -111,12 +111,17 @@ export function updateMining(dt) {
             addFloatingText(wmx * BLOCK_SIZE + 16, wmy * BLOCK_SIZE, "Wrong tool!", "#ef4444");
         }
         // Door: break both halves
-        if (blockType === BLOCKS.DOOR_CLOSED || blockType === BLOCKS.DOOR_OPEN) {
-            if (wmy > 0 && (state.activeWorld[wmx][wmy-1] === BLOCKS.DOOR_CLOSED || state.activeWorld[wmx][wmy-1] === BLOCKS.DOOR_OPEN)) {
+        const isDoor = blockType === BLOCKS.DOOR_CLOSED || blockType === BLOCKS.DOOR_OPEN;
+        const isIronDoor = blockType === BLOCKS.IRON_DOOR_CLOSED || blockType === BLOCKS.IRON_DOOR_OPEN;
+        if (isDoor || isIronDoor) {
+            const pairIds = isIronDoor
+                ? [BLOCKS.IRON_DOOR_CLOSED, BLOCKS.IRON_DOOR_OPEN]
+                : [BLOCKS.DOOR_CLOSED, BLOCKS.DOOR_OPEN];
+            if (wmy > 0 && pairIds.includes(state.activeWorld[wmx][wmy-1])) {
                 state.activeWorld[wmx][wmy-1] = BLOCKS.AIR;
                 syncBlock(wmx, wmy - 1, BLOCKS.AIR);
             }
-            if (wmy < WORLD_HEIGHT - 1 && (state.activeWorld[wmx][wmy+1] === BLOCKS.DOOR_CLOSED || state.activeWorld[wmx][wmy+1] === BLOCKS.DOOR_OPEN)) {
+            if (wmy < WORLD_HEIGHT - 1 && pairIds.includes(state.activeWorld[wmx][wmy+1])) {
                 state.activeWorld[wmx][wmy+1] = BLOCKS.AIR;
                 syncBlock(wmx, wmy + 1, BLOCKS.AIR);
             }
@@ -188,10 +193,10 @@ export function placeBlock() {
     if (TREE_BLOCKS.has(slot.itemId)) state.placedBlocks.add(`${wmx},${wmy}`);
     if (slot.itemId === BLOCKS.CHEST) initChestData(wmx, wmy);
     // Door: place 2 blocks tall
-    if (slot.itemId === BLOCKS.DOOR_CLOSED) {
+    if (slot.itemId === BLOCKS.DOOR_CLOSED || slot.itemId === BLOCKS.IRON_DOOR_CLOSED) {
         if (wmy > 0 && state.activeWorld[wmx][wmy - 1] === BLOCKS.AIR) {
-            state.activeWorld[wmx][wmy - 1] = BLOCKS.DOOR_CLOSED;
-            syncBlock(wmx, wmy - 1, BLOCKS.DOOR_CLOSED);
+            state.activeWorld[wmx][wmy - 1] = slot.itemId;
+            syncBlock(wmx, wmy - 1, slot.itemId);
         } else {
             state.activeWorld[wmx][wmy] = BLOCKS.AIR;
             syncBlock(wmx, wmy, BLOCKS.AIR);
@@ -432,7 +437,8 @@ export function interact() {
     const wmy_d = Math.floor((state.mouse.y + state.camera.y) / BLOCK_SIZE);
     if (wmx_d >= 0 && wmx_d < WORLD_WIDTH && wmy_d >= 0 && wmy_d < WORLD_HEIGHT) {
         const doorBlock = state.activeWorld[wmx_d][wmy_d];
-        if (doorBlock === BLOCKS.DOOR_CLOSED || doorBlock === BLOCKS.DOOR_OPEN) {
+        if (doorBlock === BLOCKS.DOOR_CLOSED || doorBlock === BLOCKS.DOOR_OPEN ||
+            doorBlock === BLOCKS.IRON_DOOR_CLOSED || doorBlock === BLOCKS.IRON_DOOR_OPEN) {
             const pcx = state.player.x + state.player.width / 2, pcy = state.player.y + state.player.height / 2;
             const bcx = wmx_d * BLOCK_SIZE + BLOCK_SIZE / 2, bcy = wmy_d * BLOCK_SIZE + BLOCK_SIZE / 2;
             if (Math.sqrt((pcx - bcx) ** 2 + (pcy - bcy) ** 2) < BLOCK_SIZE * 5) {
@@ -547,15 +553,18 @@ export function interact() {
 
 export function toggleDoor(x, y) {
     const current = state.activeWorld[x][y];
-    const newId = (current === BLOCKS.DOOR_CLOSED) ? BLOCKS.DOOR_OPEN : BLOCKS.DOOR_CLOSED;
+    const isIron = current === BLOCKS.IRON_DOOR_CLOSED || current === BLOCKS.IRON_DOOR_OPEN;
+    const closedId = isIron ? BLOCKS.IRON_DOOR_CLOSED : BLOCKS.DOOR_CLOSED;
+    const openId   = isIron ? BLOCKS.IRON_DOOR_OPEN   : BLOCKS.DOOR_OPEN;
+    const newId = (current === closedId) ? openId : closedId;
     state.activeWorld[x][y] = newId;
     syncBlock(x, y, newId);
     // Toggle paired half (above or below)
-    if (y > 0 && (state.activeWorld[x][y-1] === BLOCKS.DOOR_CLOSED || state.activeWorld[x][y-1] === BLOCKS.DOOR_OPEN)) {
+    if (y > 0 && (state.activeWorld[x][y-1] === closedId || state.activeWorld[x][y-1] === openId)) {
         state.activeWorld[x][y-1] = newId;
         syncBlock(x, y - 1, newId);
     }
-    if (y < WORLD_HEIGHT - 1 && (state.activeWorld[x][y+1] === BLOCKS.DOOR_CLOSED || state.activeWorld[x][y+1] === BLOCKS.DOOR_OPEN)) {
+    if (y < WORLD_HEIGHT - 1 && (state.activeWorld[x][y+1] === closedId || state.activeWorld[x][y+1] === openId)) {
         state.activeWorld[x][y+1] = newId;
         syncBlock(x, y + 1, newId);
     }

@@ -171,6 +171,35 @@ export function drawBlock(blockType, screenX, screenY) {
         state.ctx.fillRect(screenX + 2, screenY + 14, 2, 4);
         return; // mostly transparent
     }
+    // Iron door (closed) - metallic door
+    if (blockType === BLOCKS.IRON_DOOR_CLOSED) {
+        state.ctx.fillStyle = "#aaaaaa";
+        state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
+        state.ctx.fillStyle = "#888888";
+        state.ctx.fillRect(screenX + 2, screenY, 2, BLOCK_SIZE);
+        state.ctx.fillRect(screenX + BLOCK_SIZE - 4, screenY, 2, BLOCK_SIZE);
+        state.ctx.fillStyle = "#bbbbbb";
+        state.ctx.fillRect(screenX + 6, screenY + 2, BLOCK_SIZE - 12, BLOCK_SIZE - 4);
+        // Rivets
+        state.ctx.fillStyle = "#666666";
+        state.ctx.fillRect(screenX + 8, screenY + 4, 3, 3);
+        state.ctx.fillRect(screenX + BLOCK_SIZE - 11, screenY + 4, 3, 3);
+        state.ctx.fillRect(screenX + 8, screenY + BLOCK_SIZE - 7, 3, 3);
+        state.ctx.fillRect(screenX + BLOCK_SIZE - 11, screenY + BLOCK_SIZE - 7, 3, 3);
+        // Handle
+        state.ctx.fillStyle = "#cccc00";
+        state.ctx.fillRect(screenX + BLOCK_SIZE - 10, screenY + 14, 4, 4);
+    }
+    // Iron door (open) - thin frame on one side
+    if (blockType === BLOCKS.IRON_DOOR_OPEN) {
+        state.ctx.fillStyle = "#aaaaaa";
+        state.ctx.fillRect(screenX, screenY, 6, BLOCK_SIZE);
+        state.ctx.fillStyle = "#888888";
+        state.ctx.fillRect(screenX + 2, screenY, 2, BLOCK_SIZE);
+        state.ctx.fillStyle = "#cccc00";
+        state.ctx.fillRect(screenX + 2, screenY + 14, 2, 4);
+        return; // mostly transparent
+    }
     // Gravel
     if (blockType === BLOCKS.GRAVEL) {
         state.ctx.fillStyle = "#7a7a6a";

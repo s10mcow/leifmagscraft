@@ -28,6 +28,9 @@ export const BLOCKS = {
   SMOKER: 58,
   // Glass
   GLASS: 59,
+  // Iron doors (mobs cannot open or break)
+  IRON_DOOR_CLOSED: 60,
+  IRON_DOOR_OPEN: 61,
 };
 
 // --- ITEM IDs (100+) ---
@@ -200,6 +203,8 @@ export const BLOCK_INFO = {
   [BLOCKS.CHEST]: { name: "Chest", color: "#8b6c42", breakable: true, mineTime: 400, toolType: "axe", minTier: 0, drops: BLOCKS.CHEST },
   [BLOCKS.DOOR_CLOSED]: { name: "Door", color: "#8b6c42", breakable: true, mineTime: 300, toolType: "axe", minTier: 0, drops: BLOCKS.DOOR_CLOSED },
   [BLOCKS.DOOR_OPEN]: { name: "Door (Open)", color: "#8b6c42", breakable: true, mineTime: 300, toolType: "axe", minTier: 0, drops: BLOCKS.DOOR_CLOSED },
+  [BLOCKS.IRON_DOOR_CLOSED]: { name: "Iron Door", color: "#aaaaaa", breakable: true, mineTime: 600, toolType: "pickaxe", minTier: 1, drops: BLOCKS.IRON_DOOR_CLOSED },
+  [BLOCKS.IRON_DOOR_OPEN]: { name: "Iron Door (Open)", color: "#aaaaaa", breakable: true, mineTime: 600, toolType: "pickaxe", minTier: 1, drops: BLOCKS.IRON_DOOR_CLOSED },
   [BLOCKS.GRAVEL]: { name: "Gravel", color: "#8a8a7a", breakable: true, mineTime: 250, toolType: "shovel", minTier: 0, drops: BLOCKS.GRAVEL },
   [BLOCKS.LAVA]: { name: "Lava", color: "#e04010", breakable: false, mineTime: 0, toolType: null, minTier: 0, drops: null },
   [BLOCKS.OBSIDIAN]: { name: "Obsidian", color: "#1a0a2e", breakable: true, mineTime: 9000, toolType: "pickaxe", minTier: 4, drops: BLOCKS.OBSIDIAN },
@@ -401,6 +406,7 @@ export const RECIPES = [
   { result: ITEMS.HAZMAT_BOOTS,      resultCount: 1, ingredients: [{ id: BLOCKS.GLOWSTONE, count: 1 }] },
   { result: BLOCKS.CHEST, resultCount: 1, ingredients: [{ id: BLOCKS.PLANKS, count: 4 }] },
   { result: BLOCKS.DOOR_CLOSED, resultCount: 1, ingredients: [{ id: BLOCKS.PLANKS, count: 6 }] },
+  { result: BLOCKS.IRON_DOOR_CLOSED, resultCount: 1, ingredients: [{ id: ITEMS.IRON_INGOT, count: 6 }] },
   { result: BLOCKS.PRESSURE_PLATE, resultCount: 1, ingredients: [{ id: BLOCKS.COBBLESTONE, count: 2 }] },
   { result: ITEMS.FLINT_AND_STEEL, resultCount: 1, ingredients: [{ id: ITEMS.FLINT, count: 1 }, { id: ITEMS.IRON_INGOT, count: 1 }] },
   { result: ITEMS.PISTOL, resultCount: 1, ingredients: [{ id: ITEMS.IRON_INGOT, count: 2 }, { id: ITEMS.COPPER_INGOT, count: 1 }, { id: ITEMS.GUNPOWDER, count: 1 }] },

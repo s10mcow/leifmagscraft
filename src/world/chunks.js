@@ -58,7 +58,7 @@ export function isBlockSolid(x, y) {
     if (x < 0 || x >= WORLD_WIDTH || y < 0 || y >= WORLD_HEIGHT) return true;
     const block = state.activeWorld[x][y];
     if (block === BLOCKS.AIR || block === BLOCKS.WATER || block === BLOCKS.TORCH ||
-        block === BLOCKS.LAVA || block === BLOCKS.DOOR_OPEN || block === BLOCKS.NETHER_PORTAL ||
+        block === BLOCKS.LAVA || block === BLOCKS.DOOR_OPEN || block === BLOCKS.IRON_DOOR_OPEN || block === BLOCKS.NETHER_PORTAL ||
         block === BLOCKS.PRESSURE_PLATE || block === BLOCKS.CACTUS ||
         block === BLOCKS.TOXIC_PUDDLE) return false;
     // Tree blocks are walkable UNLESS the player placed them there
