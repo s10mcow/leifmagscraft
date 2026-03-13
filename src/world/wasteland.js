@@ -386,11 +386,66 @@ function generateWastelandBunker(x, surfaceY) {
     }
 
     // ==========================================================
-    // RADIATION-SAFE REGION — covers camp + all underground
+    // GUARD TOWERS — one on each side of the camp with snipers
     // ==========================================================
-    const regionX1 = Math.max(0, Math.min(roomE.left, roomA.left, campLeft) - 1);
-    const regionY1 = Math.max(0, surfaceY - 3);
-    const regionX2 = Math.min(WORLD_WIDTH - 1, Math.max(roomF.right, roomB.right, campLeft + campW) + 1);
+    const towerW = 5;
+    const towerH = 10;
+    const towerPositions = [campLeft - towerW - 1, campLeft + campW + 1];
+    for (const tLeft of towerPositions) {
+        const tRight = tLeft + towerW - 1;
+        if (tLeft < 0 || tRight >= WORLD_WIDTH) continue;
+        const tTop = surfaceY - towerH;
+        // Build tower walls and platform
+        for (let bx = tLeft; bx <= tRight; bx++) {
+            for (let by = tTop; by <= surfaceY; by++) {
+                if (by < 0 || by >= WORLD_HEIGHT) continue;
+                const isEdge = bx === tLeft || bx === tRight;
+                const isTop = by === tTop;
+                const isFloor = by === surfaceY;
+                if (isEdge || isTop || isFloor) {
+                    wld[bx][by] = WALL;
+                } else {
+                    wld[bx][by] = BLOCKS.AIR;
+                }
+            }
+        }
+        // Ladder space (air column inside)
+        const ladderX = tLeft + 2;
+        for (let by = tTop + 1; by < surfaceY; by++) {
+            if (by >= 0 && by < WORLD_HEIGHT) wld[ladderX][by] = BLOCKS.AIR;
+        }
+        // Platform at top — wider for the sniper to stand on
+        const platY = tTop;
+        for (let bx = tLeft - 1; bx <= tRight + 1; bx++) {
+            if (bx >= 0 && bx < WORLD_WIDTH && platY >= 0 && platY < WORLD_HEIGHT) {
+                wld[bx][platY] = WALL;
+            }
+        }
+        // Railing (half-walls on platform edges)
+        for (const rx of [tLeft - 1, tRight + 1]) {
+            if (rx >= 0 && rx < WORLD_WIDTH && platY - 1 >= 0) {
+                wld[rx][platY - 1] = WALL;
+            }
+        }
+        // Torch on platform
+        if (tLeft + 1 >= 0 && tLeft + 1 < WORLD_WIDTH && platY - 1 >= 0) {
+            wld[tLeft + 1][platY - 1] = BLOCKS.TORCH;
+        }
+        // Spawn sniper on top of tower
+        const sniperX = tLeft + 2;
+        const sniperY = platY - 2;
+        if (sniperX >= 0 && sniperX < WORLD_WIDTH && sniperY >= 0 && sniperY < WORLD_HEIGHT) {
+            const mob = createMob("sniper", sniperX * BLOCK_SIZE, sniperY * BLOCK_SIZE);
+            state.mobs.push(mob);
+        }
+    }
+
+    // ==========================================================
+    // RADIATION-SAFE REGION — covers camp, towers, and all underground
+    // ==========================================================
+    const regionX1 = Math.max(0, Math.min(roomE.left, roomA.left, campLeft - towerW - 2) - 1);
+    const regionY1 = Math.max(0, surfaceY - towerH - 2);
+    const regionX2 = Math.min(WORLD_WIDTH - 1, Math.max(roomF.right, roomB.right, campLeft + campW + towerW + 2) + 1);
     const regionY2 = Math.min(WORLD_HEIGHT - 1, roomG.bottom + 1);
     state.bunkerRegions.push({ x1: regionX1, y1: regionY1, x2: regionX2, y2: regionY2 });
 
@@ -533,12 +588,12 @@ export function generateWastelandWorld() {
         }
     }
 
-    // Bunkers with camps — moderately common, spaced 150+ blocks apart
+    // Bunkers with camps — rare, spaced 300+ blocks apart
     let lastBunker = -999;
     for (let x = 40; x < WORLD_WIDTH - 70; x++) {
-        if (x - lastBunker < 150) continue;
-        // ~6% chance per eligible column
-        if (Math.random() > 0.06) continue;
+        if (x - lastBunker < 300) continue;
+        // ~2% chance per eligible column — very rare
+        if (Math.random() > 0.02) continue;
         let surfY = -1;
         for (let y = 0; y < WORLD_HEIGHT; y++) {
             if (state.wastelandWorld[x][y] !== BLOCKS.AIR) { surfY = y; break; }

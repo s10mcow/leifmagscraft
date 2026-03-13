@@ -48,6 +48,23 @@ export function createBullet(x, y, targetX, targetY, damage, fromMob = false) {
     });
 }
 
+export function createSniperBullet(x, y, targetX, targetY, damage, fromMob = false, armorPiercing = false) {
+    const dx = targetX - x;
+    const dy = targetY - y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const speed = 20;
+    state.projectiles.push({
+        x, y,
+        velX: (dx / dist) * speed,
+        velY: (dy / dist) * speed,
+        damage,
+        life: 120,
+        isBullet: true,
+        fromMob,
+        armorPiercing
+    });
+}
+
 export function createRocket(x, y, targetX, targetY, damage) {
     const dx = targetX - x;
     const dy = targetY - y;
@@ -191,7 +208,7 @@ export function updateProjectiles(dt) {
                 const def = MOB_DEFS[mob.type];
                 if (p.x >= mob.x && p.x <= mob.x + def.width &&
                     p.y >= mob.y && p.y <= mob.y + def.height) {
-                    const armorReduction = (mob.equipment && mob.equipment.armor) ? 2 : 0;
+                    const armorReduction = (p.armorPiercing || !(mob.equipment && mob.equipment.armor)) ? 0 : 2;
                     const dmg = Math.max(1, p.damage - armorReduction);
                     mob.health -= dmg;
                     mob.hurtTimer = 300;
@@ -210,8 +227,8 @@ export function updateProjectiles(dt) {
             if (p.fromMob) {
                 if (p.x >= state.player.x && p.x <= state.player.x + state.player.width &&
                     p.y >= state.player.y && p.y <= state.player.y + state.player.height) {
-                    hurtPlayer(p.damage, p.x, "bullet");
-                    createParticles(p.x, p.y, 3, "#ffaa00");
+                    hurtPlayer(p.damage, p.x, p.armorPiercing ? "armorPiercing" : "bullet");
+                    createParticles(p.x, p.y, 3, p.armorPiercing ? "#ff00ff" : "#ffaa00");
                     state.projectiles.splice(i, 1);
                     continue;
                 }

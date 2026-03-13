@@ -85,6 +85,7 @@ export const ITEMS = {
   WOOL_HELMET: 183, WOOL_CHESTPLATE: 184, WOOL_LEGGINGS: 185, WOOL_BOOTS: 186,
   POSSUM_CANDY: 187,
   COOL_PACK: 188,
+  SNIPER_RIFLE: 189, SNIPER_BULLET: 190, SNIPER_AP_BULLET: 191,
 };
 
 // --- WORLD SETTINGS ---
@@ -315,6 +316,9 @@ export const ITEM_INFO = {
   // Flamethrower
   [ITEMS.FUEL_CANISTER]: { name: "Fuel Canister", stackable: true, maxStack: 10, color: "#d4a820" },
   [ITEMS.FLAMETHROWER]:  { name: "Flamethrower",  stackable: false, toolType: "gun", tier: 3, speed: 1, durability: 300, damage: 5, color: "#4a2a10", fireRate: 80, ammoType: "fuel", magSize: 60, reloadTime: 2500 },
+  [ITEMS.SNIPER_RIFLE]:  { name: "Sniper Rifle",  stackable: false, toolType: "gun", tier: 4, speed: 1, durability: 500, damage: 18, color: "#3a3a3a", fireRate: 2000, ammoType: "sniper", magSize: 5, reloadTime: 3500 },
+  [ITEMS.SNIPER_BULLET]: { name: "Sniper Bullet",  stackable: true, maxStack: 32 },
+  [ITEMS.SNIPER_AP_BULLET]: { name: "AP Sniper Bullet", stackable: true, maxStack: 32 },
   // Possum Realm
   [ITEMS.POSSUM_TELEPORTER]: { name: "Possum Teleporter", stackable: false, color: "#e8a0d0" },
   [ITEMS.POSSUM_TOOTH]: { name: "Possum's Tooth", stackable: true, maxStack: 16, color: "#fffff0" },
@@ -360,6 +364,7 @@ export const MOB_DEFS = {
   iron_golem: { name: "Iron Golem", width: 32, height: 54, maxHealth: 100, speed: 0.55, damage: 10, hostile: false, knockback: 10, detectRange: 16, attackRange: 55, drops: [{ id: BLOCKS.IRON, min: 1, max: 5 }, { id: ITEMS.FLOWER, min: 1, max: 1, chance: 0.1 }] },
   grunture: { name: "Grunture", width: 48, height: 56, maxHealth: 160, speed: 3.2, damage: 5, fireDamage: 7, hostile: true, detectRange: 18, attackRange: 60, shootRange: 420, shootInterval: 2600, knockback: 10, drops: [{ id: BLOCKS.GLOWSTONE, min: 2, max: 5 }, { id: ITEMS.GUNPOWDER, min: 0, max: 2, chance: 0.7 }, { id: ITEMS.WASTELAND_TELEPORTER, min: 1, max: 1, chance: 0.35 }] },
   raider:    { name: "Raider",        width: 24, height: 46, maxHealth: 30, speed: 1.2, damage: 4, hostile: true,  detectRange: 18,   attackRange: 380, shootInterval: 150, knockback: 5, drops: [{ id: ITEMS.GUNPOWDER, min: 0, max: 2 }, { id: ITEMS.BULLETS, min: 5, max: 15 }, { id: ITEMS.AK47, min: 1, max: 1, chance: 0.12 }] },
+  sniper:    { name: "Sniper",        width: 24, height: 46, maxHealth: 25, speed: 0.4, damage: 18, hostile: true, detectRange: 30,   attackRange: 900, shootInterval: 2500, knockback: 8, drops: [{ id: ITEMS.SNIPER_BULLET, min: 3, max: 8 }, { id: ITEMS.SNIPER_RIFLE, min: 1, max: 1, chance: 0.2 }, { id: ITEMS.SNIPER_AP_BULLET, min: 1, max: 3, chance: 0.3 }] },
   companion: { name: "The Companion", width: 24, height: 46, maxHealth: 60,  speed: 3.0, damage: 3, hostile: false, detectRange: 0,    attackRange: 36,  knockback: 4, drops: [] },
   glitched:  { name: "The Glitched",  width: 24, height: 46, maxHealth: 200, speed: 5.5, damage: 8, hostile: true,  detectRange: 9999, attackRange: 40,  knockback: 6, drops: [] },
   possum:    { name: "Possum",         width: 26, height: 16, maxHealth: 8,   speed: 1.0, damage: 0, hostile: false, knockback: 2, drops: [{ id: ITEMS.FLOWER, min: 1, max: 2 }] },
@@ -418,6 +423,9 @@ export const RECIPES = [
   { result: ITEMS.FUEL_CANISTER,   resultCount: 1, ingredients: [{ id: ITEMS.IRON_INGOT, count: 1 }, { id: ITEMS.TOXIC_BUCKET, count: 1 }] },
   { result: ITEMS.FLAMETHROWER,    resultCount: 1, ingredients: [{ id: ITEMS.GUNPOWDER, count: 1 }, { id: ITEMS.STEEL_INGOT, count: 4 }, { id: ITEMS.TITANIUM_INGOT, count: 2 }, { id: ITEMS.FUEL_CANISTER, count: 1 }] },
   { result: ITEMS.ROCKET, resultCount: 4, ingredients: [{ id: ITEMS.IRON_INGOT, count: 1 }, { id: ITEMS.GUNPOWDER, count: 1 }] },
+  { result: ITEMS.SNIPER_RIFLE, resultCount: 1, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 6 }, { id: BLOCKS.OBSIDIAN, count: 3 }, { id: ITEMS.GUNPOWDER, count: 2 }] },
+  { result: ITEMS.SNIPER_BULLET, resultCount: 8, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 2 }, { id: ITEMS.GUNPOWDER, count: 1 }] },
+  { result: ITEMS.SNIPER_AP_BULLET, resultCount: 8, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 2 }, { id: ITEMS.GUNPOWDER, count: 1 }, { id: BLOCKS.URANIUM_ORE, count: 1 }] },
   { result: ITEMS.MINIATURE_NETHER_PORTAL, resultCount: 1, ingredients: [{ id: BLOCKS.OBSIDIAN, count: 4 }, { id: ITEMS.FLINT_AND_STEEL, count: 1 }] },
   { result: ITEMS.WASTELAND_TELEPORTER, resultCount: 1, ingredients: [{ id: BLOCKS.COBBLESTONE, count: 24 }, { id: BLOCKS.OBSIDIAN, count: 4 }] },
   { result: ITEMS.POSSUM_TELEPORTER, resultCount: 1, ingredients: [{ id: ITEMS.RAW_PORKCHOP, count: 10 }, { id: ITEMS.STEAK, count: 10 }, { id: BLOCKS.GLOWSTONE, count: 5 }] },
@@ -570,6 +578,9 @@ export const LOOT_TABLES = {
     { id: ITEMS.TITANIUM_INGOT, min: 1, max: 3, chance: 0.3 },
     { id: BLOCKS.GLOWSTONE, min: 2, max: 5, chance: 0.5 },
     { id: ITEMS.GUNPOWDER, min: 3, max: 8, chance: 0.7 },
+    { id: ITEMS.SNIPER_RIFLE, min: 1, max: 1, chance: 0.1 },
+    { id: ITEMS.SNIPER_BULLET, min: 4, max: 12, chance: 0.4 },
+    { id: ITEMS.SNIPER_AP_BULLET, min: 2, max: 6, chance: 0.2 },
     { id: ITEMS.WASTELAND_TELEPORTER, min: 1, max: 1, chance: 0.1 },
   ],
   wasteland_camp: [

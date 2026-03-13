@@ -10,7 +10,7 @@ import { addToInventory, addFloatingText } from '../inventory.js';
 import { playMobHit, playGruntureRoar, speakPossumGod } from '../audio.js';
 import { createParticles } from './effects.js';
 import { creeperExplode } from './effects.js';
-import { createArrow, createFireball, createBullet } from './projectiles.js';
+import { createArrow, createFireball, createBullet, createSniperBullet } from './projectiles.js';
 import { createMob } from './entities.js';
 
 // ============================================================
@@ -1014,6 +1014,34 @@ export function updateMobs(dt, dayBrightness) {
                     mob.attackCooldown = 1200;
                 }
             } else { mob.velX *= 0.9; }
+        }
+
+        else if (mob.type === "sniper") {
+            mob.shootCooldown -= dt;
+            if (mob.reloadTimer > 0) {
+                mob.reloadTimer -= dt;
+                if (mob.reloadTimer <= 0) { mob.reloadTimer = 0; mob.magAmmo = 5; }
+            }
+            if (dist < def.detectRange * BLOCK_SIZE) {
+                mob.facing = dirToPlayer;
+                // Snipers stay put — they don't move
+                mob.velX *= 0.5;
+                // Shoot sniper bullets — long range, slow fire rate
+                if (mob.reloadTimer <= 0 && mob.shootCooldown <= 0 && dist < def.attackRange) {
+                    if (mob.magAmmo <= 0) {
+                        mob.reloadTimer = 4000;
+                    } else {
+                        createSniperBullet(
+                            mob.x + def.width / 2, mob.y + 12,
+                            state.player.x + state.player.width / 2,
+                            state.player.y + state.player.height / 2,
+                            def.damage, true, false
+                        );
+                        mob.magAmmo--;
+                        mob.shootCooldown = def.shootInterval;
+                    }
+                }
+            } else { mob.velX *= 0.5; }
         }
 
         else if (mob.type === "companion") {

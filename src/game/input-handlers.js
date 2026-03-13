@@ -11,7 +11,7 @@ import { BLOCKS, ITEMS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, BLOCK_INFO, ITEM_
 import { addToInventory, addFloatingText, getEquippedTool, getEquippedTier, damageEquippedTool, eatFood } from '../inventory.js';
 import { isBlockSolid, initChestData, removeChestData, checkLavaWaterInteraction } from '../world.js';
 import { playMineHit, playBlockBreak, playBlockPlace, playPickup } from '../audio.js';
-import { createBullet, createRocket, createFlame, createParticles } from '../mobs.js';
+import { createBullet, createSniperBullet, createRocket, createFlame, createParticles } from '../mobs.js';
 import { scheduleLeafDecay, WOOD_BLOCKS, TREE_BLOCKS, teleportToOtherDimension, teleportToWasteland, teleportToPossum } from './systems.js';
 
 function syncBlock(x, y, blockId) {
@@ -575,20 +575,26 @@ export function toggleDoor(x, y) {
 // GUN FIRING
 // ============================================================
 
-function ammoItemForGun(itemInfo) {
+function ammoItemForGun(itemInfo, selectedSlot) {
     if (itemInfo.ammoType === "rocket") return ITEMS.ROCKET;
     if (itemInfo.ammoType === "fuel")   return ITEMS.FUEL_CANISTER;
+    if (itemInfo.ammoType === "sniper") {
+        // Prefer AP bullets, fall back to regular sniper bullets
+        const hasAP = state.inventory.slots.some((s, i) => i !== selectedSlot && s.itemId === ITEMS.SNIPER_AP_BULLET && s.count > 0);
+        return hasAP ? ITEMS.SNIPER_AP_BULLET : ITEMS.SNIPER_BULLET;
+    }
     return ITEMS.BULLETS;
 }
 
 function noAmmoText(itemInfo) {
     if (itemInfo.ammoType === "rocket") return "No rockets!";
     if (itemInfo.ammoType === "fuel")   return "No fuel!";
+    if (itemInfo.ammoType === "sniper") return "No sniper ammo!";
     return "No ammo!";
 }
 
 function startReload(slot, itemInfo, selectedSlot) {
-    const ammoItemId = ammoItemForGun(itemInfo);
+    const ammoItemId = ammoItemForGun(itemInfo, selectedSlot);
     const ammoSlot = state.inventory.slots.findIndex((s, i) => i !== selectedSlot && s.itemId === ammoItemId && s.count > 0);
     if (ammoSlot === -1) {
         addFloatingText(state.player.x, state.player.y - 20, noAmmoText(itemInfo), "#ef4444");
@@ -607,7 +613,7 @@ function finishReload() {
     const itemInfo = ITEM_INFO[slot.itemId];
     if (!itemInfo) { state.gunReloadingSlot = -1; return; }
     const isFuel = itemInfo.ammoType === "fuel";
-    const ammoItemId = ammoItemForGun(itemInfo);
+    const ammoItemId = ammoItemForGun(itemInfo, slotIdx);
     const ammoSlot = state.inventory.slots.findIndex((s, i) => i !== slotIdx && s.itemId === ammoItemId && s.count > 0);
     if (ammoSlot !== -1) {
         if (isFuel) {
@@ -620,6 +626,8 @@ function finishReload() {
             slot.magAmmo = (slot.magAmmo || 0) + take;
             state.inventory.slots[ammoSlot].count -= take;
         }
+        // Track loaded ammo type for AP sniper bullets
+        slot.loadedAmmoId = ammoItemId;
         if (state.inventory.slots[ammoSlot].count <= 0) {
             state.inventory.slots[ammoSlot].itemId = 0;
             state.inventory.slots[ammoSlot].count = 0;
@@ -676,6 +684,9 @@ export function handleGunFire(dt) {
         createRocket(px, py, targetX, targetY, itemInfo.damage);
     } else if (itemInfo.ammoType === "fuel") {
         createFlame(px, py, targetX, targetY, itemInfo.damage);
+    } else if (itemInfo.ammoType === "sniper") {
+        const isAP = slot.loadedAmmoId === ITEMS.SNIPER_AP_BULLET;
+        createSniperBullet(px, py, targetX, targetY, itemInfo.damage, false, isAP);
     } else {
         createBullet(px, py, targetX, targetY, itemInfo.damage);
     }
@@ -706,11 +717,10 @@ export function triggerManualReload() {
     if (state.gunReloadTimer > 0) return; // already reloading
     if (slot.magAmmo === undefined) slot.magAmmo = itemInfo.magSize;
     if (slot.magAmmo >= itemInfo.magSize) return; // mag already full
-    const isRocket = itemInfo.ammoType === "rocket";
-    const ammoItemId = isRocket ? ITEMS.ROCKET : ITEMS.BULLETS;
+    const ammoItemId = ammoItemForGun(itemInfo, selectedSlot);
     const ammoSlot = state.inventory.slots.findIndex((s, i) => i !== selectedSlot && s.itemId === ammoItemId && s.count > 0);
     if (ammoSlot === -1) {
-        addFloatingText(state.player.x, state.player.y - 20, isRocket ? "No rockets!" : "No ammo!", "#ef4444");
+        addFloatingText(state.player.x, state.player.y - 20, noAmmoText(itemInfo), "#ef4444");
         return;
     }
     state.gunReloadTimer = itemInfo.reloadTime;

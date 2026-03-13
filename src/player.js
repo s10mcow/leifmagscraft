@@ -482,7 +482,7 @@ export function hurtPlayer(damage, knockFromX, damageType = "melee") {
         }
     }
 
-    const armorDef = getArmorDefense();
+    const armorDef = (damageType === "armorPiercing") ? 0 : getArmorDefense();
     const actualDamage = Math.max(1, damage - armorDef);
     state.player.health = Math.max(0, state.player.health - actualDamage);
     state.player.invincibleTimer = 500;

@@ -8,7 +8,8 @@
       "Bash(grep:*)",
       "Bash(npm run:*)",
       "Bash(node:*)",
-      "Bash(do node:*)"
+      "Bash(do node:*)",
+      "Bash(git add:*)"
     ]
   }
 }

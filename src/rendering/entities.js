@@ -1300,6 +1300,46 @@ function drawMob(mob) {
         }
     }
 
+    else if (mob.type === "sniper") {
+        // Body — ghillie-style dark green
+        state.ctx.fillStyle = isHurt ? "#667766" : "#2a3a2a";
+        state.ctx.fillRect(sx + 4, sy + 14, 16, 16);
+        // Head — covered with hood
+        state.ctx.fillStyle = isHurt ? "#778877" : "#3a4a3a";
+        state.ctx.fillRect(sx + 4, sy, 16, 14);
+        // Goggles
+        state.ctx.fillStyle = "#ff4400";
+        if (mob.facing === 1) {
+            state.ctx.fillRect(sx + 13, sy + 4, 4, 3);
+        } else {
+            state.ctx.fillRect(sx + 7, sy + 4, 4, 3);
+        }
+        // Legs
+        state.ctx.fillStyle = isHurt ? "#556655" : "#2a3020";
+        state.ctx.fillRect(sx + 4, sy + 30, 7, 16);
+        state.ctx.fillRect(sx + 13, sy + 30, 7, 16);
+        // Arms holding sniper rifle
+        state.ctx.fillStyle = isHurt ? "#667766" : "#3a4a3a";
+        if (mob.facing === 1) {
+            state.ctx.fillRect(sx + 19, sy + 16, 6, 5);
+        } else {
+            state.ctx.fillRect(sx - 1, sy + 16, 6, 5);
+        }
+        // Sniper rifle — long barrel with scope
+        state.ctx.fillStyle = "#1a1a1a";
+        if (mob.facing === 1) {
+            state.ctx.fillRect(sx + 22, sy + 14, 16, 2);  // long barrel
+            state.ctx.fillRect(sx + 20, sy + 16, 8, 3);   // stock
+            state.ctx.fillStyle = "#444444";
+            state.ctx.fillRect(sx + 26, sy + 11, 4, 3);   // scope
+        } else {
+            state.ctx.fillRect(sx - 14, sy + 14, 16, 2);
+            state.ctx.fillRect(sx - 4, sy + 16, 8, 3);
+            state.ctx.fillStyle = "#444444";
+            state.ctx.fillRect(sx - 6, sy + 11, 4, 3);
+        }
+    }
+
     // Mob equipment overlay (non-pigman)
     if (mob.equipment && mob.type !== "pigman") {
         if (mob.equipment.armor) {

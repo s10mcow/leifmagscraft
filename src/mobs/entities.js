@@ -55,6 +55,11 @@ export function createMob(type, x, y) {
         mob.reloadTimer = 0;
         if (Math.random() < 0.25) { mob.equipment = { armor: true }; mob.health += 5; }
     }
+    if (type === "sniper") {
+        mob.shootCooldown = Math.random() * MOB_DEFS.sniper.shootInterval;
+        mob.magAmmo = 5;
+        mob.reloadTimer = 0;
+    }
     if (type === "companion") {
         mob.hungerTimer = 0;
         mob.askingForFood = false;
