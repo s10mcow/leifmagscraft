@@ -1151,14 +1151,7 @@ export function setupInput() {
             if (state.gameState === "menu" || (state.gameState === "playing" && state.craftingOpen)) {
                 if (Math.abs(dx) < 18 && totalDy < 18) handleLeftClick(true);
             }
-            // Horizontal swipe → hotbar slot switch (only in-game with no menus)
-            if (state.gameState === "playing" && !state.craftingOpen && !state.chestOpen && !state.tradingOpen && !state.blastFurnaceOpen && !state.gameOver) {
-                if (Math.abs(dx) > 60 && totalDy < 35) {
-                    if (dx > 0) state.inventory.selectedSlot = (state.inventory.selectedSlot + 1) % HOTBAR_SIZE;
-                    else        state.inventory.selectedSlot = (state.inventory.selectedSlot - 1 + HOTBAR_SIZE) % HOTBAR_SIZE;
-                    playSelect();
-                }
-            }
+            // Hotbar switching is mouse-wheel only (no mobile swipe)
             swipeTouchId = null;
             break;
         }
