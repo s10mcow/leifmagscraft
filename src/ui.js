@@ -378,20 +378,6 @@ export function drawCraftingMenu() {
         state.ctx.fillText("O", offhandX + is / 2, offhandY + is / 2 + 6);
     }
 
-    // Drop button (bottom-left corner of crafting panel)
-    {
-        const dropW = 70, dropH = 30;
-        const dropX = px + 10;
-        const dropY = py + ph - 40;
-        state.ctx.fillStyle = "#ef4444";
-        state.ctx.fillRect(dropX, dropY, dropW, dropH);
-        state.ctx.strokeStyle = "#ff6666"; state.ctx.lineWidth = 2;
-        state.ctx.strokeRect(dropX, dropY, dropW, dropH); state.ctx.lineWidth = 1;
-        state.ctx.fillStyle = "#fff"; state.ctx.font = "bold 14px 'Courier New', monospace"; state.ctx.textAlign = "center";
-        state.ctx.fillText("DROP", dropX + dropW / 2, dropY + dropH / 2 + 5);
-        state.dropBtnRect = { x: dropX, y: dropY, w: dropW, h: dropH };
-    }
-
     state.ctx.restore();
     // Cursor item — drawn in screen space after scale is removed
     if (state.cursorItem.itemId !== 0 && state.cursorItem.count > 0) {
