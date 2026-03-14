@@ -395,25 +395,6 @@ export function startNewWorld(worldName) {
             state.player.y = (findSurfaceY(startX) - 2) * BLOCK_SIZE;
             console.log("Player placed at x:", startX, "y:", state.player.y / BLOCK_SIZE);
 
-            // Spawn loadout
-            state.inventory.slots[0] = { itemId: ITEMS.WATER_BOTTLE, count: 1, durability: 4 };
-            state.inventory.slots[1] = { itemId: ITEMS.POSSUM_TELEPORTER, count: 1, durability: 0 };
-            state.inventory.slots[2] = { itemId: ITEMS.ROCKET_LAUNCHER, count: 1, durability: 100, magAmmo: 1 };
-            state.inventory.slots[3] = { itemId: ITEMS.ROCKET, count: 16, durability: 0 };
-            state.inventory.slots[4] = { itemId: ITEMS.FLAMETHROWER, count: 1, durability: 300, magAmmo: 60 };
-            state.inventory.slots[5] = { itemId: ITEMS.FUEL_CANISTER, count: 10, durability: 0 };
-            state.inventory.slots[6] = { itemId: ITEMS.WASTELAND_TELEPORTER, count: 1, durability: 0 };
-            // Hazmat suit in backpack
-            state.inventory.slots[9]  = { itemId: ITEMS.HAZMAT_HELMET,     count: 1, durability: 180 };
-            state.inventory.slots[10] = { itemId: ITEMS.HAZMAT_CHESTPLATE, count: 1, durability: 270 };
-            state.inventory.slots[11] = { itemId: ITEMS.HAZMAT_LEGGINGS,   count: 1, durability: 240 };
-            state.inventory.slots[12] = { itemId: ITEMS.HAZMAT_BOOTS,      count: 1, durability: 210 };
-            // Riot armor equipped
-            state.inventory.armor.helmet =     { itemId: ITEMS.RIOT_HELMET,     count: 1, durability: 350 };
-            state.inventory.armor.chestplate = { itemId: ITEMS.RIOT_CHESTPLATE, count: 1, durability: 520 };
-            state.inventory.armor.leggings =   { itemId: ITEMS.RIOT_LEGGINGS,   count: 1, durability: 480 };
-            state.inventory.armor.boots =      { itemId: ITEMS.RIOT_BOOTS,      count: 1, durability: 400 };
-
             state.currentWorldName = worldName || ("World " + Date.now());
             state.gameState = "playing";
             console.log("New world created:", state.currentWorldName, "gameState:", state.gameState);
@@ -459,25 +440,6 @@ export function startMultiplayerWorld(worldName) {
             const startX = Math.floor(WORLD_WIDTH / 2);
             state.player.x = startX * BLOCK_SIZE;
             state.player.y = (findSurfaceY(startX) - 2) * BLOCK_SIZE;
-
-            // Spawn loadout
-            state.inventory.slots[0] = { itemId: ITEMS.WATER_BOTTLE, count: 1, durability: 4 };
-            state.inventory.slots[1] = { itemId: ITEMS.POSSUM_TELEPORTER, count: 1, durability: 0 };
-            state.inventory.slots[2] = { itemId: ITEMS.ROCKET_LAUNCHER, count: 1, durability: 100, magAmmo: 1 };
-            state.inventory.slots[3] = { itemId: ITEMS.ROCKET, count: 16, durability: 0 };
-            state.inventory.slots[4] = { itemId: ITEMS.FLAMETHROWER, count: 1, durability: 300, magAmmo: 60 };
-            state.inventory.slots[5] = { itemId: ITEMS.FUEL_CANISTER, count: 10, durability: 0 };
-            state.inventory.slots[6] = { itemId: ITEMS.WASTELAND_TELEPORTER, count: 1, durability: 0 };
-            // Hazmat suit in backpack
-            state.inventory.slots[9]  = { itemId: ITEMS.HAZMAT_HELMET,     count: 1, durability: 180 };
-            state.inventory.slots[10] = { itemId: ITEMS.HAZMAT_CHESTPLATE, count: 1, durability: 270 };
-            state.inventory.slots[11] = { itemId: ITEMS.HAZMAT_LEGGINGS,   count: 1, durability: 240 };
-            state.inventory.slots[12] = { itemId: ITEMS.HAZMAT_BOOTS,      count: 1, durability: 210 };
-            // Riot armor equipped
-            state.inventory.armor.helmet =     { itemId: ITEMS.RIOT_HELMET,     count: 1, durability: 350 };
-            state.inventory.armor.chestplate = { itemId: ITEMS.RIOT_CHESTPLATE, count: 1, durability: 520 };
-            state.inventory.armor.leggings =   { itemId: ITEMS.RIOT_LEGGINGS,   count: 1, durability: 480 };
-            state.inventory.armor.boots =      { itemId: ITEMS.RIOT_BOOTS,      count: 1, durability: 400 };
 
             state.currentWorldName = worldName || ("World " + Date.now());
             state.gameState = "playing";

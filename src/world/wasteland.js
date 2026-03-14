@@ -368,13 +368,13 @@ function generateWastelandBunker(x, surfaceY) {
     }
 
     // ==========================================================
-    // RAIDERS — spawn throughout the bunker (not on surface)
+    // RAIDERS — masses of armed guards inside every room
     // ==========================================================
     const raiderRooms = [hall, roomA, roomB, roomC, roomD, hall2, roomE, roomF, roomG];
     for (const room of raiderRooms) {
-        // 1-3 raiders per room depending on room width
         const rw = room.right - room.left;
-        const count = rw > 15 ? 2 + Math.floor(Math.random() * 2) : 1 + Math.floor(Math.random() * 2);
+        // Big rooms get 5-8, small rooms get 3-5
+        const count = rw > 15 ? 5 + Math.floor(Math.random() * 4) : 3 + Math.floor(Math.random() * 3);
         for (let i = 0; i < count; i++) {
             const rx = room.left + 2 + Math.floor(Math.random() * Math.max(1, rw - 4));
             const ry = room.bottom - 2;
@@ -437,6 +437,16 @@ function generateWastelandBunker(x, surfaceY) {
         if (sniperX >= 0 && sniperX < WORLD_WIDTH && sniperY >= 0 && sniperY < WORLD_HEIGHT) {
             const mob = createMob("sniper", sniperX * BLOCK_SIZE, sniperY * BLOCK_SIZE);
             state.mobs.push(mob);
+        }
+        // Raiders inside the tower (2-3 per tower)
+        const towerRaiderCount = 2 + Math.floor(Math.random() * 2);
+        for (let ri = 0; ri < towerRaiderCount; ri++) {
+            const rx = tLeft + 1 + Math.floor(Math.random() * 3);
+            const ry = surfaceY - 2;
+            if (rx >= 0 && rx < WORLD_WIDTH && ry >= 0 && ry < WORLD_HEIGHT) {
+                const mob = createMob("raider", rx * BLOCK_SIZE, ry * BLOCK_SIZE);
+                state.mobs.push(mob);
+            }
         }
     }
 
