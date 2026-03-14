@@ -3,7 +3,7 @@
 // ============================================================
 
 import { state } from '../state.js';
-import { BLOCKS, ITEMS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, GRAVITY, MAX_FALL_SPEED, NIGHT_THRESHOLD, MOB_DEFS, getItemName } from '../constants.js';
+import { BLOCKS, ITEMS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, GRAVITY, MAX_FALL_SPEED, NIGHT_THRESHOLD, MOB_DEFS, ITEM_INFO, getItemName } from '../constants.js';
 import { isBlockSolid } from '../world.js';
 import { hurtPlayer, hasLineOfSight } from '../player.js';
 import { addToInventory, addFloatingText } from '../inventory.js';
@@ -210,8 +210,15 @@ export function updateMobs(dt, dayBrightness) {
                 if (drop.chance !== undefined && Math.random() > drop.chance) continue;
                 const count = drop.min + Math.floor(Math.random() * (drop.max - drop.min + 1));
                 if (count > 0) {
-                    addToInventory(drop.id, count);
-                    addFloatingText(mob.x + def.width / 2, mob.y, `+${count} ${getItemName(drop.id)}`, "#ffd700");
+                    state.droppedItems.push({
+                        x: mob.x + def.width / 2 + (Math.random() - 0.5) * 20,
+                        y: mob.y + def.height / 2,
+                        velX: 0, velY: 0,
+                        itemId: drop.id,
+                        count: count,
+                        durability: (ITEM_INFO[drop.id] && ITEM_INFO[drop.id].durability) ? ITEM_INFO[drop.id].durability : 0,
+                        timer: 30000
+                    });
                 }
             }
             state.mobs.splice(i, 1);

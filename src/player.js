@@ -282,18 +282,20 @@ export function updatePlayer(dt) {
         const item = state.droppedItems[di];
         item.timer -= dt;
         if (item.timer <= 0) { state.droppedItems.splice(di, 1); continue; }
-        // Physics: gravity + friction
-        item.velY = Math.min((item.velY || 0) + 0.3, 8);
-        item.x += (item.velX || 0);
-        item.y += item.velY;
-        item.velX *= 0.95;
-        // Ground collision
-        const bx = Math.floor(item.x / BLOCK_SIZE);
-        const by = Math.floor((item.y + 8) / BLOCK_SIZE);
-        if (bx >= 0 && bx < WORLD_WIDTH && by >= 0 && by < WORLD_HEIGHT && isBlockSolid(bx, by)) {
-            item.y = by * BLOCK_SIZE - 8;
-            item.velY = 0;
-            item.velX *= 0.8;
+        // Physics: only apply gravity for death drops (timer > 30000), world drops float in place
+        if (item.timer > 30000 || item.velY !== 0 || item.velX !== 0) {
+            if (item.timer > 30000) item.velY = Math.min((item.velY || 0) + 0.3, 8);
+            item.x += (item.velX || 0);
+            item.y += item.velY;
+            item.velX *= 0.95;
+            // Ground collision
+            const bx = Math.floor(item.x / BLOCK_SIZE);
+            const by = Math.floor((item.y + 8) / BLOCK_SIZE);
+            if (bx >= 0 && bx < WORLD_WIDTH && by >= 0 && by < WORLD_HEIGHT && isBlockSolid(bx, by)) {
+                item.y = by * BLOCK_SIZE - 8;
+                item.velY = 0;
+                item.velX *= 0.8;
+            }
         }
         // Pickup check
         const dx = (state.player.x + state.player.width / 2) - item.x;

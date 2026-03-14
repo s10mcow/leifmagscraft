@@ -81,13 +81,21 @@ export function updateMining(dt) {
 
     if (state.mining.progress >= state.mining.targetTime) {
         if (state.mining.canMine) {
-            // If breaking a chest, dump its contents to player
+            // If breaking a chest, dump its contents as ground items
             if (blockType === BLOCKS.CHEST) {
                 const chestKey = `${wmx},${wmy}`;
                 if (state.chestData[chestKey]) {
                     for (const slot of state.chestData[chestKey]) {
                         if (slot.itemId !== 0 && slot.count > 0) {
-                            addToInventory(slot.itemId, slot.count);
+                            state.droppedItems.push({
+                                x: wmx * BLOCK_SIZE + 16 + (Math.random() - 0.5) * 20,
+                                y: wmy * BLOCK_SIZE,
+                                velX: 0, velY: 0,
+                                itemId: slot.itemId,
+                                count: slot.count,
+                                durability: slot.durability || ((ITEM_INFO[slot.itemId] && ITEM_INFO[slot.itemId].durability) ? ITEM_INFO[slot.itemId].durability : 0),
+                                timer: 30000
+                            });
                         }
                     }
                     removeChestData(wmx, wmy);
@@ -96,15 +104,27 @@ export function updateMining(dt) {
             // Gravel: 10% chance to drop flint instead
             if (blockType === BLOCKS.GRAVEL) {
                 const gravelDrop = Math.random() < 0.1 ? ITEMS.FLINT : BLOCKS.GRAVEL;
-                addToInventory(gravelDrop);
-                playPickup();
-                addFloatingText(wmx * BLOCK_SIZE + 16, wmy * BLOCK_SIZE, `+1 ${getItemName(gravelDrop)}`, "#4ade80");
+                state.droppedItems.push({
+                    x: wmx * BLOCK_SIZE + 16,
+                    y: wmy * BLOCK_SIZE,
+                    velX: 0, velY: 0,
+                    itemId: gravelDrop,
+                    count: 1,
+                    durability: 0,
+                    timer: 30000
+                });
             } else {
                 const drop = blockInfo.drops;
                 if (drop !== null) {
-                    addToInventory(drop);
-                    playPickup();
-                    addFloatingText(wmx * BLOCK_SIZE + 16, wmy * BLOCK_SIZE, `+1 ${getItemName(drop)}`, "#4ade80");
+                    state.droppedItems.push({
+                        x: wmx * BLOCK_SIZE + 16,
+                        y: wmy * BLOCK_SIZE,
+                        velX: 0, velY: 0,
+                        itemId: drop,
+                        count: 1,
+                        durability: (ITEM_INFO[drop] && ITEM_INFO[drop].durability) ? ITEM_INFO[drop].durability : 0,
+                        timer: 30000
+                    });
                 }
             }
         } else {
