@@ -8,7 +8,7 @@
 
 import { state } from '../state.js';
 import { BLOCKS, ITEMS, ITEM_INFO, WORLD_WIDTH, WORLD_HEIGHT, BLOCK_SIZE, MOB_DEFS, SAVE_KEY_PREFIX, SAVE_INDEX_KEY } from '../constants.js';
-import { ARMOR_SLOT_TYPES } from '../inventory.js';
+import { ARMOR_SLOT_TYPES, addToInventory } from '../inventory.js';
 import { findSurfaceY, generateWorld, generateNetherWorld } from '../world.js';
 import { checkExistingSession } from '../auth.js';
 import { updateCamera } from '../player.js';
@@ -395,6 +395,26 @@ export function startNewWorld(worldName) {
             state.player.y = (findSurfaceY(startX) - 2) * BLOCK_SIZE;
             console.log("Player placed at x:", startX, "y:", state.player.y / BLOCK_SIZE);
 
+            // Spawn loadout
+            state.inventory.armor.helmet    = { itemId: ITEMS.HAZMAT_HELMET,     count: 1, durability: ITEM_INFO[ITEMS.HAZMAT_HELMET].durability };
+            state.inventory.armor.chestplate = { itemId: ITEMS.HAZMAT_CHESTPLATE, count: 1, durability: ITEM_INFO[ITEMS.HAZMAT_CHESTPLATE].durability };
+            state.inventory.armor.leggings  = { itemId: ITEMS.HAZMAT_LEGGINGS,   count: 1, durability: ITEM_INFO[ITEMS.HAZMAT_LEGGINGS].durability };
+            state.inventory.armor.boots     = { itemId: ITEMS.HAZMAT_BOOTS,      count: 1, durability: ITEM_INFO[ITEMS.HAZMAT_BOOTS].durability };
+            addToInventory(ITEMS.RIOT_HELMET, 1);
+            addToInventory(ITEMS.RIOT_CHESTPLATE, 1);
+            addToInventory(ITEMS.RIOT_LEGGINGS, 1);
+            addToInventory(ITEMS.RIOT_BOOTS, 1);
+            addToInventory(ITEMS.AK47, 1);
+            addToInventory(ITEMS.ROCKET_LAUNCHER, 1);
+            addToInventory(ITEMS.FLAMETHROWER, 1);
+            addToInventory(ITEMS.BULLETS, 64);
+            addToInventory(ITEMS.BULLETS, 64);
+            addToInventory(ITEMS.ROCKET, 16);
+            addToInventory(ITEMS.FUEL_CANISTER, 10);
+            addToInventory(ITEMS.MINIATURE_NETHER_PORTAL, 1);
+            addToInventory(ITEMS.WASTELAND_TELEPORTER, 1);
+            addToInventory(ITEMS.POSSUM_TELEPORTER, 1);
+
             state.currentWorldName = worldName || ("World " + Date.now());
             state.gameState = "playing";
             console.log("New world created:", state.currentWorldName, "gameState:", state.gameState);
@@ -440,6 +460,26 @@ export function startMultiplayerWorld(worldName) {
             const startX = Math.floor(WORLD_WIDTH / 2);
             state.player.x = startX * BLOCK_SIZE;
             state.player.y = (findSurfaceY(startX) - 2) * BLOCK_SIZE;
+
+            // Spawn loadout
+            state.inventory.armor.helmet    = { itemId: ITEMS.HAZMAT_HELMET,     count: 1, durability: ITEM_INFO[ITEMS.HAZMAT_HELMET].durability };
+            state.inventory.armor.chestplate = { itemId: ITEMS.HAZMAT_CHESTPLATE, count: 1, durability: ITEM_INFO[ITEMS.HAZMAT_CHESTPLATE].durability };
+            state.inventory.armor.leggings  = { itemId: ITEMS.HAZMAT_LEGGINGS,   count: 1, durability: ITEM_INFO[ITEMS.HAZMAT_LEGGINGS].durability };
+            state.inventory.armor.boots     = { itemId: ITEMS.HAZMAT_BOOTS,      count: 1, durability: ITEM_INFO[ITEMS.HAZMAT_BOOTS].durability };
+            addToInventory(ITEMS.RIOT_HELMET, 1);
+            addToInventory(ITEMS.RIOT_CHESTPLATE, 1);
+            addToInventory(ITEMS.RIOT_LEGGINGS, 1);
+            addToInventory(ITEMS.RIOT_BOOTS, 1);
+            addToInventory(ITEMS.AK47, 1);
+            addToInventory(ITEMS.ROCKET_LAUNCHER, 1);
+            addToInventory(ITEMS.FLAMETHROWER, 1);
+            addToInventory(ITEMS.BULLETS, 64);
+            addToInventory(ITEMS.BULLETS, 64);
+            addToInventory(ITEMS.ROCKET, 16);
+            addToInventory(ITEMS.FUEL_CANISTER, 10);
+            addToInventory(ITEMS.MINIATURE_NETHER_PORTAL, 1);
+            addToInventory(ITEMS.WASTELAND_TELEPORTER, 1);
+            addToInventory(ITEMS.POSSUM_TELEPORTER, 1);
 
             state.currentWorldName = worldName || ("World " + Date.now());
             state.gameState = "playing";
