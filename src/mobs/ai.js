@@ -210,15 +210,8 @@ export function updateMobs(dt, dayBrightness) {
                 if (drop.chance !== undefined && Math.random() > drop.chance) continue;
                 const count = drop.min + Math.floor(Math.random() * (drop.max - drop.min + 1));
                 if (count > 0) {
-                    state.droppedItems.push({
-                        x: mob.x + def.width / 2 + (Math.random() - 0.5) * 20,
-                        y: mob.y + def.height / 2,
-                        velX: 0, velY: 0,
-                        itemId: drop.id,
-                        count: count,
-                        durability: (ITEM_INFO[drop.id] && ITEM_INFO[drop.id].durability) ? ITEM_INFO[drop.id].durability : 0,
-                        timer: 30000
-                    });
+                    addToInventory(drop.id, count);
+                    addFloatingText(mob.x + def.width / 2, mob.y - 10, `+${count} ${getItemName(drop.id)}`, "#4ade80");
                 }
             }
             state.mobs.splice(i, 1);
