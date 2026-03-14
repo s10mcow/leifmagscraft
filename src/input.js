@@ -471,6 +471,26 @@ export function setupInput() {
             else triggerManualReload();
         }
 
+        // Z = drop (destroy) selected item
+        if (e.key === "z" || e.key === "Z") {
+            if (state.gameState === "playing" && !state.gameOver) {
+                if (state.craftingOpen && state.cursorItem.itemId !== 0) {
+                    // Drop cursor item when in inventory
+                    state.cursorItem.itemId = 0;
+                    state.cursorItem.count = 0;
+                    state.cursorItem.durability = 0;
+                } else if (!state.craftingOpen) {
+                    // Drop selected hotbar item
+                    const slot = state.inventory.slots[state.inventory.selectedSlot];
+                    if (slot.itemId !== 0 && slot.count > 0) {
+                        slot.itemId = 0;
+                        slot.count = 0;
+                        slot.durability = 0;
+                    }
+                }
+            }
+        }
+
         // 1-9 = select hotbar slot
         const num = parseInt(e.key);
         if (num >= 1 && num <= 9) { state.inventory.selectedSlot = num - 1; playSelect(); }
@@ -996,6 +1016,15 @@ export function setupInput() {
             return;
         }
         if (state.craftingOpen) {
+            // Drop button — destroys cursor item
+            const db = state.dropBtnRect;
+            if (db && state.mouse.x >= db.x && state.mouse.x <= db.x + db.w && state.mouse.y >= db.y && state.mouse.y <= db.y + db.h) {
+                if (state.cursorItem.itemId !== 0) {
+                    state.cursorItem.itemId = 0;
+                    state.cursorItem.count = 0;
+                    state.cursorItem.durability = 0;
+                }
+            } else {
             const armorSlot = getArmorSlotAtMouse();
             if (armorSlot) {
                 clickArmorSlot(armorSlot);
@@ -1008,6 +1037,7 @@ export function setupInput() {
                 } else if (state.craftingHover >= 0 && state.craftingHover < RECIPES.length) {
                     craft(RECIPES[state.craftingHover]);
                 }
+            }
             }
         } else {
             const mob = fn.getMobAtCursor();
