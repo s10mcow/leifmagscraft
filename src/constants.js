@@ -86,6 +86,7 @@ export const ITEMS = {
   POSSUM_CANDY: 187,
   COOL_PACK: 188,
   SNIPER_RIFLE: 189, SNIPER_BULLET: 190, SNIPER_AP_BULLET: 191,
+  SILVER_HELMET: 192, SILVER_CHESTPLATE: 193, SILVER_LEGGINGS: 194, SILVER_BOOTS: 195,
 };
 
 // --- WORLD SETTINGS ---
@@ -343,6 +344,10 @@ export const ITEM_INFO = {
   [ITEMS.COPPER_INGOT]: { name: "Copper Ingot", stackable: true, maxStack: 64, color: "#e07040" },
   [ITEMS.GOLD_INGOT]:   { name: "Gold Ingot",   stackable: true, maxStack: 64, color: "#ffd700" },
   [ITEMS.SILVER_INGOT]: { name: "Silver Ingot", stackable: true, maxStack: 64, color: "#c0c8d8" },
+  [ITEMS.SILVER_HELMET]:     { name: "Silver Helmet",     stackable: false, armorType: "helmet",     defense: 2, durability: 200, color: "#c0c8d8", coolPack: true },
+  [ITEMS.SILVER_CHESTPLATE]: { name: "Silver Chestplate", stackable: false, armorType: "chestplate", defense: 4, durability: 280, color: "#c0c8d8", coolPack: true },
+  [ITEMS.SILVER_LEGGINGS]:   { name: "Silver Leggings",   stackable: false, armorType: "leggings",   defense: 3, durability: 240, color: "#c0c8d8", coolPack: true },
+  [ITEMS.SILVER_BOOTS]:      { name: "Silver Boots",      stackable: false, armorType: "boots",      defense: 2, durability: 180, color: "#c0c8d8", coolPack: true },
 };
 
 // --- MOB DEFINITIONS ---
@@ -450,8 +455,11 @@ export const RECIPES = [
   { result: ITEMS.WOOL_CHESTPLATE, resultCount: 1, ingredients: [{ id: ITEMS.WOOL, count: 8 }] },
   { result: ITEMS.WOOL_LEGGINGS,   resultCount: 1, ingredients: [{ id: ITEMS.WOOL, count: 7 }] },
   { result: ITEMS.WOOL_BOOTS,      resultCount: 1, ingredients: [{ id: ITEMS.WOOL, count: 4 }] },
-  // Cool Pack (silver boots — keeps you cool)
-  { result: ITEMS.COOL_PACK, resultCount: 1, ingredients: [{ id: ITEMS.SILVER_INGOT, count: 6 }] },
+  // Silver armor (temperature regulation — any piece keeps you comfortable)
+  { result: ITEMS.SILVER_HELMET,     resultCount: 1, ingredients: [{ id: ITEMS.SILVER_INGOT, count: 5 }] },
+  { result: ITEMS.SILVER_CHESTPLATE, resultCount: 1, ingredients: [{ id: ITEMS.SILVER_INGOT, count: 8 }] },
+  { result: ITEMS.SILVER_LEGGINGS,   resultCount: 1, ingredients: [{ id: ITEMS.SILVER_INGOT, count: 7 }] },
+  { result: ITEMS.SILVER_BOOTS,      resultCount: 1, ingredients: [{ id: ITEMS.SILVER_INGOT, count: 4 }] },
 ];
 
 // --- SMELTING RECIPES (blast furnace) ---
