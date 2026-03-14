@@ -277,18 +277,16 @@ export function updatePlayer(dt) {
         }
     }
 
-    // Pick up dropped items
+    // Update dropped items physics
     for (let di = state.droppedItems.length - 1; di >= 0; di--) {
         const item = state.droppedItems[di];
         item.timer -= dt;
         if (item.timer <= 0) { state.droppedItems.splice(di, 1); continue; }
-        // Physics: gravity pulls items down until they land, then they float on the ground
         if (!item.grounded) {
             item.velY = Math.min((item.velY || 0) + 0.3, 8);
             item.x += (item.velX || 0);
             item.y += item.velY;
             item.velX *= 0.95;
-            // Ground collision
             const bx = Math.floor(item.x / BLOCK_SIZE);
             const by = Math.floor((item.y + 8) / BLOCK_SIZE);
             if (bx >= 0 && bx < WORLD_WIDTH && by >= 0 && by < WORLD_HEIGHT && isBlockSolid(bx, by)) {
@@ -298,15 +296,30 @@ export function updatePlayer(dt) {
                 item.grounded = true;
             }
         }
-        // Pickup check
-        const dx = (state.player.x + state.player.width / 2) - item.x;
-        const dy = (state.player.y + state.player.height / 2) - item.y;
-        if (Math.sqrt(dx * dx + dy * dy) < BLOCK_SIZE * 1.5) {
+    }
+
+    // Pick up all nearby dropped items at once
+    let pickedUp = false;
+    const pickupCounts = {};
+    const px = state.player.x + state.player.width / 2;
+    const py = state.player.y + state.player.height / 2;
+    for (let di = state.droppedItems.length - 1; di >= 0; di--) {
+        const item = state.droppedItems[di];
+        const dx = px - item.x;
+        const dy = py - item.y;
+        if (dx * dx + dy * dy < (BLOCK_SIZE * 1.5) * (BLOCK_SIZE * 1.5)) {
             if (addToInventory(item.itemId, item.count, item.durability)) {
-                playPickup();
-                addFloatingText(item.x, item.y - 10, `+${item.count} ${getItemName(item.itemId)}`, "#4ade80");
+                const name = getItemName(item.itemId);
+                pickupCounts[name] = (pickupCounts[name] || 0) + item.count;
                 state.droppedItems.splice(di, 1);
+                pickedUp = true;
             }
+        }
+    }
+    if (pickedUp) {
+        playPickup();
+        for (const [name, count] of Object.entries(pickupCounts)) {
+            addFloatingText(px, py - 10, `+${count} ${name}`, "#4ade80");
         }
     }
 
