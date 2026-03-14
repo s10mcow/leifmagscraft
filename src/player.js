@@ -9,7 +9,7 @@ import { state } from './state.js';
 import { BLOCKS, ITEMS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, GRAVITY, MAX_FALL_SPEED, PLAYER_REACH, SAFE_FALL_BLOCKS, MOB_DEFS, ITEM_INFO, BIOMES, getItemName } from './constants.js';
 import { isBlockSolid, findSurfaceY } from './world.js';
 import { addFloatingText, getEquippedTool, getEquippedTier, getArmorDefense, damageAllArmor, damageEquippedTool } from './inventory.js';
-import { playJump, playFootstep, playLand, playHurt, playMobHit, playBlockPlace, playSelect, playToolBreak } from './audio.js';
+import { playJump, playFootstep, playLand, playHurt, playMobHit, playBlockPlace, playSelect, playToolBreak, playPickup } from './audio.js';
 import { createParticles } from './mobs.js';
 
 // Lazy import for toggleDoor (lives in game.js) to avoid circular dependencies
@@ -282,9 +282,9 @@ export function updatePlayer(dt) {
         const item = state.droppedItems[di];
         item.timer -= dt;
         if (item.timer <= 0) { state.droppedItems.splice(di, 1); continue; }
-        // Physics: only apply gravity for death drops (timer > 30000), world drops float in place
-        if (item.timer > 30000 || item.velY !== 0 || item.velX !== 0) {
-            if (item.timer > 30000) item.velY = Math.min((item.velY || 0) + 0.3, 8);
+        // Physics: gravity pulls items down until they land, then they float on the ground
+        if (!item.grounded) {
+            item.velY = Math.min((item.velY || 0) + 0.3, 8);
             item.x += (item.velX || 0);
             item.y += item.velY;
             item.velX *= 0.95;
@@ -294,16 +294,19 @@ export function updatePlayer(dt) {
             if (bx >= 0 && bx < WORLD_WIDTH && by >= 0 && by < WORLD_HEIGHT && isBlockSolid(bx, by)) {
                 item.y = by * BLOCK_SIZE - 8;
                 item.velY = 0;
-                item.velX *= 0.8;
+                item.velX = 0;
+                item.grounded = true;
             }
         }
         // Pickup check
         const dx = (state.player.x + state.player.width / 2) - item.x;
         const dy = (state.player.y + state.player.height / 2) - item.y;
         if (Math.sqrt(dx * dx + dy * dy) < BLOCK_SIZE * 1.5) {
-            addToInventory(item.itemId, item.count, item.durability);
-            addFloatingText(item.x, item.y - 10, `+${item.count} ${getItemName(item.itemId)}`, "#4ade80");
-            state.droppedItems.splice(di, 1);
+            if (addToInventory(item.itemId, item.count, item.durability)) {
+                playPickup();
+                addFloatingText(item.x, item.y - 10, `+${item.count} ${getItemName(item.itemId)}`, "#4ade80");
+                state.droppedItems.splice(di, 1);
+            }
         }
     }
 
