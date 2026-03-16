@@ -12,7 +12,7 @@ import { addToInventory, addFloatingText, getEquippedTool, getEquippedTier, dama
 import { isBlockSolid, initChestData, removeChestData, checkLavaWaterInteraction } from '../world.js';
 import { playMineHit, playBlockBreak, playBlockPlace, playPickup } from '../audio.js';
 import { createBullet, createSniperBullet, createRocket, createFlame, createParticles } from '../mobs.js';
-import { scheduleLeafDecay, WOOD_BLOCKS, TREE_BLOCKS, teleportToOtherDimension, teleportToWasteland, teleportToPossum, teleportToEther } from './systems.js';
+import { scheduleLeafDecay, WOOD_BLOCKS, TREE_BLOCKS, teleportToOtherDimension, teleportToWasteland, teleportToPossum, teleportToVoid } from './systems.js';
 
 function syncBlock(x, y, blockId) {
     if (state.multiplayerMode) import('../multiplayer.js').then(m => m.sendBlockUpdate(x, y, blockId));
@@ -330,9 +330,9 @@ export function interact() {
         teleportToPossum();
         return;
     }
-    // Ether Teleporter: teleport to/from Ether
-    if (heldSlot.itemId === ITEMS.ETHER_TELEPORTER && state.portalCooldown <= 0) {
-        teleportToEther();
+    // Void Teleporter: teleport to/from the Void
+    if (heldSlot.itemId === ITEMS.VOID_TELEPORTER && state.portalCooldown <= 0) {
+        teleportToVoid();
         return;
     }
 

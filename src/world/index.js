@@ -20,8 +20,8 @@ export { generateWastelandWorld } from './wasteland.js';
 // Possum Realm world generation
 export { generatePossumWorld } from './possum.js';
 
-// Ether dimension world generation
-export { generateEtherWorld } from './ether.js';
+// Void dimension world generation
+export { generateVoidWorld } from './void.js';
 
 // Underground lava-water interaction (runtime)
 export { checkLavaWaterInteraction } from './caves.js';

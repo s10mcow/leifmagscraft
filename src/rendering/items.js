@@ -468,7 +468,7 @@ export function drawItemIcon(itemId, x, y, size) {
         state.ctx.fillRect(x + size * 0.7, y + size * 0.24, size * 0.18, size * 0.28);
         state.ctx.fillStyle = "#44ff88";
         state.ctx.fillRect(x + size * 0.73, y + size * 0.28, size * 0.06, size * 0.2);
-    } else if (itemId === ITEMS.ETHER_TELEPORTER) {
+    } else if (itemId === ITEMS.VOID_TELEPORTER) {
         // Ethereal portal frame — dark blue-grey with glowing center
         const fw = size * 0.75, fh = size * 0.9;
         const fx = x + (size - fw) / 2, fy = y + (size - fh) / 2;

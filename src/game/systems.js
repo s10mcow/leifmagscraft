@@ -9,16 +9,16 @@
 import { state } from '../state.js';
 import { BLOCKS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, MOB_DEFS, getItemName, FURNACE_RECIPES, FOOD_RECIPES, FUEL_VALUES } from '../constants.js';
 import { addFloatingText, countItem, addToInventory } from '../inventory.js';
-import { findSurfaceY, generateNetherWorld, generateWastelandWorld, generatePossumWorld, generateEtherWorld, switchDimension } from '../world.js';
+import { findSurfaceY, generateNetherWorld, generateWastelandWorld, generatePossumWorld, generateVoidWorld, switchDimension } from '../world.js';
 import { playCraft } from '../audio.js';
 
 // ============================================================
 // LOCAL CONSTANTS (shared with input-handlers.js)
 // ============================================================
 
-export const WOOD_BLOCKS = new Set([BLOCKS.WOOD, BLOCKS.SPRUCE_WOOD, BLOCKS.ACACIA_WOOD, BLOCKS.NETHER_WOOD, BLOCKS.WARPED_WOOD, BLOCKS.ETHER_WOOD]);
-export const LEAF_BLOCKS = new Set([BLOCKS.LEAVES, BLOCKS.SPRUCE_LEAVES, BLOCKS.ACACIA_LEAVES, BLOCKS.NETHER_LEAVES, BLOCKS.WARPED_LEAVES, BLOCKS.ETHER_LEAVES]);
-export const TREE_BLOCKS = new Set([BLOCKS.WOOD, BLOCKS.LEAVES, BLOCKS.SPRUCE_WOOD, BLOCKS.SPRUCE_LEAVES, BLOCKS.ACACIA_WOOD, BLOCKS.ACACIA_LEAVES, BLOCKS.NETHER_WOOD, BLOCKS.NETHER_LEAVES, BLOCKS.WARPED_WOOD, BLOCKS.WARPED_LEAVES, BLOCKS.ETHER_WOOD, BLOCKS.ETHER_LEAVES]);
+export const WOOD_BLOCKS = new Set([BLOCKS.WOOD, BLOCKS.SPRUCE_WOOD, BLOCKS.ACACIA_WOOD, BLOCKS.NETHER_WOOD, BLOCKS.WARPED_WOOD, BLOCKS.VOID_WOOD]);
+export const LEAF_BLOCKS = new Set([BLOCKS.LEAVES, BLOCKS.SPRUCE_LEAVES, BLOCKS.ACACIA_LEAVES, BLOCKS.NETHER_LEAVES, BLOCKS.WARPED_LEAVES, BLOCKS.VOID_LEAVES]);
+export const TREE_BLOCKS = new Set([BLOCKS.WOOD, BLOCKS.LEAVES, BLOCKS.SPRUCE_WOOD, BLOCKS.SPRUCE_LEAVES, BLOCKS.ACACIA_WOOD, BLOCKS.ACACIA_LEAVES, BLOCKS.NETHER_WOOD, BLOCKS.NETHER_LEAVES, BLOCKS.WARPED_WOOD, BLOCKS.WARPED_LEAVES, BLOCKS.VOID_WOOD, BLOCKS.VOID_LEAVES]);
 
 // ============================================================
 // LEAF DECAY SYSTEM
@@ -233,35 +233,35 @@ export function teleportToPossum() {
 }
 
 // ============================================================
-// ETHER TELEPORT
+// VOID TELEPORT
 // ============================================================
 
-export function teleportToEther() {
-    if (state.inEther) {
+export function teleportToVoid() {
+    if (state.inTheVoid) {
         // Return to where we came from
-        switchDimension(state.etherReturnDim || 'overworld');
-        state.player.x = state.etherReturnX * BLOCK_SIZE;
-        state.player.y = (state.etherReturnY - 2) * BLOCK_SIZE;
+        switchDimension(state.voidReturnDim || 'overworld');
+        state.player.x = state.voidReturnX * BLOCK_SIZE;
+        state.player.y = (state.voidReturnY - 2) * BLOCK_SIZE;
 
         state.mobs.length = 0;
         state.portalCooldown = 3000;
         state.player.velX = 0;
         state.player.velY = 0;
-        addFloatingText(state.player.x, state.player.y - 30, "Descended from the Ether!", "#aabbff");
+        addFloatingText(state.player.x, state.player.y - 30, "Escaped the Void!", "#aabbff");
         return;
     }
 
     // Save return position
-    state.etherReturnX = Math.floor(state.player.x / BLOCK_SIZE);
-    state.etherReturnY = Math.floor(state.player.y / BLOCK_SIZE);
-    state.etherReturnDim = state.inNether ? 'nether' : state.inWasteland ? 'wasteland' : state.inPossum ? 'possum' : 'overworld';
+    state.voidReturnX = Math.floor(state.player.x / BLOCK_SIZE);
+    state.voidReturnY = Math.floor(state.player.y / BLOCK_SIZE);
+    state.voidReturnDim = state.inNether ? 'nether' : state.inWasteland ? 'wasteland' : state.inPossum ? 'possum' : 'overworld';
 
-    // Generate Ether if first time
-    if (state.etherWorld.length === 0) {
-        generateEtherWorld();
+    // Generate Void if first time
+    if (state.voidWorld.length === 0) {
+        generateVoidWorld();
     }
 
-    switchDimension('ether');
+    switchDimension('void');
 
     // Spawn near middle on surface
     const spawnX = Math.floor(WORLD_WIDTH / 2);
@@ -273,7 +273,7 @@ export function teleportToEther() {
     state.portalCooldown = 3000;
     state.player.velX = 0;
     state.player.velY = 0;
-    addFloatingText(state.player.x, state.player.y - 30, "Ascended to the Ether!", "#aabbff");
+    addFloatingText(state.player.x, state.player.y - 30, "Entered the Void!", "#aabbff");
 }
 
 // ============================================================

@@ -584,8 +584,8 @@ export function drawBlock(blockType, screenX, screenY) {
         state.ctx.strokeRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
         return;
     }
-    // Ether Bedrock — dark grey-blue with faint crystalline texture
-    if (blockType === BLOCKS.ETHER_BEDROCK) {
+    // Void Bedrock — dark grey-blue with faint crystalline texture
+    if (blockType === BLOCKS.VOID_BEDROCK) {
         state.ctx.fillStyle = "#2a2a3a";
         state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
         state.ctx.fillStyle = "#383848";
@@ -599,8 +599,8 @@ export function drawBlock(blockType, screenX, screenY) {
         state.ctx.strokeRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
         return;
     }
-    // Ether Wood — dark grey trunk with subtle blue-grey grain
-    if (blockType === BLOCKS.ETHER_WOOD) {
+    // Void Wood — dark grey trunk with subtle blue-grey grain
+    if (blockType === BLOCKS.VOID_WOOD) {
         state.ctx.fillStyle = "#3a3a4a";
         state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
         state.ctx.fillStyle = "#2e2e3e";
@@ -614,8 +614,8 @@ export function drawBlock(blockType, screenX, screenY) {
         state.ctx.strokeRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
         return;
     }
-    // Ether Leaves — dark grey-blue leaf clusters
-    if (blockType === BLOCKS.ETHER_LEAVES) {
+    // Void Leaves — dark grey-blue leaf clusters
+    if (blockType === BLOCKS.VOID_LEAVES) {
         state.ctx.fillStyle = "#4a4a5a";
         state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
         state.ctx.fillStyle = "#5a5a6a";
@@ -630,8 +630,8 @@ export function drawBlock(blockType, screenX, screenY) {
         state.ctx.strokeRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
         return;
     }
-    // Ether Stone — rainbow shimmer effect
-    if (blockType === BLOCKS.ETHER_STONE) {
+    // Void Stone — rainbow shimmer effect
+    if (blockType === BLOCKS.VOID_STONE) {
         state.ctx.fillStyle = "#555566";
         state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
         const t = performance.now() * 0.002;

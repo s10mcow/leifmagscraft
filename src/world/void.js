@@ -1,102 +1,82 @@
 // ============================================================
-// VOID.JS - Void dimension generation
+// WORLD/VOID.JS - Void dimension world generation
 // ============================================================
-// Looks like the overworld but rendered in black and white
-// (grayscale CSS filter applied in frame-renderer.js).
-// Generates standard rolling hills with grass/dirt/stone/trees.
+// A dimension made entirely of bedrock-colored variants.
+// Bedrock terrain, bedrock trees, rare rainbow Void Stone.
 // ============================================================
 
 import { state } from '../state.js';
-import { BLOCKS, WORLD_WIDTH, WORLD_HEIGHT, SURFACE_LEVEL } from '../constants.js';
-import { initChestData } from './chunks.js';
+import { BLOCKS, WORLD_WIDTH, WORLD_HEIGHT } from '../constants.js';
 
-function simpleNoise(x, seed) {
-    return Math.sin(x * 0.05 + seed) * 6 +
-           Math.sin(x * 0.1  + seed * 2) * 3 +
-           Math.sin(x * 0.02 + seed * 0.5) * 10;
+function generateVoidTerrain() {
+    const heights = new Array(WORLD_WIDTH);
+    const base = 30;
+    let seed = 7777;
+    function rng() { seed = (seed * 1664525 + 1013904223) & 0xffffffff; return (seed >>> 0) / 0xffffffff; }
+    for (let x = 0; x < WORLD_WIDTH; x++) {
+        const t = x / WORLD_WIDTH;
+        const h = Math.sin(t * Math.PI * 8) * 4 + Math.sin(t * Math.PI * 18 + 2.1) * 2 + rng() * 2;
+        heights[x] = Math.round(base + h);
+    }
+    return heights;
 }
 
-function generateVoidOakTree(cx, surfY, world) {
-    const w = world || state.voidWorld;
-    const trunkH = 4 + Math.floor(Math.random() * 3);
-    for (let ty = surfY - trunkH; ty < surfY; ty++) {
-        if (ty >= 0 && ty < WORLD_HEIGHT) w[cx][ty] = BLOCKS.WOOD;
+export function generateVoidWorld() {
+    for (let x = 0; x < WORLD_WIDTH; x++) {
+        state.voidWorld[x] = new Uint8Array(WORLD_HEIGHT);
+        state.voidBgWorld[x] = new Uint8Array(WORLD_HEIGHT);
     }
-    const topY = surfY - trunkH;
-    for (let dy = -2; dy <= 1; dy++) {
-        for (let dx = -2; dx <= 2; dx++) {
-            if (Math.abs(dx) + Math.abs(dy) <= 3) {
-                const lx = cx + dx, ly = topY + dy;
-                if (lx >= 0 && lx < WORLD_WIDTH && ly >= 0 && ly < WORLD_HEIGHT) {
-                    if (w[lx][ly] === BLOCKS.AIR) w[lx][ly] = BLOCKS.LEAVES;
+
+    const heights = generateVoidTerrain();
+
+    // Fill terrain with void bedrock
+    for (let x = 0; x < WORLD_WIDTH; x++) {
+        const surf = heights[x];
+        for (let y = 0; y < WORLD_HEIGHT; y++) {
+            if (y === surf) {
+                state.voidWorld[x][y] = BLOCKS.VOID_BEDROCK;
+            } else if (y > surf && y < WORLD_HEIGHT - 1) {
+                state.voidWorld[x][y] = BLOCKS.VOID_BEDROCK;
+            } else if (y === WORLD_HEIGHT - 1) {
+                state.voidWorld[x][y] = BLOCKS.BEDROCK;
+            }
+        }
+    }
+
+    // Place bedrock trees (void wood trunk + void leaves canopy)
+    for (let x = 5; x < WORLD_WIDTH - 5; x++) {
+        if (Math.random() < 0.04) {
+            const surf = heights[x];
+            if (state.voidWorld[x][surf] !== BLOCKS.VOID_BEDROCK) continue;
+            const trunkH = 5 + Math.floor(Math.random() * 3);
+            // Trunk
+            for (let ty = surf - trunkH; ty < surf; ty++) {
+                if (ty >= 0) state.voidWorld[x][ty] = BLOCKS.VOID_WOOD;
+            }
+            // Canopy (diamond shape)
+            const topY = surf - trunkH;
+            for (let dy = -3; dy <= 1; dy++) {
+                for (let dx = -3; dx <= 3; dx++) {
+                    if (Math.abs(dx) + Math.abs(dy) <= 3) {
+                        const lx = x + dx, ly = topY + dy;
+                        if (lx >= 0 && lx < WORLD_WIDTH && ly >= 0 && ly < WORLD_HEIGHT) {
+                            if (state.voidWorld[lx][ly] === BLOCKS.AIR) {
+                                state.voidWorld[lx][ly] = BLOCKS.VOID_LEAVES;
+                            }
+                        }
+                    }
                 }
             }
         }
     }
-}
 
-export function generateVoidWorld() {
-    const seed = 77.3; // Fixed seed for deterministic void world
-
-    // Init arrays
+    // Scatter rare Void Stone in the underground
     for (let x = 0; x < WORLD_WIDTH; x++) {
-        state.voidWorld[x]   = new Array(WORLD_HEIGHT).fill(BLOCKS.AIR);
-        state.voidBgWorld[x] = new Array(WORLD_HEIGHT).fill(BLOCKS.AIR);
-    }
-
-    // Generate overworld-like rolling hills terrain
-    const surfaceHeights = new Array(WORLD_WIDTH);
-    for (let x = 0; x < WORLD_WIDTH; x++) {
-        surfaceHeights[x] = Math.floor(SURFACE_LEVEL + simpleNoise(x, seed));
-    }
-
-    for (let x = 0; x < WORLD_WIDTH; x++) {
-        const surf = surfaceHeights[x];
-        for (let y = 0; y < WORLD_HEIGHT; y++) {
-            if (y === WORLD_HEIGHT - 1) {
-                state.voidWorld[x][y] = BLOCKS.BEDROCK;
-            } else if (y === surf) {
-                state.voidWorld[x][y] = BLOCKS.GRASS;
-            } else if (y > surf && y < surf + 4) {
-                state.voidWorld[x][y] = BLOCKS.DIRT;
-            } else if (y >= surf + 4 && y < WORLD_HEIGHT - 1) {
-                state.voidWorld[x][y] = BLOCKS.STONE;
+        const surf = heights[x];
+        for (let y = surf + 3; y < WORLD_HEIGHT - 1; y++) {
+            if (state.voidWorld[x][y] === BLOCKS.VOID_BEDROCK && Math.random() < 0.003) {
+                state.voidWorld[x][y] = BLOCKS.VOID_STONE;
             }
-        }
-    }
-
-    // Place some ores for interest
-    for (let x = 1; x < WORLD_WIDTH - 1; x++) {
-        const surf = surfaceHeights[x];
-        for (let y = surf + 5; y < WORLD_HEIGHT - 2; y++) {
-            if (state.voidWorld[x][y] !== BLOCKS.STONE) continue;
-            const r = Math.random();
-            if (r < 0.008) state.voidWorld[x][y] = BLOCKS.COAL;
-            else if (r < 0.004) state.voidWorld[x][y] = BLOCKS.IRON;
-            else if (r < 0.001 && y > surf + 20) state.voidWorld[x][y] = BLOCKS.DIAMOND;
-        }
-    }
-
-    // Place oak trees
-    for (let x = 4; x < WORLD_WIDTH - 4; x++) {
-        if (Math.random() < 0.06) {
-            const surf = surfaceHeights[x];
-            if (state.voidWorld[x][surf] !== BLOCKS.GRASS) continue;
-            generateVoidOakTree(x, surf);
-            // Background tree layer too
-            const bgx = Math.min(WORLD_WIDTH - 1, x + 1);
-            generateVoidOakTree(bgx, surfaceHeights[bgx], state.voidBgWorld);
-            x += 4;
-        }
-    }
-
-    // A few loot chests
-    for (let i = 0; i < 6; i++) {
-        const cx = Math.floor(WORLD_WIDTH * (0.1 + i * 0.14));
-        const surf = surfaceHeights[cx];
-        if (surf > 0 && surf < WORLD_HEIGHT - 2) {
-            state.voidWorld[cx][surf - 1] = BLOCKS.CHEST;
-            initChestData(cx, surf - 1, "void_cache");
         }
     }
 }

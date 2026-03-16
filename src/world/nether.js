@@ -280,7 +280,7 @@ export function generateNetherWorld() {
     for (let x = 0; x < WORLD_WIDTH; x++) {
         for (let y = SURFACE_LEVEL + 4; y < WORLD_HEIGHT - 2; y++) {
             if (state.netherWorld[x][y] === BLOCKS.NETHERRACK && state.netherWorld[x][y + 1] === BLOCKS.AIR) {
-                if (Math.random() < 0.06) {
+                if (Math.random() < 0.12) {
                     state.netherWorld[x][y] = BLOCKS.GLOWSTONE;
                 }
             }

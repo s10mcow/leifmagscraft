@@ -31,11 +31,11 @@ export const BLOCKS = {
   // Iron doors (mobs cannot open or break)
   IRON_DOOR_CLOSED: 60,
   IRON_DOOR_OPEN: 61,
-  // Ether dimension
-  ETHER_BEDROCK: 62,
-  ETHER_WOOD: 63,
-  ETHER_LEAVES: 64,
-  ETHER_STONE: 65,
+  // Void dimension
+  VOID_BEDROCK: 62,
+  VOID_WOOD: 63,
+  VOID_LEAVES: 64,
+  VOID_STONE: 65,
 };
 
 // --- ITEM IDs (100+) ---
@@ -93,8 +93,8 @@ export const ITEMS = {
   SNIPER_RIFLE: 189, SNIPER_BULLET: 190, SNIPER_AP_BULLET: 191,
   SILVER_HELMET: 192, SILVER_CHESTPLATE: 193, SILVER_LEGGINGS: 194, SILVER_BOOTS: 195,
   POWER_FUSE: 196, NUCLEAR_LASER: 197,
-  // Ether dimension
-  ETHER_TELEPORTER: 198,
+  // Void dimension
+  VOID_TELEPORTER: 198,
   NETHERITE_HELMET: 199, NETHERITE_CHESTPLATE: 200, NETHERITE_LEGGINGS: 201, NETHERITE_BOOTS: 202,
   NETHERITE_PICKAXE: 203, NETHERITE_SWORD: 204, NETHERITE_AXE: 205,
 };
@@ -251,11 +251,11 @@ export const BLOCK_INFO = {
   [BLOCKS.SILVER_ORE]: { name: "Silver Ore", color: "#8896a8", breakable: true, mineTime: 800, toolType: "pickaxe", minTier: 1, drops: BLOCKS.SILVER_ORE },
   [BLOCKS.SMOKER]:     { name: "Smoker",     color: "#4a5040", breakable: true, mineTime: 900, toolType: "pickaxe", minTier: 1, drops: BLOCKS.SMOKER },
   [BLOCKS.GLASS]:      { name: "Glass",      color: "#b8d8f0", breakable: true, mineTime: 250, toolType: null,      minTier: 0, drops: BLOCKS.GLASS },
-  // Ether dimension blocks
-  [BLOCKS.ETHER_BEDROCK]: { name: "Ether Bedrock", color: "#2a2a3a", breakable: false, mineTime: 0, toolType: null, minTier: 99, drops: null },
-  [BLOCKS.ETHER_WOOD]:    { name: "Ether Wood",    color: "#3a3a4a", breakable: true,  mineTime: 500, toolType: "axe", minTier: 0, drops: BLOCKS.ETHER_WOOD },
-  [BLOCKS.ETHER_LEAVES]:  { name: "Ether Leaves",  color: "#4a4a5a", breakable: true,  mineTime: 100, toolType: null,  minTier: 0, drops: null },
-  [BLOCKS.ETHER_STONE]:   { name: "Ether Stone",   color: "#888", breakable: true,  mineTime: 3000, toolType: "pickaxe", minTier: 6, drops: BLOCKS.ETHER_STONE },
+  // Void dimension blocks
+  [BLOCKS.VOID_BEDROCK]: { name: "Void Bedrock", color: "#2a2a3a", breakable: false, mineTime: 0, toolType: null, minTier: 99, drops: null },
+  [BLOCKS.VOID_WOOD]:    { name: "Void Wood",    color: "#3a3a4a", breakable: true,  mineTime: 500, toolType: "axe", minTier: 0, drops: BLOCKS.VOID_WOOD },
+  [BLOCKS.VOID_LEAVES]:  { name: "Void Leaves",  color: "#4a4a5a", breakable: true,  mineTime: 100, toolType: null,  minTier: 0, drops: null },
+  [BLOCKS.VOID_STONE]:   { name: "Void Stone",   color: "#888", breakable: true,  mineTime: 3000, toolType: "pickaxe", minTier: 6, drops: BLOCKS.VOID_STONE },
 };
 
 // --- ITEM PROPERTIES ---
@@ -365,8 +365,8 @@ export const ITEM_INFO = {
   [ITEMS.SILVER_BOOTS]:      { name: "Silver Boots",      stackable: false, armorType: "boots",      defense: 2, durability: 180, color: "#c0c8d8", coolPack: true },
   [ITEMS.POWER_FUSE]:       { name: "Fusion Core",      stackable: true, maxStack: 10, color: "#44ff88" },
   [ITEMS.NUCLEAR_LASER]:    { name: "Nuclear Laser",    stackable: false, toolType: "gun", tier: 5, speed: 1, durability: 500, damage: 50, color: "#00ff66", fireRate: 80, ammoType: "powerfuse", magSize: 300, reloadTime: 4000, beamWeapon: true },
-  // Ether dimension items
-  [ITEMS.ETHER_TELEPORTER]: { name: "Ether Teleporter", stackable: false, color: "#aabbff" },
+  // Void dimension items
+  [ITEMS.VOID_TELEPORTER]: { name: "Void Teleporter", stackable: false, color: "#aabbff" },
   [ITEMS.NETHERITE_HELMET]:     { name: "Netherite Helmet",     stackable: false, armorType: "helmet",     defense: 3, durability: 500, color: "#444455" },
   [ITEMS.NETHERITE_CHESTPLATE]: { name: "Netherite Chestplate", stackable: false, armorType: "chestplate", defense: 5, durability: 700, color: "#444455" },
   [ITEMS.NETHERITE_LEGGINGS]:   { name: "Netherite Leggings",   stackable: false, armorType: "leggings",   defense: 4, durability: 650, color: "#444455" },
@@ -459,7 +459,7 @@ export const RECIPES = [
   { result: ITEMS.SNIPER_AP_BULLET, resultCount: 8, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 2 }, { id: ITEMS.GUNPOWDER, count: 1 }, { id: BLOCKS.URANIUM_ORE, count: 1 }] },
   // Nuclear Laser & Power Fuse
   { result: ITEMS.POWER_FUSE, resultCount: 1, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 6 }, { id: BLOCKS.URANIUM_ORE, count: 1 }] },
-  { result: ITEMS.NUCLEAR_LASER, resultCount: 1, ingredients: [{ id: ITEMS.TITANIUM_INGOT, count: 80 }, { id: BLOCKS.URANIUM_ORE, count: 20 }, { id: ITEMS.STEEL_INGOT, count: 30 }, { id: BLOCKS.ETHER_STONE, count: 10 }] },
+  { result: ITEMS.NUCLEAR_LASER, resultCount: 1, ingredients: [{ id: ITEMS.TITANIUM_INGOT, count: 80 }, { id: BLOCKS.URANIUM_ORE, count: 20 }, { id: ITEMS.STEEL_INGOT, count: 30 }, { id: BLOCKS.VOID_STONE, count: 10 }] },
   { result: ITEMS.MINIATURE_NETHER_PORTAL, resultCount: 1, ingredients: [{ id: BLOCKS.OBSIDIAN, count: 4 }, { id: ITEMS.FLINT_AND_STEEL, count: 1 }] },
   { result: ITEMS.WASTELAND_TELEPORTER, resultCount: 1, ingredients: [{ id: BLOCKS.COBBLESTONE, count: 24 }, { id: BLOCKS.OBSIDIAN, count: 4 }] },
   { result: ITEMS.POSSUM_TELEPORTER, resultCount: 1, ingredients: [{ id: ITEMS.RAW_PORKCHOP, count: 10 }, { id: ITEMS.STEAK, count: 10 }, { id: BLOCKS.GLOWSTONE, count: 5 }] },
@@ -498,8 +498,8 @@ export const RECIPES = [
   { result: ITEMS.NETHERITE_PICKAXE, resultCount: 1, ingredients: [{ id: ITEMS.NETHERITE_INGOT, count: 3 }, { id: ITEMS.DIAMOND_PICKAXE, count: 1 }] },
   { result: ITEMS.NETHERITE_SWORD,   resultCount: 1, ingredients: [{ id: ITEMS.NETHERITE_INGOT, count: 2 }, { id: ITEMS.DIAMOND_SWORD, count: 1 }] },
   { result: ITEMS.NETHERITE_AXE,     resultCount: 1, ingredients: [{ id: ITEMS.NETHERITE_INGOT, count: 3 }, { id: ITEMS.DIAMOND_AXE, count: 1 }] },
-  // Ether Teleporter
-  { result: ITEMS.ETHER_TELEPORTER, resultCount: 1, ingredients: [{ id: ITEMS.NETHERITE_INGOT, count: 4 }, { id: BLOCKS.OBSIDIAN, count: 8 }, { id: BLOCKS.DIAMOND, count: 4 }] },
+  // Void Teleporter
+  { result: ITEMS.VOID_TELEPORTER, resultCount: 1, ingredients: [{ id: ITEMS.NETHERITE_INGOT, count: 4 }, { id: BLOCKS.OBSIDIAN, count: 8 }, { id: BLOCKS.DIAMOND, count: 4 }] },
 ];
 
 // --- SMELTING RECIPES (blast furnace) ---
