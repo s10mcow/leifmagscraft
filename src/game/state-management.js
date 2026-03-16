@@ -397,7 +397,14 @@ export function startNewWorld(worldName) {
 
             // Spawn loadout
             addToInventory(ITEMS.NUCLEAR_LASER, 1);
-            addToInventory(ITEMS.POWER_FUSE, 10);
+            addToInventory(ITEMS.POWER_FUSE, 5);
+            state.inventory.armor.helmet    = { itemId: ITEMS.RIOT_HELMET,     count: 1, durability: ITEM_INFO[ITEMS.RIOT_HELMET].durability };
+            state.inventory.armor.chestplate = { itemId: ITEMS.RIOT_CHESTPLATE, count: 1, durability: ITEM_INFO[ITEMS.RIOT_CHESTPLATE].durability };
+            state.inventory.armor.leggings  = { itemId: ITEMS.RIOT_LEGGINGS,   count: 1, durability: ITEM_INFO[ITEMS.RIOT_LEGGINGS].durability };
+            state.inventory.armor.boots     = { itemId: ITEMS.RIOT_BOOTS,      count: 1, durability: ITEM_INFO[ITEMS.RIOT_BOOTS].durability };
+            addToInventory(ITEMS.MINIATURE_NETHER_PORTAL, 1);
+            addToInventory(ITEMS.WASTELAND_TELEPORTER, 1);
+            addToInventory(ITEMS.POSSUM_TELEPORTER, 1);
 
             state.currentWorldName = worldName || ("World " + Date.now());
             state.gameState = "playing";
@@ -447,7 +454,14 @@ export function startMultiplayerWorld(worldName) {
 
             // Spawn loadout
             addToInventory(ITEMS.NUCLEAR_LASER, 1);
-            addToInventory(ITEMS.POWER_FUSE, 10);
+            addToInventory(ITEMS.POWER_FUSE, 5);
+            state.inventory.armor.helmet    = { itemId: ITEMS.RIOT_HELMET,     count: 1, durability: ITEM_INFO[ITEMS.RIOT_HELMET].durability };
+            state.inventory.armor.chestplate = { itemId: ITEMS.RIOT_CHESTPLATE, count: 1, durability: ITEM_INFO[ITEMS.RIOT_CHESTPLATE].durability };
+            state.inventory.armor.leggings  = { itemId: ITEMS.RIOT_LEGGINGS,   count: 1, durability: ITEM_INFO[ITEMS.RIOT_LEGGINGS].durability };
+            state.inventory.armor.boots     = { itemId: ITEMS.RIOT_BOOTS,      count: 1, durability: ITEM_INFO[ITEMS.RIOT_BOOTS].durability };
+            addToInventory(ITEMS.MINIATURE_NETHER_PORTAL, 1);
+            addToInventory(ITEMS.WASTELAND_TELEPORTER, 1);
+            addToInventory(ITEMS.POSSUM_TELEPORTER, 1);
 
             state.currentWorldName = worldName || ("World " + Date.now());
             state.gameState = "playing";
