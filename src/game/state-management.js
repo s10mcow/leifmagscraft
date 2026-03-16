@@ -401,7 +401,8 @@ export function startNewWorld(worldName) {
             state.inventory.armor.helmet    = { itemId: ITEMS.RIOT_HELMET,     count: 1, durability: ITEM_INFO[ITEMS.RIOT_HELMET].durability };
             state.inventory.armor.chestplate = { itemId: ITEMS.RIOT_CHESTPLATE, count: 1, durability: ITEM_INFO[ITEMS.RIOT_CHESTPLATE].durability };
             state.inventory.armor.leggings  = { itemId: ITEMS.RIOT_LEGGINGS,   count: 1, durability: ITEM_INFO[ITEMS.RIOT_LEGGINGS].durability };
-            state.inventory.armor.boots     = { itemId: ITEMS.RIOT_BOOTS,      count: 1, durability: ITEM_INFO[ITEMS.RIOT_BOOTS].durability };
+            state.inventory.armor.boots     = { itemId: ITEMS.SILVER_BOOTS,    count: 1, durability: ITEM_INFO[ITEMS.SILVER_BOOTS].durability };
+            addToInventory(ITEMS.RIOT_BOOTS, 1);
             addToInventory(ITEMS.SNIPER_RIFLE, 1);
             addToInventory(ITEMS.SNIPER_BULLET, 32);
             addToInventory(ITEMS.SNIPER_AP_BULLET, 32);
@@ -461,7 +462,8 @@ export function startMultiplayerWorld(worldName) {
             state.inventory.armor.helmet    = { itemId: ITEMS.RIOT_HELMET,     count: 1, durability: ITEM_INFO[ITEMS.RIOT_HELMET].durability };
             state.inventory.armor.chestplate = { itemId: ITEMS.RIOT_CHESTPLATE, count: 1, durability: ITEM_INFO[ITEMS.RIOT_CHESTPLATE].durability };
             state.inventory.armor.leggings  = { itemId: ITEMS.RIOT_LEGGINGS,   count: 1, durability: ITEM_INFO[ITEMS.RIOT_LEGGINGS].durability };
-            state.inventory.armor.boots     = { itemId: ITEMS.RIOT_BOOTS,      count: 1, durability: ITEM_INFO[ITEMS.RIOT_BOOTS].durability };
+            state.inventory.armor.boots     = { itemId: ITEMS.SILVER_BOOTS,    count: 1, durability: ITEM_INFO[ITEMS.SILVER_BOOTS].durability };
+            addToInventory(ITEMS.RIOT_BOOTS, 1);
             addToInventory(ITEMS.SNIPER_RIFLE, 1);
             addToInventory(ITEMS.SNIPER_BULLET, 32);
             addToInventory(ITEMS.SNIPER_AP_BULLET, 32);
