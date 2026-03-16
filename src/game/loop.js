@@ -82,6 +82,7 @@ export function gameLoop(timestamp) {
                     if (state.inNether) state.cachedDayBrightness = 0.3;
                     if (state.inWasteland) state.cachedDayBrightness = 0.25;
                     if (state.inPossum) state.cachedDayBrightness = 1.0;
+                    if (state.inEther) state.cachedDayBrightness = 0.5;
 
                     if (state.portalCooldown > 0) state.portalCooldown -= dt;
 
@@ -140,7 +141,7 @@ export function gameLoop(timestamp) {
                         if (state.isMobHost || !state.multiplayerMode) spawnMobs(dt, state.cachedDayBrightness);
                     }
                     updateMusic(dt, state.cachedDayBrightness);
-                    if (!state.inNether && !state.inWasteland && !state.inVoid && !state.inPossum) state.timeOfDay = (state.timeOfDay + DAY_CYCLE_SPEED) % 1;
+                    if (!state.inNether && !state.inWasteland && !state.inVoid && !state.inPossum && !state.inEther) state.timeOfDay = (state.timeOfDay + DAY_CYCLE_SPEED) % 1;
                 }
 
                 drawGameFrame(timestamp);

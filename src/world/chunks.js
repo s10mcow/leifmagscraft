@@ -8,11 +8,12 @@
 import { state } from '../state.js';
 import { BLOCKS, WORLD_WIDTH, WORLD_HEIGHT, ITEM_INFO, LOOT_TABLES } from '../constants.js';
 
-// dimension: 'overworld' | 'nether' | 'wasteland' | 'possum'
+// dimension: 'overworld' | 'nether' | 'wasteland' | 'possum' | 'ether'
 export function switchDimension(dimension) {
     state.inNether    = dimension === 'nether';
     state.inWasteland = dimension === 'wasteland';
     state.inPossum    = dimension === 'possum';
+    state.inEther     = dimension === 'ether';
     if (dimension === 'nether') {
         state.activeWorld    = state.netherWorld;
         state.activeBgWorld  = state.netherBgWorld;
@@ -22,6 +23,9 @@ export function switchDimension(dimension) {
     } else if (dimension === 'possum') {
         state.activeWorld    = state.possumWorld;
         state.activeBgWorld  = state.possumBgWorld;
+    } else if (dimension === 'ether') {
+        state.activeWorld    = state.etherWorld;
+        state.activeBgWorld  = state.etherBgWorld;
     } else {
         state.activeWorld    = state.world;
         state.activeBgWorld  = state.bgWorld;
@@ -67,14 +71,15 @@ export function isBlockSolid(x, y) {
         block === BLOCKS.ACACIA_WOOD || block === BLOCKS.ACACIA_LEAVES ||
         block === BLOCKS.NETHER_WOOD || block === BLOCKS.NETHER_LEAVES ||
         block === BLOCKS.WARPED_WOOD || block === BLOCKS.WARPED_LEAVES ||
-        block === BLOCKS.CANDY_CANE || block === BLOCKS.LOLLIPOP_TOP;
+        block === BLOCKS.CANDY_CANE || block === BLOCKS.LOLLIPOP_TOP ||
+        block === BLOCKS.ETHER_WOOD || block === BLOCKS.ETHER_LEAVES;
     if (isTreeBlock && !state.placedBlocks.has(`${x},${y}`)) return false;
     return true;
 }
 
 // Find the surface Y at a given X (first solid block from top)
 export function findSurfaceY(x) {
-    const startY = (state.inNether || state.inWasteland) ? 3 : 0;
+    const startY = (state.inNether || state.inWasteland || state.inEther) ? 3 : 0;
     for (let y = startY; y < WORLD_HEIGHT; y++) {
         if (isBlockSolid(x, y)) return y;
     }

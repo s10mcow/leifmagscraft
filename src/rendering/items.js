@@ -468,6 +468,70 @@ export function drawItemIcon(itemId, x, y, size) {
         state.ctx.fillRect(x + size * 0.7, y + size * 0.24, size * 0.18, size * 0.28);
         state.ctx.fillStyle = "#44ff88";
         state.ctx.fillRect(x + size * 0.73, y + size * 0.28, size * 0.06, size * 0.2);
+    } else if (itemId === ITEMS.ETHER_TELEPORTER) {
+        // Ethereal portal frame — dark blue-grey with glowing center
+        const fw = size * 0.75, fh = size * 0.9;
+        const fx = x + (size - fw) / 2, fy = y + (size - fh) / 2;
+        const border = Math.max(2, size * 0.12);
+        state.ctx.fillStyle = "#3a3a5a";
+        state.ctx.fillRect(fx, fy, fw, fh);
+        state.ctx.fillStyle = "#2a2a4a";
+        state.ctx.fillRect(fx + border * 0.3, fy + border * 0.3, border * 0.6, border * 0.6);
+        state.ctx.fillRect(fx + fw - border * 0.9, fy + fh - border * 0.9, border * 0.6, border * 0.6);
+        // Glowing interior
+        const t = performance.now() * 0.002;
+        const hue = (t * 40) % 360;
+        state.ctx.fillStyle = `hsla(${hue}, 60%, 50%, 0.4)`;
+        state.ctx.fillRect(fx + border, fy + border, fw - border * 2, fh - border * 2);
+        state.ctx.fillStyle = `hsla(${(hue + 120) % 360}, 60%, 70%, 0.3)`;
+        state.ctx.fillRect(fx + border + 2, fy + border + 2, (fw - border * 2) * 0.5, (fh - border * 2) * 0.5);
+    } else if (itemId === ITEMS.NETHERITE_HELMET || itemId === ITEMS.NETHERITE_CHESTPLATE ||
+               itemId === ITEMS.NETHERITE_LEGGINGS || itemId === ITEMS.NETHERITE_BOOTS) {
+        // Dark netherite armor pieces
+        state.ctx.fillStyle = "#333344";
+        if (itemId === ITEMS.NETHERITE_HELMET) {
+            state.ctx.fillRect(x + size * 0.15, y + size * 0.15, size * 0.7, size * 0.55);
+            state.ctx.fillStyle = "#444455";
+            state.ctx.fillRect(x + size * 0.2, y + size * 0.5, size * 0.6, size * 0.15);
+        } else if (itemId === ITEMS.NETHERITE_CHESTPLATE) {
+            state.ctx.fillRect(x + size * 0.1, y + size * 0.1, size * 0.8, size * 0.8);
+            state.ctx.fillStyle = "#444455";
+            state.ctx.fillRect(x + size * 0.35, y + size * 0.15, size * 0.3, size * 0.3);
+        } else if (itemId === ITEMS.NETHERITE_LEGGINGS) {
+            state.ctx.fillRect(x + size * 0.15, y + size * 0.1, size * 0.3, size * 0.8);
+            state.ctx.fillRect(x + size * 0.55, y + size * 0.1, size * 0.3, size * 0.8);
+            state.ctx.fillStyle = "#444455";
+            state.ctx.fillRect(x + size * 0.15, y + size * 0.1, size * 0.7, size * 0.2);
+        } else {
+            state.ctx.fillRect(x + size * 0.1, y + size * 0.4, size * 0.3, size * 0.45);
+            state.ctx.fillRect(x + size * 0.6, y + size * 0.4, size * 0.3, size * 0.45);
+            state.ctx.fillStyle = "#444455";
+            state.ctx.fillRect(x + size * 0.1, y + size * 0.4, size * 0.3, size * 0.15);
+            state.ctx.fillRect(x + size * 0.6, y + size * 0.4, size * 0.3, size * 0.15);
+        }
+    } else if (itemId === ITEMS.NETHERITE_PICKAXE || itemId === ITEMS.NETHERITE_SWORD || itemId === ITEMS.NETHERITE_AXE) {
+        // Dark netherite tools
+        // Handle
+        state.ctx.fillStyle = "#8b6c42";
+        state.ctx.fillRect(x + size * 0.45, y + size * 0.5, size * 0.12, size * 0.45);
+        // Head
+        state.ctx.fillStyle = "#333344";
+        if (itemId === ITEMS.NETHERITE_PICKAXE) {
+            state.ctx.fillRect(x + size * 0.1, y + size * 0.12, size * 0.8, size * 0.18);
+            state.ctx.fillStyle = "#444455";
+            state.ctx.fillRect(x + size * 0.1, y + size * 0.12, size * 0.15, size * 0.25);
+            state.ctx.fillRect(x + size * 0.75, y + size * 0.12, size * 0.15, size * 0.25);
+        } else if (itemId === ITEMS.NETHERITE_SWORD) {
+            state.ctx.fillRect(x + size * 0.38, y + size * 0.05, size * 0.24, size * 0.5);
+            state.ctx.fillStyle = "#444455";
+            state.ctx.fillRect(x + size * 0.42, y + size * 0.05, size * 0.08, size * 0.45);
+            state.ctx.fillStyle = "#a08050";
+            state.ctx.fillRect(x + size * 0.3, y + size * 0.5, size * 0.4, size * 0.08);
+        } else {
+            state.ctx.fillRect(x + size * 0.1, y + size * 0.1, size * 0.45, size * 0.35);
+            state.ctx.fillStyle = "#444455";
+            state.ctx.fillRect(x + size * 0.1, y + size * 0.1, size * 0.2, size * 0.35);
+        }
     } else if (itemId === ITEMS.NETHERITE_INGOT) {
         // Dark metallic ingot bar
         state.ctx.fillStyle = "#2a2a35";

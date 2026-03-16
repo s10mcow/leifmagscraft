@@ -26,6 +26,7 @@ export function resetAllGameState() {
     state.netherWorld.length = 0;
     state.wastelandWorld.length = 0;
     state.possumWorld.length = 0;
+    state.etherWorld.length = 0;
     state.biomeMap.length = 0;
     state.netherBiomeMap.length = 0;
     state.wastelandBiomeMap.length = 0;
@@ -33,6 +34,7 @@ export function resetAllGameState() {
     state.netherBgWorld.length = 0;
     state.wastelandBgWorld.length = 0;
     state.possumBgWorld.length = 0;
+    state.etherBgWorld.length = 0;
     state.activeBgWorld = null;
     for (const key in state.chestData) delete state.chestData[key];
 
@@ -77,6 +79,7 @@ export function resetAllGameState() {
     state.inNether = false;
     state.inWasteland = false;
     state.inPossum = false;
+    state.inEther = false;
     state.activeWorld = state.world;
     state.overworldPortalX = 0; state.overworldPortalY = 0;
     state.netherPortalX = 0; state.netherPortalY = 0;
@@ -86,6 +89,8 @@ export function resetAllGameState() {
     state.radiationTimer = 3000;
     state.possumReturnX = 0; state.possumReturnY = 0;
     state.possumReturnDim = 'overworld';
+    state.etherReturnX = 0; state.etherReturnY = 0;
+    state.etherReturnDim = 'overworld';
     state.portalCooldown = 0;
 
     // Time
@@ -163,6 +168,7 @@ export function saveWorld() {
         netherWorld: state.netherWorld.length > 0 ? rleEncode(state.netherWorld) : null,
         wastelandWorld: state.wastelandWorld.length > 0 ? rleEncode(state.wastelandWorld) : null,
         possumWorld: state.possumWorld.length > 0 ? rleEncode(state.possumWorld) : null,
+        etherWorld: state.etherWorld.length > 0 ? rleEncode(state.etherWorld) : null,
         biomeMap: state.biomeMap.slice(),
         netherBiomeMap: state.netherBiomeMap.slice(),
         wastelandBiomeMap: state.wastelandBiomeMap.slice(),
@@ -170,6 +176,7 @@ export function saveWorld() {
         netherBgWorld: state.netherBgWorld.length > 0 ? rleEncode(state.netherBgWorld) : null,
         wastelandBgWorld: state.wastelandBgWorld.length > 0 ? rleEncode(state.wastelandBgWorld) : null,
         possumBgWorld: state.possumBgWorld.length > 0 ? rleEncode(state.possumBgWorld) : null,
+        etherBgWorld: state.etherBgWorld.length > 0 ? rleEncode(state.etherBgWorld) : null,
         chestData: JSON.parse(JSON.stringify(state.chestData)),
         inventory: {
             slots: state.inventory.slots.map(function(s) { return { itemId: s.itemId, count: s.count, durability: s.durability }; }),
@@ -194,6 +201,7 @@ export function saveWorld() {
         inNether: state.inNether,
         inWasteland: state.inWasteland,
         inPossum: state.inPossum,
+        inEther: state.inEther,
         overworldPortalX: state.overworldPortalX,
         overworldPortalY: state.overworldPortalY,
         netherPortalX: state.netherPortalX,
@@ -206,6 +214,9 @@ export function saveWorld() {
         possumReturnX: state.possumReturnX,
         possumReturnY: state.possumReturnY,
         possumReturnDim: state.possumReturnDim || 'overworld',
+        etherReturnX: state.etherReturnX,
+        etherReturnY: state.etherReturnY,
+        etherReturnDim: state.etherReturnDim || 'overworld',
         bunkerRegions: state.bunkerRegions.slice(),
         mobs: state.mobs.filter(function(m) { return !MOB_DEFS[m.type].hostile; }).map(function(m) {
             const md = { type: m.type, x: m.x, y: m.y, health: m.health, facing: m.facing };
@@ -255,6 +266,10 @@ export function loadWorld(worldName) {
                 const pDecoded = rleDecode(data.possumWorld, WORLD_WIDTH, WORLD_HEIGHT);
                 for (let x = 0; x < WORLD_WIDTH; x++) state.possumWorld[x] = pDecoded[x];
             }
+            if (data.etherWorld) {
+                const eDecoded = rleDecode(data.etherWorld, WORLD_WIDTH, WORLD_HEIGHT);
+                for (let x = 0; x < WORLD_WIDTH; x++) state.etherWorld[x] = eDecoded[x];
+            }
 
             // BiomeMap
             for (let i = 0; i < data.biomeMap.length; i++) state.biomeMap[i] = data.biomeMap[i];
@@ -279,6 +294,10 @@ export function loadWorld(worldName) {
             if (data.possumBgWorld) {
                 const pbgDecoded = rleDecode(data.possumBgWorld, WORLD_WIDTH, WORLD_HEIGHT);
                 for (let x = 0; x < WORLD_WIDTH; x++) state.possumBgWorld[x] = pbgDecoded[x];
+            }
+            if (data.etherBgWorld) {
+                const ebgDecoded = rleDecode(data.etherBgWorld, WORLD_WIDTH, WORLD_HEIGHT);
+                for (let x = 0; x < WORLD_WIDTH; x++) state.etherBgWorld[x] = ebgDecoded[x];
             }
 
             // Chests
@@ -317,7 +336,11 @@ export function loadWorld(worldName) {
             state.inNether = data.inNether;
             state.inWasteland = data.inWasteland || false;
             state.inPossum = data.inPossum || false;
-            if (state.inPossum) {
+            state.inEther = data.inEther || false;
+            if (state.inEther) {
+                state.activeWorld   = state.etherWorld;
+                state.activeBgWorld = state.etherBgWorld;
+            } else if (state.inPossum) {
                 state.activeWorld   = state.possumWorld;
                 state.activeBgWorld = state.possumBgWorld;
             } else if (state.inWasteland) {
@@ -342,6 +365,9 @@ export function loadWorld(worldName) {
             state.possumReturnX = data.possumReturnX || 0;
             state.possumReturnY = data.possumReturnY || 0;
             state.possumReturnDim = data.possumReturnDim || 'overworld';
+            state.etherReturnX = data.etherReturnX || 0;
+            state.etherReturnY = data.etherReturnY || 0;
+            state.etherReturnDim = data.etherReturnDim || 'overworld';
             if (data.bunkerRegions) {
                 for (const r of data.bunkerRegions) state.bunkerRegions.push(r);
             }
@@ -409,6 +435,7 @@ export function startNewWorld(worldName) {
             addToInventory(ITEMS.MINIATURE_NETHER_PORTAL, 1);
             addToInventory(ITEMS.WASTELAND_TELEPORTER, 1);
             addToInventory(ITEMS.POSSUM_TELEPORTER, 1);
+            addToInventory(ITEMS.ETHER_TELEPORTER, 1);
 
             state.currentWorldName = worldName || ("World " + Date.now());
             state.gameState = "playing";
@@ -470,6 +497,7 @@ export function startMultiplayerWorld(worldName) {
             addToInventory(ITEMS.MINIATURE_NETHER_PORTAL, 1);
             addToInventory(ITEMS.WASTELAND_TELEPORTER, 1);
             addToInventory(ITEMS.POSSUM_TELEPORTER, 1);
+            addToInventory(ITEMS.ETHER_TELEPORTER, 1);
 
             state.currentWorldName = worldName || ("World " + Date.now());
             state.gameState = "playing";

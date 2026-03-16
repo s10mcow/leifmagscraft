@@ -9,16 +9,16 @@
 import { state } from '../state.js';
 import { BLOCKS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, MOB_DEFS, getItemName, FURNACE_RECIPES, FOOD_RECIPES, FUEL_VALUES } from '../constants.js';
 import { addFloatingText, countItem, addToInventory } from '../inventory.js';
-import { findSurfaceY, generateNetherWorld, generateWastelandWorld, generatePossumWorld, switchDimension } from '../world.js';
+import { findSurfaceY, generateNetherWorld, generateWastelandWorld, generatePossumWorld, generateEtherWorld, switchDimension } from '../world.js';
 import { playCraft } from '../audio.js';
 
 // ============================================================
 // LOCAL CONSTANTS (shared with input-handlers.js)
 // ============================================================
 
-export const WOOD_BLOCKS = new Set([BLOCKS.WOOD, BLOCKS.SPRUCE_WOOD, BLOCKS.ACACIA_WOOD, BLOCKS.NETHER_WOOD, BLOCKS.WARPED_WOOD]);
-export const LEAF_BLOCKS = new Set([BLOCKS.LEAVES, BLOCKS.SPRUCE_LEAVES, BLOCKS.ACACIA_LEAVES, BLOCKS.NETHER_LEAVES, BLOCKS.WARPED_LEAVES]);
-export const TREE_BLOCKS = new Set([BLOCKS.WOOD, BLOCKS.LEAVES, BLOCKS.SPRUCE_WOOD, BLOCKS.SPRUCE_LEAVES, BLOCKS.ACACIA_WOOD, BLOCKS.ACACIA_LEAVES, BLOCKS.NETHER_WOOD, BLOCKS.NETHER_LEAVES, BLOCKS.WARPED_WOOD, BLOCKS.WARPED_LEAVES]);
+export const WOOD_BLOCKS = new Set([BLOCKS.WOOD, BLOCKS.SPRUCE_WOOD, BLOCKS.ACACIA_WOOD, BLOCKS.NETHER_WOOD, BLOCKS.WARPED_WOOD, BLOCKS.ETHER_WOOD]);
+export const LEAF_BLOCKS = new Set([BLOCKS.LEAVES, BLOCKS.SPRUCE_LEAVES, BLOCKS.ACACIA_LEAVES, BLOCKS.NETHER_LEAVES, BLOCKS.WARPED_LEAVES, BLOCKS.ETHER_LEAVES]);
+export const TREE_BLOCKS = new Set([BLOCKS.WOOD, BLOCKS.LEAVES, BLOCKS.SPRUCE_WOOD, BLOCKS.SPRUCE_LEAVES, BLOCKS.ACACIA_WOOD, BLOCKS.ACACIA_LEAVES, BLOCKS.NETHER_WOOD, BLOCKS.NETHER_LEAVES, BLOCKS.WARPED_WOOD, BLOCKS.WARPED_LEAVES, BLOCKS.ETHER_WOOD, BLOCKS.ETHER_LEAVES]);
 
 // ============================================================
 // LEAF DECAY SYSTEM
@@ -230,6 +230,50 @@ export function teleportToPossum() {
     state.player.velX = 0;
     state.player.velY = 0;
     addFloatingText(state.player.x, state.player.y - 30, "Welcome to Possum Realm! :D", "#ff88cc");
+}
+
+// ============================================================
+// ETHER TELEPORT
+// ============================================================
+
+export function teleportToEther() {
+    if (state.inEther) {
+        // Return to where we came from
+        switchDimension(state.etherReturnDim || 'overworld');
+        state.player.x = state.etherReturnX * BLOCK_SIZE;
+        state.player.y = (state.etherReturnY - 2) * BLOCK_SIZE;
+
+        state.mobs.length = 0;
+        state.portalCooldown = 3000;
+        state.player.velX = 0;
+        state.player.velY = 0;
+        addFloatingText(state.player.x, state.player.y - 30, "Descended from the Ether!", "#aabbff");
+        return;
+    }
+
+    // Save return position
+    state.etherReturnX = Math.floor(state.player.x / BLOCK_SIZE);
+    state.etherReturnY = Math.floor(state.player.y / BLOCK_SIZE);
+    state.etherReturnDim = state.inNether ? 'nether' : state.inWasteland ? 'wasteland' : state.inPossum ? 'possum' : 'overworld';
+
+    // Generate Ether if first time
+    if (state.etherWorld.length === 0) {
+        generateEtherWorld();
+    }
+
+    switchDimension('ether');
+
+    // Spawn near middle on surface
+    const spawnX = Math.floor(WORLD_WIDTH / 2);
+    const surfY = findSurfaceY(spawnX);
+    state.player.x = spawnX * BLOCK_SIZE;
+    state.player.y = (surfY - 2) * BLOCK_SIZE;
+
+    state.mobs.length = 0;
+    state.portalCooldown = 3000;
+    state.player.velX = 0;
+    state.player.velY = 0;
+    addFloatingText(state.player.x, state.player.y - 30, "Ascended to the Ether!", "#aabbff");
 }
 
 // ============================================================

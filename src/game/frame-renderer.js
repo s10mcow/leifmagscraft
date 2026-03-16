@@ -17,7 +17,7 @@ const PLAYER_COLORS = ['#e07040','#40a0e0','#e040a0','#40e080','#e0c040','#a040e
 function drawOtherPlayers() {
     const players = Object.values(state.otherPlayers);
     if (!players.length) return;
-    const myDim = state.inNether ? 'nether' : state.inWasteland ? 'wasteland' : state.inPossum ? 'possum' : 'overworld';
+    const myDim = state.inNether ? 'nether' : state.inWasteland ? 'wasteland' : state.inPossum ? 'possum' : state.inEther ? 'ether' : 'overworld';
     const camX = state.camera.x - state.screenShake.x;
     const camY = state.camera.y - state.screenShake.y;
     for (let pi = 0; pi < players.length; pi++) {
@@ -59,7 +59,8 @@ export function drawGameFrame(timestamp) {
 
     // CSS filter on canvas — GPU composited, no render cost
     state.canvas.style.filter = state.glitchedActive ? "grayscale(100%)" :
-                                 state.inPossum      ? "saturate(140%) brightness(1.08)" : "";
+                                 state.inPossum      ? "saturate(140%) brightness(1.08)" :
+                                 state.inEther        ? "saturate(80%) brightness(0.95) contrast(1.1)" : "";
 
     // 1. Sky
     drawSky(state.cachedDayBrightness);
@@ -86,6 +87,7 @@ export function drawGameFrame(timestamp) {
         const nightAlpha = (0.7 - state.cachedDayBrightness) * 0.7;
         state.ctx.fillStyle = state.inNether    ? `rgba(10,0,0,${nightAlpha})`    :
                               state.inWasteland ? `rgba(5,15,0,${nightAlpha})`    :
+                              state.inEther     ? `rgba(10,10,30,${nightAlpha})`  :
                               state.inVoid      ? `rgba(0,0,20,${nightAlpha})`    :
                                                   `rgba(0,0,20,${nightAlpha})`;
         state.ctx.fillRect(0, 0, state.canvas.width, state.canvas.height);

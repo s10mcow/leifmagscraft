@@ -584,6 +584,74 @@ export function drawBlock(blockType, screenX, screenY) {
         state.ctx.strokeRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
         return;
     }
+    // Ether Bedrock — dark grey-blue with faint crystalline texture
+    if (blockType === BLOCKS.ETHER_BEDROCK) {
+        state.ctx.fillStyle = "#2a2a3a";
+        state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
+        state.ctx.fillStyle = "#383848";
+        state.ctx.fillRect(screenX + 4, screenY + 5, 6, 5);
+        state.ctx.fillRect(screenX + 18, screenY + 14, 7, 5);
+        state.ctx.fillRect(screenX + 10, screenY + 22, 5, 4);
+        state.ctx.fillStyle = "#1e1e2e";
+        state.ctx.fillRect(screenX + 22, screenY + 4, 4, 4);
+        state.ctx.fillRect(screenX + 6, screenY + 16, 4, 3);
+        state.ctx.strokeStyle = "rgba(100,100,160,0.12)";
+        state.ctx.strokeRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
+        return;
+    }
+    // Ether Wood — dark grey trunk with subtle blue-grey grain
+    if (blockType === BLOCKS.ETHER_WOOD) {
+        state.ctx.fillStyle = "#3a3a4a";
+        state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
+        state.ctx.fillStyle = "#2e2e3e";
+        state.ctx.fillRect(screenX + 6, screenY, 2, BLOCK_SIZE);
+        state.ctx.fillRect(screenX + 16, screenY, 2, BLOCK_SIZE);
+        state.ctx.fillRect(screenX + 24, screenY, 2, BLOCK_SIZE);
+        state.ctx.fillStyle = "#4a4a5a";
+        state.ctx.fillRect(screenX + 4, screenY, 1, BLOCK_SIZE);
+        state.ctx.fillRect(screenX + 14, screenY, 1, BLOCK_SIZE);
+        state.ctx.strokeStyle = "rgba(100,100,160,0.12)";
+        state.ctx.strokeRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
+        return;
+    }
+    // Ether Leaves — dark grey-blue leaf clusters
+    if (blockType === BLOCKS.ETHER_LEAVES) {
+        state.ctx.fillStyle = "#4a4a5a";
+        state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
+        state.ctx.fillStyle = "#5a5a6a";
+        state.ctx.fillRect(screenX + 2, screenY + 3, 5, 4);
+        state.ctx.fillRect(screenX + 14, screenY + 8, 6, 5);
+        state.ctx.fillRect(screenX + 6, screenY + 18, 5, 4);
+        state.ctx.fillRect(screenX + 20, screenY + 22, 6, 4);
+        state.ctx.fillStyle = "#3a3a4a";
+        state.ctx.fillRect(screenX + 8, screenY + 4, 4, 3);
+        state.ctx.fillRect(screenX + 22, screenY + 14, 4, 3);
+        state.ctx.strokeStyle = "rgba(100,100,160,0.12)";
+        state.ctx.strokeRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
+        return;
+    }
+    // Ether Stone — rainbow shimmer effect
+    if (blockType === BLOCKS.ETHER_STONE) {
+        state.ctx.fillStyle = "#555566";
+        state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
+        const t = performance.now() * 0.002;
+        const hue1 = ((t * 50 + screenX + screenY) % 360);
+        const hue2 = ((t * 50 + screenX * 2 + screenY * 3 + 120) % 360);
+        const hue3 = ((t * 50 + screenX * 3 + screenY + 240) % 360);
+        state.ctx.fillStyle = `hsla(${hue1}, 80%, 60%, 0.5)`;
+        state.ctx.fillRect(screenX + 4, screenY + 5, 7, 6);
+        state.ctx.fillStyle = `hsla(${hue2}, 80%, 60%, 0.5)`;
+        state.ctx.fillRect(screenX + 18, screenY + 14, 6, 5);
+        state.ctx.fillStyle = `hsla(${hue3}, 80%, 60%, 0.5)`;
+        state.ctx.fillRect(screenX + 9, screenY + 21, 8, 5);
+        // Sparkle highlight
+        state.ctx.fillStyle = `rgba(255,255,255,${0.3 + Math.sin(t * 3) * 0.15})`;
+        state.ctx.fillRect(screenX + 6, screenY + 7, 3, 2);
+        state.ctx.fillRect(screenX + 20, screenY + 16, 2, 2);
+        state.ctx.strokeStyle = "rgba(200,200,255,0.3)";
+        state.ctx.strokeRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
+        return;
+    }
     state.ctx.strokeStyle = "rgba(0, 0, 0, 0.15)";
     state.ctx.strokeRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
 }

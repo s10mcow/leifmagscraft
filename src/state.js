@@ -91,6 +91,13 @@ export const state = {
     possumReturnX: 0,
     possumReturnY: 0,
     possumReturnDim: 'overworld',
+    // Ether dimension
+    etherWorld: [],
+    etherBgWorld: [],
+    inEther: false,
+    etherReturnX: 0,
+    etherReturnY: 0,
+    etherReturnDim: 'overworld',
 
     // Player
     player: {
