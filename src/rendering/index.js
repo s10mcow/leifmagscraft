@@ -8,4 +8,4 @@ export { drawBlock } from './blocks.js';
 export { drawItemIcon } from './items.js';
 export { drawBackgroundTrees, drawSky } from './world-bg.js';
 export { drawPlayer, drawAllMobs } from './entities.js';
-export { drawProjectiles, drawParticles } from './effects.js';
+export { drawProjectiles, drawLaserBeam, drawParticles } from './effects.js';

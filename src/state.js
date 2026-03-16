@@ -115,6 +115,7 @@ export const state = {
     },
     camera: { x: 0, y: 0 },
     screenShake: { x: 0, y: 0, intensity: 0 },
+    laserBeam: null,
     plateTimers: [],
 
     // Inventory

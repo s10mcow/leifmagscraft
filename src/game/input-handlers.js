@@ -11,7 +11,7 @@ import { BLOCKS, ITEMS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, BLOCK_INFO, ITEM_
 import { addToInventory, addFloatingText, getEquippedTool, getEquippedTier, damageEquippedTool, eatFood } from '../inventory.js';
 import { isBlockSolid, initChestData, removeChestData, checkLavaWaterInteraction } from '../world.js';
 import { playMineHit, playBlockBreak, playBlockPlace, playPickup } from '../audio.js';
-import { createBullet, createSniperBullet, createRocket, createFlame, createLaserBeam, createParticles } from '../mobs.js';
+import { createBullet, createSniperBullet, createRocket, createFlame, createParticles } from '../mobs.js';
 import { scheduleLeafDecay, WOOD_BLOCKS, TREE_BLOCKS, teleportToOtherDimension, teleportToWasteland, teleportToPossum } from './systems.js';
 
 function syncBlock(x, y, blockId) {
@@ -640,6 +640,10 @@ function finishReload() {
 
 export function handleGunFire(dt) {
     if (state.gunCooldown > 0) state.gunCooldown -= dt;
+    if (state.laserBeam && state.laserBeam.timer > 0) {
+        state.laserBeam.timer -= dt;
+        if (state.laserBeam.timer <= 0) state.laserBeam = null;
+    }
 
     // Tick reload timer
     if (state.gunReloadTimer > 0) {
@@ -686,8 +690,46 @@ export function handleGunFire(dt) {
         createRocket(px, py, targetX, targetY, itemInfo.damage);
     } else if (itemInfo.ammoType === "fuel") {
         createFlame(px, py, targetX, targetY, itemInfo.damage);
-    } else if (itemInfo.ammoType === "powerfuse") {
-        createLaserBeam(px, py, targetX, targetY, itemInfo.damage);
+    } else if (itemInfo.beamWeapon) {
+        // Continuous beam — raycast to target, hit first mob in path
+        const dx = targetX - px, dy = targetY - py;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        const nx = dx / dist, ny = dy / dist;
+        const maxRange = 800;
+        let beamEndX = px + nx * maxRange, beamEndY = py + ny * maxRange;
+        let hitMob = null;
+        // Step along beam checking for mobs and blocks
+        for (let step = 0; step < maxRange; step += 8) {
+            const cx = px + nx * step, cy = py + ny * step;
+            // Block collision
+            const bx = Math.floor(cx / BLOCK_SIZE), by = Math.floor(cy / BLOCK_SIZE);
+            if (isBlockSolid(bx, by)) { beamEndX = cx; beamEndY = cy; break; }
+            // Mob collision
+            if (!hitMob) {
+                for (const mob of state.mobs) {
+                    if (mob.dead) continue;
+                    const def = MOB_DEFS[mob.type];
+                    if (cx >= mob.x && cx <= mob.x + def.width && cy >= mob.y && cy <= mob.y + def.height) {
+                        hitMob = mob;
+                        beamEndX = cx; beamEndY = cy;
+                        break;
+                    }
+                }
+            }
+            if (hitMob) break;
+        }
+        if (hitMob) {
+            const def = MOB_DEFS[hitMob.type];
+            hitMob.health -= itemInfo.damage;
+            hitMob.hurtTimer = 200;
+            hitMob.aggroed = true;
+            const kb = nx > 0 ? 6 : -6;
+            hitMob.velX = kb; hitMob.velY = -3;
+            createParticles(beamEndX, beamEndY, 4, "#00ff66", 3);
+            addFloatingText(hitMob.x + def.width / 2, hitMob.y - 10, `-${itemInfo.damage}`, "#00ff66");
+        }
+        // Store beam for rendering
+        state.laserBeam = { x1: px, y1: py, x2: beamEndX, y2: beamEndY, timer: 100 };
     } else if (itemInfo.ammoType === "sniper") {
         const isAP = slot.loadedAmmoId === ITEMS.SNIPER_AP_BULLET;
         createSniperBullet(px, py, targetX, targetY, itemInfo.damage, false, isAP);

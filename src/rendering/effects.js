@@ -97,6 +97,30 @@ export function drawProjectiles() {
     }
 }
 
+// --- NUCLEAR LASER BEAM ---
+export function drawLaserBeam() {
+    const b = state.laserBeam;
+    if (!b || b.timer <= 0) return;
+    const x1 = b.x1 - state.camera.x + state.screenShake.x;
+    const y1 = b.y1 - state.camera.y + state.screenShake.y;
+    const x2 = b.x2 - state.camera.x + state.screenShake.x;
+    const y2 = b.y2 - state.camera.y + state.screenShake.y;
+    const alpha = Math.min(1, b.timer / 50);
+    // Outer glow
+    state.ctx.strokeStyle = `rgba(0, 255, 100, ${alpha * 0.3})`;
+    state.ctx.lineWidth = 12;
+    state.ctx.beginPath(); state.ctx.moveTo(x1, y1); state.ctx.lineTo(x2, y2); state.ctx.stroke();
+    // Mid beam
+    state.ctx.strokeStyle = `rgba(0, 255, 80, ${alpha * 0.7})`;
+    state.ctx.lineWidth = 6;
+    state.ctx.beginPath(); state.ctx.moveTo(x1, y1); state.ctx.lineTo(x2, y2); state.ctx.stroke();
+    // Core
+    state.ctx.strokeStyle = `rgba(170, 255, 210, ${alpha})`;
+    state.ctx.lineWidth = 2;
+    state.ctx.beginPath(); state.ctx.moveTo(x1, y1); state.ctx.lineTo(x2, y2); state.ctx.stroke();
+    state.ctx.lineWidth = 1;
+}
+
 // --- PARTICLES ---
 export function drawParticles() {
     for (const p of state.particles) {

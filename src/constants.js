@@ -350,7 +350,7 @@ export const ITEM_INFO = {
   [ITEMS.SILVER_LEGGINGS]:   { name: "Silver Leggings",   stackable: false, armorType: "leggings",   defense: 3, durability: 240, color: "#c0c8d8", coolPack: true },
   [ITEMS.SILVER_BOOTS]:      { name: "Silver Boots",      stackable: false, armorType: "boots",      defense: 2, durability: 180, color: "#c0c8d8", coolPack: true },
   [ITEMS.POWER_FUSE]:       { name: "Fusion Core",      stackable: true, maxStack: 10, color: "#44ff88" },
-  [ITEMS.NUCLEAR_LASER]:    { name: "Nuclear Laser",    stackable: false, toolType: "gun", tier: 5, speed: 1, durability: 500, damage: 25, color: "#00ff66", fireRate: 400, ammoType: "powerfuse", magSize: 300, reloadTime: 4000 },
+  [ITEMS.NUCLEAR_LASER]:    { name: "Nuclear Laser",    stackable: false, toolType: "gun", tier: 5, speed: 1, durability: 500, damage: 50, color: "#00ff66", fireRate: 80, ammoType: "powerfuse", magSize: 300, reloadTime: 4000, beamWeapon: true },
 };
 
 // --- MOB DEFINITIONS ---
