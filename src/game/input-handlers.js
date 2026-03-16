@@ -11,7 +11,7 @@ import { BLOCKS, ITEMS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, BLOCK_INFO, ITEM_
 import { addToInventory, addFloatingText, getEquippedTool, getEquippedTier, damageEquippedTool, eatFood } from '../inventory.js';
 import { isBlockSolid, initChestData, removeChestData, checkLavaWaterInteraction } from '../world.js';
 import { playMineHit, playBlockBreak, playBlockPlace, playPickup } from '../audio.js';
-import { createBullet, createSniperBullet, createRocket, createFlame, createParticles } from '../mobs.js';
+import { createBullet, createSniperBullet, createRocket, createFlame, createLaserBeam, createParticles } from '../mobs.js';
 import { scheduleLeafDecay, WOOD_BLOCKS, TREE_BLOCKS, teleportToOtherDimension, teleportToWasteland, teleportToPossum } from './systems.js';
 
 function syncBlock(x, y, blockId) {
@@ -578,6 +578,7 @@ export function toggleDoor(x, y) {
 function ammoItemForGun(itemInfo, selectedSlot) {
     if (itemInfo.ammoType === "rocket") return ITEMS.ROCKET;
     if (itemInfo.ammoType === "fuel")   return ITEMS.FUEL_CANISTER;
+    if (itemInfo.ammoType === "powerfuse") return ITEMS.POWER_FUSE;
     if (itemInfo.ammoType === "sniper") {
         // Prefer AP bullets, fall back to regular sniper bullets
         const hasAP = state.inventory.slots.some((s, i) => i !== selectedSlot && s.itemId === ITEMS.SNIPER_AP_BULLET && s.count > 0);
@@ -589,6 +590,7 @@ function ammoItemForGun(itemInfo, selectedSlot) {
 function noAmmoText(itemInfo) {
     if (itemInfo.ammoType === "rocket") return "No rockets!";
     if (itemInfo.ammoType === "fuel")   return "No fuel!";
+    if (itemInfo.ammoType === "powerfuse") return "No power fuse!";
     if (itemInfo.ammoType === "sniper") return "No sniper ammo!";
     return "No ammo!";
 }
@@ -612,7 +614,7 @@ function finishReload() {
     if (!slot || slot.count === 0) { state.gunReloadingSlot = -1; return; }
     const itemInfo = ITEM_INFO[slot.itemId];
     if (!itemInfo) { state.gunReloadingSlot = -1; return; }
-    const isFuel = itemInfo.ammoType === "fuel";
+    const isFuel = itemInfo.ammoType === "fuel" || itemInfo.ammoType === "powerfuse";
     const ammoItemId = ammoItemForGun(itemInfo, slotIdx);
     const ammoSlot = state.inventory.slots.findIndex((s, i) => i !== slotIdx && s.itemId === ammoItemId && s.count > 0);
     if (ammoSlot !== -1) {
@@ -684,6 +686,8 @@ export function handleGunFire(dt) {
         createRocket(px, py, targetX, targetY, itemInfo.damage);
     } else if (itemInfo.ammoType === "fuel") {
         createFlame(px, py, targetX, targetY, itemInfo.damage);
+    } else if (itemInfo.ammoType === "powerfuse") {
+        createLaserBeam(px, py, targetX, targetY, itemInfo.damage);
     } else if (itemInfo.ammoType === "sniper") {
         const isAP = slot.loadedAmmoId === ITEMS.SNIPER_AP_BULLET;
         createSniperBullet(px, py, targetX, targetY, itemInfo.damage, false, isAP);

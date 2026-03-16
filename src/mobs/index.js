@@ -9,7 +9,7 @@ export { createMob } from './entities.js';
 
 export { createParticles, updateParticles, fireballExplode, rocketExplode, creeperExplode } from './effects.js';
 
-export { createArrow, createBullet, createSniperBullet, createRocket, createFlame, createFireball, updateProjectiles } from './projectiles.js';
+export { createArrow, createBullet, createSniperBullet, createRocket, createFlame, createLaserBeam, createFireball, updateProjectiles } from './projectiles.js';
 
 export { updateMobs } from './ai.js';
 

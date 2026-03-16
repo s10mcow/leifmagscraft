@@ -433,6 +433,41 @@ export function drawItemIcon(itemId, x, y, size) {
         // Golden-brown crispy top
         state.ctx.fillStyle = "#c89040";
         state.ctx.fillRect(x + size * 0.25, y + size * 0.18, size * 0.5, size * 0.15);
+    } else if (itemId === ITEMS.POWER_FUSE) {
+        // Glowing green cylinder with electrodes
+        state.ctx.fillStyle = "#1a3a1a";
+        state.ctx.fillRect(x + size * 0.2, y + size * 0.15, size * 0.6, size * 0.7);
+        state.ctx.fillStyle = "#00cc44";
+        state.ctx.fillRect(x + size * 0.25, y + size * 0.2, size * 0.5, size * 0.6);
+        state.ctx.fillStyle = "#44ff88";
+        state.ctx.fillRect(x + size * 0.3, y + size * 0.25, size * 0.15, size * 0.5);
+        // Metal caps
+        state.ctx.fillStyle = "#888";
+        state.ctx.fillRect(x + size * 0.15, y + size * 0.1, size * 0.7, size * 0.08);
+        state.ctx.fillRect(x + size * 0.15, y + size * 0.82, size * 0.7, size * 0.08);
+        // Glow
+        state.ctx.fillStyle = "rgba(0, 255, 100, 0.15)";
+        state.ctx.fillRect(x + size * 0.1, y + size * 0.05, size * 0.8, size * 0.9);
+    } else if (itemId === ITEMS.NUCLEAR_LASER) {
+        // Futuristic laser gun — titanium body with green glow
+        state.ctx.fillStyle = "#6a7a8a";
+        state.ctx.fillRect(x + size * 0.05, y + size * 0.28, size * 0.85, size * 0.2);
+        // Barrel tip with green glow
+        state.ctx.fillStyle = "#00ff66";
+        state.ctx.fillRect(x, y + size * 0.3, size * 0.12, size * 0.16);
+        state.ctx.fillStyle = "rgba(0, 255, 100, 0.3)";
+        state.ctx.fillRect(x - size * 0.05, y + size * 0.25, size * 0.15, size * 0.26);
+        // Body detail
+        state.ctx.fillStyle = "#8aa0b8";
+        state.ctx.fillRect(x + size * 0.1, y + size * 0.3, size * 0.45, size * 0.14);
+        // Grip
+        state.ctx.fillStyle = "#444";
+        state.ctx.fillRect(x + size * 0.5, y + size * 0.44, size * 0.18, size * 0.36);
+        // Power cell (green)
+        state.ctx.fillStyle = "#00cc44";
+        state.ctx.fillRect(x + size * 0.7, y + size * 0.24, size * 0.18, size * 0.28);
+        state.ctx.fillStyle = "#44ff88";
+        state.ctx.fillRect(x + size * 0.73, y + size * 0.28, size * 0.06, size * 0.2);
     } else if (itemId === ITEMS.NETHERITE_INGOT) {
         // Dark metallic ingot bar
         state.ctx.fillStyle = "#2a2a35";

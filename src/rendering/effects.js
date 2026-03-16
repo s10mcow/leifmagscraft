@@ -18,6 +18,21 @@ export function drawProjectiles() {
             state.ctx.fillRect(sx - 2, sy - 2, 4, 4);
             state.ctx.fillStyle = "rgba(255, 80, 0, 0.25)";
             state.ctx.fillRect(sx - 7, sy - 7, 14, 14);
+        } else if (p.isLaser) {
+            // Bright green nuclear laser beam
+            state.ctx.save();
+            state.ctx.translate(sx, sy);
+            state.ctx.rotate(Math.atan2(p.velY, p.velX));
+            // Outer glow
+            state.ctx.fillStyle = "rgba(0, 255, 100, 0.2)";
+            state.ctx.fillRect(-10, -5, 20, 10);
+            // Core beam
+            state.ctx.fillStyle = "#00ff66";
+            state.ctx.fillRect(-8, -2, 16, 4);
+            // Bright center
+            state.ctx.fillStyle = "#aaffcc";
+            state.ctx.fillRect(-6, -1, 12, 2);
+            state.ctx.restore();
         } else if (p.isFireball) {
             // Glowing orange fireball
             state.ctx.fillStyle = "#ff2200";

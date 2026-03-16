@@ -87,6 +87,7 @@ export const ITEMS = {
   COOL_PACK: 188,
   SNIPER_RIFLE: 189, SNIPER_BULLET: 190, SNIPER_AP_BULLET: 191,
   SILVER_HELMET: 192, SILVER_CHESTPLATE: 193, SILVER_LEGGINGS: 194, SILVER_BOOTS: 195,
+  POWER_FUSE: 196, NUCLEAR_LASER: 197,
 };
 
 // --- WORLD SETTINGS ---
@@ -348,6 +349,8 @@ export const ITEM_INFO = {
   [ITEMS.SILVER_CHESTPLATE]: { name: "Silver Chestplate", stackable: false, armorType: "chestplate", defense: 4, durability: 280, color: "#c0c8d8", coolPack: true },
   [ITEMS.SILVER_LEGGINGS]:   { name: "Silver Leggings",   stackable: false, armorType: "leggings",   defense: 3, durability: 240, color: "#c0c8d8", coolPack: true },
   [ITEMS.SILVER_BOOTS]:      { name: "Silver Boots",      stackable: false, armorType: "boots",      defense: 2, durability: 180, color: "#c0c8d8", coolPack: true },
+  [ITEMS.POWER_FUSE]:       { name: "Power Fuse",       stackable: true, maxStack: 10, color: "#44ff88" },
+  [ITEMS.NUCLEAR_LASER]:    { name: "Nuclear Laser",    stackable: false, toolType: "gun", tier: 5, speed: 1, durability: 500, damage: 25, color: "#00ff66", fireRate: 400, ammoType: "powerfuse", magSize: 300, reloadTime: 4000 },
 };
 
 // --- MOB DEFINITIONS ---
@@ -431,6 +434,9 @@ export const RECIPES = [
   { result: ITEMS.SNIPER_RIFLE, resultCount: 1, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 6 }, { id: BLOCKS.OBSIDIAN, count: 3 }, { id: ITEMS.GUNPOWDER, count: 2 }] },
   { result: ITEMS.SNIPER_BULLET, resultCount: 8, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 2 }, { id: ITEMS.GUNPOWDER, count: 1 }] },
   { result: ITEMS.SNIPER_AP_BULLET, resultCount: 8, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 2 }, { id: ITEMS.GUNPOWDER, count: 1 }, { id: BLOCKS.URANIUM_ORE, count: 1 }] },
+  // Nuclear Laser & Power Fuse
+  { result: ITEMS.POWER_FUSE, resultCount: 1, ingredients: [{ id: ITEMS.STEEL_INGOT, count: 6 }, { id: BLOCKS.URANIUM_ORE, count: 1 }] },
+  { result: ITEMS.NUCLEAR_LASER, resultCount: 1, ingredients: [{ id: ITEMS.TITANIUM_INGOT, count: 8 }, { id: BLOCKS.URANIUM_ORE, count: 2 }, { id: ITEMS.STEEL_INGOT, count: 3 }] },
   { result: ITEMS.MINIATURE_NETHER_PORTAL, resultCount: 1, ingredients: [{ id: BLOCKS.OBSIDIAN, count: 4 }, { id: ITEMS.FLINT_AND_STEEL, count: 1 }] },
   { result: ITEMS.WASTELAND_TELEPORTER, resultCount: 1, ingredients: [{ id: BLOCKS.COBBLESTONE, count: 24 }, { id: BLOCKS.OBSIDIAN, count: 4 }] },
   { result: ITEMS.POSSUM_TELEPORTER, resultCount: 1, ingredients: [{ id: ITEMS.RAW_PORKCHOP, count: 10 }, { id: ITEMS.STEAK, count: 10 }, { id: BLOCKS.GLOWSTONE, count: 5 }] },

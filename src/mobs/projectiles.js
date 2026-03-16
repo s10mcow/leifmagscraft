@@ -94,6 +94,18 @@ export function createFlame(x, y, targetX, targetY, damage) {
     });
 }
 
+export function createLaserBeam(x, y, targetX, targetY, damage) {
+    const dx = targetX - x, dy = targetY - y;
+    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    const speed = 25;
+    state.projectiles.push({
+        x, y,
+        velX: (dx / dist) * speed,
+        velY: (dy / dist) * speed,
+        damage, life: 80, isLaser: true
+    });
+}
+
 
 export function createFireball(x, y, targetX, targetY, damage) {
     const dx = targetX - x, dy = targetY - y;
@@ -112,7 +124,7 @@ export function createFireball(x, y, targetX, targetY, damage) {
 export function updateProjectiles(dt) {
     for (let i = state.projectiles.length - 1; i >= 0; i--) {
         const p = state.projectiles[i];
-        if (!p.isBullet && !p.isRocket && !p.isFireball && !p.isFlame) p.velY += 0.15; // Gravity for arrows only
+        if (!p.isBullet && !p.isRocket && !p.isFireball && !p.isFlame && !p.isLaser) p.velY += 0.15; // Gravity for arrows only
         if (p.isRocket) p.velY += 0.05; // Slight gravity for rockets
         p.x += p.velX;
         p.y += p.velY;
@@ -144,6 +156,37 @@ export function updateProjectiles(dt) {
             const fby = Math.floor(p.y / BLOCK_SIZE);
             if (isBlockSolid(fbx, fby)) {
                 createParticles(p.x, p.y, 3, "#ff8800", 2);
+                state.projectiles.splice(i, 1);
+                continue;
+            }
+            if (p.life <= 0) { state.projectiles.splice(i, 1); continue; }
+        } else if (p.isLaser) {
+            // Laser beam — pierces through and does massive damage
+            let hitMob = false;
+            for (let j = state.mobs.length - 1; j >= 0; j--) {
+                const mob = state.mobs[j];
+                const def = MOB_DEFS[mob.type];
+                if (mob.dead) continue;
+                if (p.x >= mob.x && p.x <= mob.x + def.width &&
+                    p.y >= mob.y && p.y <= mob.y + def.height) {
+                    mob.health -= p.damage;
+                    mob.hurtTimer = 300;
+                    mob.aggroed = true;
+                    const kb = p.velX > 0 ? 6 : -6;
+                    mob.velX = kb;
+                    mob.velY = -4;
+                    createParticles(p.x, p.y, 8, "#00ff66", 4);
+                    addFloatingText(mob.x + def.width / 2, mob.y - 10, `-${p.damage}`, "#00ff66");
+                    hitMob = true;
+                    break;
+                }
+            }
+            if (hitMob) { state.projectiles.splice(i, 1); continue; }
+            // Hit block
+            const lbx = Math.floor(p.x / BLOCK_SIZE);
+            const lby = Math.floor(p.y / BLOCK_SIZE);
+            if (isBlockSolid(lbx, lby)) {
+                createParticles(p.x, p.y, 6, "#00ff66", 3);
                 state.projectiles.splice(i, 1);
                 continue;
             }
