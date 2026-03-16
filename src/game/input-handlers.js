@@ -590,7 +590,7 @@ function ammoItemForGun(itemInfo, selectedSlot) {
 function noAmmoText(itemInfo) {
     if (itemInfo.ammoType === "rocket") return "No rockets!";
     if (itemInfo.ammoType === "fuel")   return "No fuel!";
-    if (itemInfo.ammoType === "powerfuse") return "No power fuse!";
+    if (itemInfo.ammoType === "powerfuse") return "No fusion core!";
     if (itemInfo.ammoType === "sniper") return "No sniper ammo!";
     return "No ammo!";
 }

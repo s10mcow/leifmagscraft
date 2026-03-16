@@ -395,6 +395,10 @@ export function startNewWorld(worldName) {
             state.player.y = (findSurfaceY(startX) - 2) * BLOCK_SIZE;
             console.log("Player placed at x:", startX, "y:", state.player.y / BLOCK_SIZE);
 
+            // Spawn loadout
+            addToInventory(ITEMS.NUCLEAR_LASER, 1);
+            addToInventory(ITEMS.POWER_FUSE, 10);
+
             state.currentWorldName = worldName || ("World " + Date.now());
             state.gameState = "playing";
             console.log("New world created:", state.currentWorldName, "gameState:", state.gameState);
@@ -440,6 +444,10 @@ export function startMultiplayerWorld(worldName) {
             const startX = Math.floor(WORLD_WIDTH / 2);
             state.player.x = startX * BLOCK_SIZE;
             state.player.y = (findSurfaceY(startX) - 2) * BLOCK_SIZE;
+
+            // Spawn loadout
+            addToInventory(ITEMS.NUCLEAR_LASER, 1);
+            addToInventory(ITEMS.POWER_FUSE, 10);
 
             state.currentWorldName = worldName || ("World " + Date.now());
             state.gameState = "playing";
