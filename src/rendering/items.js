@@ -536,6 +536,54 @@ export function drawItemIcon(itemId, x, y, size) {
         state.ctx.fillRect(x + size * 0.05, y + size * 0.32, size * 0.5, size * 0.1);
         state.ctx.fillStyle = "#666";
         state.ctx.fillRect(x + size * 0.2, y + size * 0.2, size * 0.15, size * 0.12);
+    } else if (itemId === ITEMS.SNIPER_RIFLE) {
+        // Long rifle with scope
+        state.ctx.fillStyle = "#3a3a3a";
+        state.ctx.fillRect(x + size * 0.0, y + size * 0.35, size * 0.95, size * 0.12);
+        // Barrel extension (longer than AK)
+        state.ctx.fillStyle = "#2a2a2a";
+        state.ctx.fillRect(x + size * 0.0, y + size * 0.37, size * 0.3, size * 0.08);
+        // Stock (dark wood)
+        state.ctx.fillStyle = "#5a4a30";
+        state.ctx.fillRect(x + size * 0.7, y + size * 0.3, size * 0.3, size * 0.22);
+        state.ctx.fillStyle = "#4a3a20";
+        state.ctx.fillRect(x + size * 0.75, y + size * 0.32, size * 0.22, size * 0.08);
+        // Scope
+        state.ctx.fillStyle = "#222";
+        state.ctx.fillRect(x + size * 0.3, y + size * 0.18, size * 0.3, size * 0.14);
+        // Scope lens (blue tint)
+        state.ctx.fillStyle = "#4488cc";
+        state.ctx.fillRect(x + size * 0.3, y + size * 0.2, size * 0.06, size * 0.1);
+        state.ctx.fillRect(x + size * 0.54, y + size * 0.2, size * 0.06, size * 0.1);
+        // Scope mount
+        state.ctx.fillStyle = "#444";
+        state.ctx.fillRect(x + size * 0.35, y + size * 0.3, size * 0.08, size * 0.06);
+        state.ctx.fillRect(x + size * 0.5, y + size * 0.3, size * 0.08, size * 0.06);
+        // Grip
+        state.ctx.fillStyle = "#3a3a3a";
+        state.ctx.fillRect(x + size * 0.55, y + size * 0.44, size * 0.12, size * 0.3);
+    } else if (itemId === ITEMS.SNIPER_BULLET) {
+        // Tall sniper rounds (longer than pistol bullets)
+        state.ctx.fillStyle = "#c4a030";
+        state.ctx.fillRect(x + size * 0.15, y + size * 0.25, size * 0.18, size * 0.55);
+        state.ctx.fillRect(x + size * 0.42, y + size * 0.25, size * 0.18, size * 0.55);
+        state.ctx.fillRect(x + size * 0.69, y + size * 0.25, size * 0.18, size * 0.55);
+        // Pointed tips
+        state.ctx.fillStyle = "#dd8844";
+        state.ctx.fillRect(x + size * 0.15, y + size * 0.12, size * 0.18, size * 0.18);
+        state.ctx.fillRect(x + size * 0.42, y + size * 0.12, size * 0.18, size * 0.18);
+        state.ctx.fillRect(x + size * 0.69, y + size * 0.12, size * 0.18, size * 0.18);
+    } else if (itemId === ITEMS.SNIPER_AP_BULLET) {
+        // AP sniper rounds — green tinted
+        state.ctx.fillStyle = "#88a830";
+        state.ctx.fillRect(x + size * 0.15, y + size * 0.25, size * 0.18, size * 0.55);
+        state.ctx.fillRect(x + size * 0.42, y + size * 0.25, size * 0.18, size * 0.55);
+        state.ctx.fillRect(x + size * 0.69, y + size * 0.25, size * 0.18, size * 0.55);
+        // Green pointed tips
+        state.ctx.fillStyle = "#66cc44";
+        state.ctx.fillRect(x + size * 0.15, y + size * 0.12, size * 0.18, size * 0.18);
+        state.ctx.fillRect(x + size * 0.42, y + size * 0.12, size * 0.18, size * 0.18);
+        state.ctx.fillRect(x + size * 0.69, y + size * 0.12, size * 0.18, size * 0.18);
     } else if (itemId === ITEMS.ENDER_PEARL) {
         state.ctx.fillStyle = "#1a3a2a";
         state.ctx.beginPath();
