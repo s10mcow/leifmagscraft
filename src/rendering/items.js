@@ -594,6 +594,42 @@ export function drawItemIcon(itemId, x, y, size) {
         // Boss centre highlight
         state.ctx.fillStyle = "#e8e8e8";
         state.ctx.fillRect(cx - size * 0.04, y + size * 0.33, size * 0.08, size * 0.12);
+    } else if (itemId === ITEMS.IRON_INGOT) {
+        // Silver-grey iron bar
+        state.ctx.fillStyle = "#a0a0a0";
+        state.ctx.fillRect(x + size * 0.1, y + size * 0.22, size * 0.8, size * 0.56);
+        state.ctx.fillStyle = "#d4d4d4";
+        state.ctx.fillRect(x + size * 0.15, y + size * 0.27, size * 0.7, size * 0.18);
+        state.ctx.fillStyle = "#808080";
+        state.ctx.fillRect(x + size * 0.15, y + size * 0.62, size * 0.7, size * 0.1);
+    } else if (itemId === ITEMS.SILVER_INGOT) {
+        // Bright silver bar
+        state.ctx.fillStyle = "#a0a8b8";
+        state.ctx.fillRect(x + size * 0.1, y + size * 0.22, size * 0.8, size * 0.56);
+        state.ctx.fillStyle = "#d0d8e8";
+        state.ctx.fillRect(x + size * 0.15, y + size * 0.27, size * 0.7, size * 0.18);
+        state.ctx.fillStyle = "#e8eef8";
+        state.ctx.fillRect(x + size * 0.3, y + size * 0.3, size * 0.1, size * 0.1);
+        state.ctx.fillStyle = "#7a8090";
+        state.ctx.fillRect(x + size * 0.15, y + size * 0.62, size * 0.7, size * 0.1);
+    } else if (itemId === ITEMS.GOLD_INGOT) {
+        // Gold bar
+        state.ctx.fillStyle = "#c8a000";
+        state.ctx.fillRect(x + size * 0.1, y + size * 0.22, size * 0.8, size * 0.56);
+        state.ctx.fillStyle = "#ffd700";
+        state.ctx.fillRect(x + size * 0.15, y + size * 0.27, size * 0.7, size * 0.18);
+        state.ctx.fillStyle = "#ffe866";
+        state.ctx.fillRect(x + size * 0.3, y + size * 0.3, size * 0.1, size * 0.1);
+        state.ctx.fillStyle = "#a08000";
+        state.ctx.fillRect(x + size * 0.15, y + size * 0.62, size * 0.7, size * 0.1);
+    } else if (itemId === ITEMS.COPPER_INGOT) {
+        // Copper bar
+        state.ctx.fillStyle = "#b05830";
+        state.ctx.fillRect(x + size * 0.1, y + size * 0.22, size * 0.8, size * 0.56);
+        state.ctx.fillStyle = "#e07040";
+        state.ctx.fillRect(x + size * 0.15, y + size * 0.27, size * 0.7, size * 0.18);
+        state.ctx.fillStyle = "#904020";
+        state.ctx.fillRect(x + size * 0.15, y + size * 0.62, size * 0.7, size * 0.1);
     } else if (itemId === ITEMS.STEEL_INGOT) {
         // Silver-blue steel ingot bar
         state.ctx.fillStyle = "#6a7a8a";
