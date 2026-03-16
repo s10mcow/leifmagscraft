@@ -70,12 +70,20 @@ export function generateVoidWorld() {
         }
     }
 
-    // Scatter rare Void Stone in the underground
-    for (let x = 0; x < WORLD_WIDTH; x++) {
-        const surf = heights[x];
-        for (let y = surf + 3; y < WORLD_HEIGHT - 1; y++) {
-            if (state.voidWorld[x][y] === BLOCKS.VOID_BEDROCK && Math.random() < 0.003) {
-                state.voidWorld[x][y] = BLOCKS.VOID_STONE;
+    // Scatter Void Stone in clusters on the surface
+    for (let x = 2; x < WORLD_WIDTH - 2; x++) {
+        if (Math.random() < 0.008) {
+            const surf = heights[x];
+            // Place a cluster of 2-5 Void Stone at and just below the surface
+            const clusterSize = 2 + Math.floor(Math.random() * 4);
+            for (let i = 0; i < clusterSize; i++) {
+                const cx = x + Math.floor(Math.random() * 3) - 1;
+                const cy = surf + Math.floor(Math.random() * 2); // surface and 1 below
+                if (cx >= 0 && cx < WORLD_WIDTH && cy >= 0 && cy < WORLD_HEIGHT - 1) {
+                    if (state.voidWorld[cx][cy] === BLOCKS.VOID_BEDROCK) {
+                        state.voidWorld[cx][cy] = BLOCKS.VOID_STONE;
+                    }
+                }
             }
         }
     }
