@@ -396,6 +396,43 @@ export function drawItemIcon(itemId, x, y, size) {
         state.ctx.fillStyle = "#770011";
         state.ctx.fillRect(x + size * 0.3, y + size * 0.58, size * 0.1, size * 0.18);
         state.ctx.fillRect(x + size * 0.18, y + size * 0.52, size * 0.08, size * 0.12);
+    } else if (itemId === ITEMS.COOKED_PORKCHOP) {
+        // Browned cooked porkchop
+        state.ctx.fillStyle = "#a06848";
+        state.ctx.fillRect(x + 2, y + 4, size - 4, size - 6);
+        state.ctx.fillStyle = "#8a5030";
+        state.ctx.fillRect(x + 4, y + 6, size - 10, size - 12);
+        state.ctx.fillStyle = "#c88860";
+        state.ctx.fillRect(x + size * 0.3, y + size * 0.25, size * 0.4, size * 0.15);
+    } else if (itemId === ITEMS.COOKED_BEEF) {
+        // Browned cooked beef
+        state.ctx.fillStyle = "#7a3020";
+        state.ctx.fillRect(x + 2, y + 4, size - 4, size - 6);
+        state.ctx.fillStyle = "#8a4030";
+        state.ctx.fillRect(x + 4, y + 6, size - 10, size - 12);
+        state.ctx.fillStyle = "#c8a080";
+        state.ctx.fillRect(x + size * 0.6, y + size * 0.3, size * 0.2, size * 0.4);
+        state.ctx.fillStyle = "#6a2818";
+        state.ctx.fillRect(x + size * 0.2, y + size * 0.2, size * 0.3, size * 0.1);
+    } else if (itemId === ITEMS.COOKED_MUTTON) {
+        // Browned cooked mutton
+        state.ctx.fillStyle = "#9a6858";
+        state.ctx.fillRect(x + 2, y + 4, size - 4, size - 6);
+        state.ctx.fillStyle = "#aa7868";
+        state.ctx.fillRect(x + 4, y + 6, size - 10, size - 12);
+        state.ctx.fillStyle = "#c8a080";
+        state.ctx.fillRect(x + size * 0.15, y + size * 0.6, size * 0.2, size * 0.25);
+    } else if (itemId === ITEMS.COOKED_CHICKEN) {
+        // Browned cooked chicken
+        state.ctx.fillStyle = "#b08050";
+        state.ctx.fillRect(x + size * 0.2, y + size * 0.15, size * 0.6, size * 0.55);
+        // Drumstick bone
+        state.ctx.fillStyle = "#e0d0b0";
+        state.ctx.fillRect(x + size * 0.35, y + size * 0.6, size * 0.12, size * 0.35);
+        state.ctx.fillRect(x + size * 0.55, y + size * 0.6, size * 0.12, size * 0.35);
+        // Golden-brown crispy top
+        state.ctx.fillStyle = "#c89040";
+        state.ctx.fillRect(x + size * 0.25, y + size * 0.18, size * 0.5, size * 0.15);
     } else if (itemId === ITEMS.NETHERITE_INGOT) {
         // Dark metallic ingot bar
         state.ctx.fillStyle = "#2a2a35";
