@@ -402,6 +402,9 @@ export function startNewWorld(worldName) {
             state.inventory.armor.chestplate = { itemId: ITEMS.RIOT_CHESTPLATE, count: 1, durability: ITEM_INFO[ITEMS.RIOT_CHESTPLATE].durability };
             state.inventory.armor.leggings  = { itemId: ITEMS.RIOT_LEGGINGS,   count: 1, durability: ITEM_INFO[ITEMS.RIOT_LEGGINGS].durability };
             state.inventory.armor.boots     = { itemId: ITEMS.RIOT_BOOTS,      count: 1, durability: ITEM_INFO[ITEMS.RIOT_BOOTS].durability };
+            addToInventory(ITEMS.SNIPER_RIFLE, 1);
+            addToInventory(ITEMS.SNIPER_BULLET, 32);
+            addToInventory(ITEMS.SNIPER_AP_BULLET, 32);
             addToInventory(ITEMS.MINIATURE_NETHER_PORTAL, 1);
             addToInventory(ITEMS.WASTELAND_TELEPORTER, 1);
             addToInventory(ITEMS.POSSUM_TELEPORTER, 1);
@@ -459,6 +462,9 @@ export function startMultiplayerWorld(worldName) {
             state.inventory.armor.chestplate = { itemId: ITEMS.RIOT_CHESTPLATE, count: 1, durability: ITEM_INFO[ITEMS.RIOT_CHESTPLATE].durability };
             state.inventory.armor.leggings  = { itemId: ITEMS.RIOT_LEGGINGS,   count: 1, durability: ITEM_INFO[ITEMS.RIOT_LEGGINGS].durability };
             state.inventory.armor.boots     = { itemId: ITEMS.RIOT_BOOTS,      count: 1, durability: ITEM_INFO[ITEMS.RIOT_BOOTS].durability };
+            addToInventory(ITEMS.SNIPER_RIFLE, 1);
+            addToInventory(ITEMS.SNIPER_BULLET, 32);
+            addToInventory(ITEMS.SNIPER_AP_BULLET, 32);
             addToInventory(ITEMS.MINIATURE_NETHER_PORTAL, 1);
             addToInventory(ITEMS.WASTELAND_TELEPORTER, 1);
             addToInventory(ITEMS.POSSUM_TELEPORTER, 1);
