@@ -118,7 +118,7 @@ export function generatePossumWorld() {
             // Outer shell: edges of each layer
             const isEdge = Math.abs(dx) >= halfW - 1 || layer === 0 || layer === pyramidH - 1;
             if (isEdge) {
-                state.possumWorld[px][y] = BLOCKS.CANDY_CANE;
+                state.possumWorld[px][y] = BLOCKS.GOLD_CANDY;
             } else {
                 state.possumWorld[px][y] = BLOCKS.AIR;
             }

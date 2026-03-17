@@ -703,6 +703,25 @@ export function drawBlock(blockType, screenX, screenY) {
         state.ctx.fillRect(screenX + 23, screenY + 23, 4, 4);
         return;
     }
+    if (blockType === BLOCKS.GOLD_CANDY) {
+        // Gold candy block — shiny gold with candy sheen
+        state.ctx.fillStyle = "#ffd700";
+        state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
+        // Lighter highlight stripe
+        state.ctx.fillStyle = "#ffe44d";
+        state.ctx.fillRect(screenX + 2, screenY + 2, BLOCK_SIZE - 4, 6);
+        // Darker gold shadow
+        state.ctx.fillStyle = "#daa520";
+        state.ctx.fillRect(screenX + 2, screenY + BLOCK_SIZE - 6, BLOCK_SIZE - 4, 4);
+        // Candy swirl spots
+        state.ctx.fillStyle = "#fff3a0";
+        state.ctx.fillRect(screenX + 6, screenY + 12, 5, 5);
+        state.ctx.fillRect(screenX + 20, screenY + 18, 6, 4);
+        // Outline
+        state.ctx.strokeStyle = "#b8860b";
+        state.ctx.strokeRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
+        return;
+    }
     if (blockType === BLOCKS.GASLY_SHRINE) {
         const t = performance.now() * 0.002;
         // Dark netherrack base

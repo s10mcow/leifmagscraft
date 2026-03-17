@@ -40,6 +40,7 @@ export const BLOCKS = {
   ORIUM_SHRINE: 66,
   GASLY_SHRINE: 67,
   POSSUM_KING_SHRINE: 68,
+  GOLD_CANDY: 69,
 };
 
 // --- ITEM IDs (100+) ---
@@ -267,6 +268,7 @@ export const BLOCK_INFO = {
   [BLOCKS.ORIUM_SHRINE]: { name: "Orium Shrine", color: "#d4af37", breakable: false, mineTime: 0, toolType: null, minTier: 99, drops: null },
   [BLOCKS.GASLY_SHRINE]: { name: "Gasly Shrine", color: "#ff4400", breakable: false, mineTime: 0, toolType: null, minTier: 99, drops: null },
   [BLOCKS.POSSUM_KING_SHRINE]: { name: "Possum King Shrine", color: "#ff88cc", breakable: false, mineTime: 0, toolType: null, minTier: 99, drops: null },
+  [BLOCKS.GOLD_CANDY]: { name: "Gold Candy", color: "#ffd700", breakable: false, mineTime: 0, toolType: null, minTier: 99, drops: null },
 };
 
 // --- ITEM PROPERTIES ---
