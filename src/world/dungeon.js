@@ -41,32 +41,11 @@ export function generateDungeon(seed) {
         }
     }
 
-    // Pillars inside chamber (4 pillars)
-    const pillarOffsets = [5, 10, 15, 20];
-    for (const px of pillarOffsets) {
-        const bx = cx + px;
-        if (bx >= 0 && bx < WORLD_WIDTH) {
-            for (let dy = 2; dy < chamberH - 1; dy++) {
-                const by = cy + dy;
-                if (by >= 0 && by < WORLD_HEIGHT) {
-                    state.world[bx][by] = BLOCKS.OBSIDIAN;
-                }
-            }
-        }
-    }
-
     // Place the Orium Shrine in the center of the chamber
     const shrineX = cx + Math.floor(chamberW / 2);
     const shrineY = cy + chamberH - 2; // on the floor
     if (shrineX >= 0 && shrineX < WORLD_WIDTH && shrineY >= 0 && shrineY < WORLD_HEIGHT) {
         state.world[shrineX][shrineY] = BLOCKS.ORIUM_SHRINE;
-        // Clear the pillar at shrine position if it overlaps
-        for (let dy = 2; dy < chamberH - 2; dy++) {
-            const by = cy + dy;
-            if (state.world[shrineX][by] === BLOCKS.OBSIDIAN) {
-                state.world[shrineX][by] = BLOCKS.AIR;
-            }
-        }
     }
 
     // Entrance corridor going up from the chamber ceiling to make it accessible
