@@ -23,7 +23,7 @@ function syncBlock(x, y, blockId) {
 // ============================================================
 
 export function updateMining(dt) {
-    if (state.craftingOpen || state.tradingOpen || state.chestOpen || state.blastFurnaceOpen || state.furnaceOpen || state.smokerOpen || state.gameOver) return;
+    if (state.craftingOpen || state.tradingOpen || state.chestOpen || state.blastFurnaceOpen || state.furnaceOpen || state.smokerOpen || state.gameOver || state.player.stunTimer > 0) return;
     // Don't mine when holding a gun
     const gunSlot = state.inventory.slots[state.inventory.selectedSlot];
     const gunInfo = gunSlot.count > 0 ? ITEM_INFO[gunSlot.itemId] : null;

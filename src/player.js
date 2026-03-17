@@ -52,6 +52,11 @@ export function updatePlayer(dt) {
     }
     if (state.player.sugarCrashTimer > 0) state.player.sugarCrashTimer -= dt;
     if (state.player.squishTimer > 0) state.player.squishTimer -= dt;
+    if (state.player.stunTimer > 0) {
+        state.player.stunTimer -= dt;
+        state.player.velX = 0;
+        return; // Can't do anything while stunned
+    }
 
     // --- Temperature system ---
     {
@@ -533,7 +538,7 @@ export function hasLineOfSight(x1, y1, x2, y2) {
 }
 
 export function attackMob(mob) {
-    if (state.player.attackCooldown > 0) return;
+    if (state.player.attackCooldown > 0 || state.player.stunTimer > 0) return;
     // Can't attack your own pet Posse
     if (mob.type === "possum_pet" && mob.tamed) return;
     const def = MOB_DEFS[mob.type];

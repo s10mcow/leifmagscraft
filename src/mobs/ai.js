@@ -1155,6 +1155,33 @@ export function updateMobs(dt, dayBrightness) {
         else if (mob.type === "possum_king") {
             // Posse, the Possum King — cute but deadly
             // Attacks: slash (common), bite (medium), tail grab (rare)
+
+            // Teleport-on-damage: 10% chance when hit
+            if (mob.tpCooldown === undefined) mob.tpCooldown = 0;
+            mob.tpCooldown -= dt;
+            if (mob.hurtTimer > 0 && mob.hurtTimer > 180 && mob.tpCooldown <= 0 && Math.random() < 0.1) {
+                // Teleport right next to player
+                const side = Math.random() < 0.5 ? -1 : 1;
+                mob.x = state.player.x + side * (state.player.width + 5);
+                mob.y = state.player.y + state.player.height - def.height;
+                mob.velX = 0;
+                mob.velY = 0;
+                createParticles(mob.x + def.width / 2, mob.y + def.height / 2, 15, "#ff88cc", 6);
+                addFloatingText(mob.x + def.width / 2, mob.y - 20, "TELEPORT!", "#ff44aa");
+
+                // 50% chance to stun player for 5 seconds
+                if (Math.random() < 0.5) {
+                    state.player.stunTimer = 5000;
+                    addFloatingText(state.player.x, state.player.y - 30, "STUNNED!", "#ff0000");
+                    createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 12, "#ff0000", 5);
+                    mob.tpCooldown = 0; // can teleport again normally
+                } else {
+                    // Failed stun — can't teleport for 20 seconds
+                    mob.tpCooldown = 20000;
+                    addFloatingText(mob.x + def.width / 2, mob.y - 30, "Stun failed!", "#4ade80");
+                }
+            }
+
             if (dist < def.detectRange * BLOCK_SIZE) {
                 mob.velX = dirToPlayer * def.speed;
                 mob.facing = dirToPlayer;

@@ -152,6 +152,18 @@ export function drawPlayer() {
     }
 
     // Burn effect
+    // Stun effect — stars around head
+    if (state.player.stunTimer > 0) {
+        const t = performance.now() * 0.004;
+        for (let i = 0; i < 4; i++) {
+            const angle = t + i * Math.PI / 2;
+            const starX = sx + state.player.width / 2 + Math.cos(angle) * 14;
+            const starY = sy - 6 + Math.sin(angle) * 6;
+            state.ctx.fillStyle = "#ffff00";
+            state.ctx.fillRect(starX - 2, starY - 2, 4, 4);
+        }
+    }
+
     if (state.player.burnTimer > 0) {
         state.ctx.fillStyle = "rgba(255, 100, 0, 0.55)";
         state.ctx.fillRect(sx, sy - 6, state.player.width, state.player.height + 6);

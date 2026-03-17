@@ -125,6 +125,7 @@ export const state = {
         regenHealTimer: 0,
         sugarCrashTimer: 0,
         squishTimer: 0, // Blocky smash — player is flattened
+        stunTimer: 0,   // Posse stun — player can't act
     },
     camera: { x: 0, y: 0 },
     screenShake: { x: 0, y: 0, intensity: 0 },
