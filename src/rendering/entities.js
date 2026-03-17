@@ -1340,6 +1340,87 @@ function drawMob(mob) {
         }
     }
 
+    else if (mob.type === "orium") {
+        // ORIUM, THE DWARF KING — super big dwarf with gold/emerald/diamond mixed armor
+        const f = mob.facing;
+        const t = performance.now() * 0.002;
+
+        // Legs (thick, armored)
+        state.ctx.fillStyle = isHurt ? "#ffeeaa" : "#8b6914";
+        state.ctx.fillRect(sx + 6, sy + 48, 16, 20);
+        state.ctx.fillRect(sx + 34, sy + 48, 16, 20);
+        // Gold leg armor
+        state.ctx.fillStyle = isHurt ? "#ffffcc" : "#d4af37";
+        state.ctx.fillRect(sx + 8, sy + 50, 12, 8);
+        state.ctx.fillRect(sx + 36, sy + 50, 12, 8);
+
+        // Body (barrel chest)
+        state.ctx.fillStyle = isHurt ? "#ffffcc" : "#d4af37";
+        state.ctx.fillRect(sx + 4, sy + 20, 48, 30);
+        // Diamond chestplate overlay
+        state.ctx.fillStyle = isHurt ? "#aaffff" : "#4dfff3";
+        state.ctx.fillRect(sx + 10, sy + 22, 36, 10);
+        // Emerald belt
+        state.ctx.fillStyle = isHurt ? "#aaffaa" : "#50c878";
+        state.ctx.fillRect(sx + 6, sy + 42, 44, 6);
+
+        // Arms (thick)
+        state.ctx.fillStyle = isHurt ? "#ffffcc" : "#d4af37";
+        state.ctx.fillRect(sx - 4, sy + 22, 10, 24);
+        state.ctx.fillRect(sx + 50, sy + 22, 10, 24);
+        // Emerald shoulder pads
+        state.ctx.fillStyle = isHurt ? "#aaffaa" : "#50c878";
+        state.ctx.fillRect(sx - 6, sy + 18, 14, 8);
+        state.ctx.fillRect(sx + 48, sy + 18, 14, 8);
+
+        // Head (big dwarf head with helmet)
+        state.ctx.fillStyle = isHurt ? "#ffddbb" : "#c69c6d";
+        state.ctx.fillRect(sx + 10, sy + 2, 36, 20);
+        // Diamond crown/helmet
+        state.ctx.fillStyle = isHurt ? "#aaffff" : "#4dfff3";
+        state.ctx.fillRect(sx + 8, sy - 2, 40, 8);
+        // Gold crown points
+        state.ctx.fillStyle = "#ffd700";
+        state.ctx.fillRect(sx + 12, sy - 6, 6, 6);
+        state.ctx.fillRect(sx + 24, sy - 8, 8, 8);
+        state.ctx.fillRect(sx + 38, sy - 6, 6, 6);
+
+        // Eyes (angry red)
+        state.ctx.fillStyle = "#ff2200";
+        if (f === 1) {
+            state.ctx.fillRect(sx + 30, sy + 8, 5, 4);
+            state.ctx.fillRect(sx + 38, sy + 8, 5, 4);
+        } else {
+            state.ctx.fillRect(sx + 13, sy + 8, 5, 4);
+            state.ctx.fillRect(sx + 21, sy + 8, 5, 4);
+        }
+
+        // Beard (big golden beard)
+        state.ctx.fillStyle = isHurt ? "#ffffaa" : "#b8860b";
+        state.ctx.fillRect(sx + 14, sy + 16, 28, 10);
+        state.ctx.fillRect(sx + 18, sy + 26, 20, 4);
+
+        // Weapon: big golden axe
+        state.ctx.fillStyle = "#ffd700";
+        const axeX = f === 1 ? sx + 54 : sx - 14;
+        const swing = Math.sin(t * 3) * 4;
+        state.ctx.fillRect(axeX, sy + 24 + swing, 10, 20);
+        state.ctx.fillStyle = "#d4af37";
+        state.ctx.fillRect(axeX - 2, sy + 26 + swing, 14, 8);
+
+        // Golden aura shimmer
+        const shimmer = 0.15 + Math.sin(t * 2) * 0.1;
+        state.ctx.fillStyle = `rgba(255, 215, 0, ${shimmer})`;
+        state.ctx.fillRect(sx - 8, sy - 10, def.width + 16, def.height + 14);
+
+        // Boss health bar above sprite
+        const hpFrac = mob.health / def.maxHealth;
+        state.ctx.fillStyle = "rgba(0,0,0,0.7)";
+        state.ctx.fillRect(sx - 4, sy - 18, def.width + 8, 8);
+        state.ctx.fillStyle = hpFrac > 0.5 ? "#22cc44" : hpFrac > 0.25 ? "#ffaa00" : "#ee2222";
+        state.ctx.fillRect(sx - 2, sy - 16, (def.width + 4) * hpFrac, 4);
+    }
+
     // Mob equipment overlay (non-pigman)
     if (mob.equipment && mob.type !== "pigman") {
         if (mob.equipment.armor) {

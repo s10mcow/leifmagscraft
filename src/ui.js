@@ -872,6 +872,26 @@ export function drawDeathScreen() {
 
 // --- HUD ---
 export function drawHUD() {
+    // Boss health bar at top of screen
+    const boss = state.mobs.find(m => m.type === "orium");
+    if (boss) {
+        const def = MOB_DEFS.orium;
+        const barW = 400, barH = 16;
+        const bx = (state.canvas.width - barW) / 2;
+        const by = 12;
+        state.ctx.fillStyle = "rgba(0,0,0,0.75)";
+        state.ctx.fillRect(bx - 2, by - 2, barW + 4, barH + 4);
+        const pct = boss.health / def.maxHealth;
+        const col = pct > 0.5 ? "#ffd700" : pct > 0.25 ? "#ff8800" : "#ff2222";
+        state.ctx.fillStyle = col;
+        state.ctx.fillRect(bx, by, barW * pct, barH);
+        state.ctx.fillStyle = "#fff";
+        state.ctx.font = "bold 12px 'Courier New', monospace";
+        state.ctx.textAlign = "center";
+        state.ctx.fillText("Orium, the Dwarf King", state.canvas.width / 2, by + 13);
+        state.ctx.textAlign = "left";
+    }
+
     if (!state.craftingOpen && !state.tradingOpen && !state.chestOpen && !state.gameOver) {
         const wmx = Math.floor((state.mouse.x + state.camera.x) / BLOCK_SIZE);
         const wmy = Math.floor((state.mouse.y + state.camera.y) / BLOCK_SIZE);
@@ -885,8 +905,9 @@ export function drawHUD() {
                 if (b === BLOCKS.DOOR_OPEN) tip += " (F to close)";
                 if (b === BLOCKS.OBSIDIAN) tip += " (needs Diamond pickaxe)";
                 if (b === BLOCKS.PRESSURE_PLATE) tip += " (activates nearby doors)";
-                if (info.minTier > 0 && b !== BLOCKS.OBSIDIAN) {
-                    tip += ` (needs ${["Hand","Wood","Stone","Iron","Diamond"][info.minTier]} pickaxe)`;
+                if (b === BLOCKS.ORIUM_SHRINE) tip += " (F to sacrifice 5 diamonds)";
+                if (info.minTier > 0 && info.minTier < 99 && b !== BLOCKS.OBSIDIAN) {
+                    tip += ` (needs ${["Hand","Wood","Stone","Iron","Diamond","Silver","Netherite"][info.minTier] || "Special"} pickaxe)`;
                 }
                 state.ctx.font = "13px 'Courier New', monospace"; state.ctx.textAlign = "left";
                 const tw = state.ctx.measureText(tip).width;
@@ -931,8 +952,8 @@ export function drawHUD() {
 
     // Dimension indicator
     state.ctx.fillStyle = "rgba(0,0,0,0.4)"; state.ctx.fillRect(state.canvas.width - 150, statusY, 145, 20);
-    const dimColor = state.inNether ? "#ff4444" : state.inWasteland ? "#c8a030" : state.inPossum ? "#ff88cc" : "#4ade80";
-    const dimName  = state.inNether ? "NETHER"  : state.inWasteland ? "WASTELAND" : state.inPossum ? "POSSUM REALM" : "Overworld";
+    const dimColor = state.inNether ? "#ff4444" : state.inWasteland ? "#c8a030" : state.inPossum ? "#ff88cc" : state.inTheVoid ? "#8888ff" : "#4ade80";
+    const dimName  = state.inNether ? "NETHER"  : state.inWasteland ? "WASTELAND" : state.inPossum ? "POSSUM REALM" : state.inTheVoid ? "THE VOID" : "Overworld";
     state.ctx.fillStyle = dimColor; state.ctx.font = "bold 11px 'Courier New', monospace";
     state.ctx.fillText(dimName, state.canvas.width - 10, statusY + 14);
 

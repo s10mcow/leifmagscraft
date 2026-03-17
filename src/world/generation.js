@@ -10,6 +10,7 @@ import { BLOCKS, WORLD_WIDTH, WORLD_HEIGHT, SURFACE_LEVEL, SEA_LEVEL, BIOMES, BI
 import { generateOakTree, generateCactus, generateAcacia, generateSpruce } from './terrain.js';
 import { generateVillages, generateStructures } from './structures.js';
 import { generateCaves, placeOres } from './caves.js';
+import { generateDungeon } from './dungeon.js';
 
 // ============================================================
 // INTERNAL: noise function - makes smooth natural-looking hills
@@ -196,6 +197,9 @@ export function generateWorld() {
 
     // Structures with loot chests
     generateStructures(seed);
+
+    // Deep underground dungeon with Orium shrine
+    generateDungeon(seed);
 
     // Background tree layer — denser, separate from foreground
     for (let x = 0; x < WORLD_WIDTH; x++) {

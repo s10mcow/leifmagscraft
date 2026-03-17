@@ -30,7 +30,7 @@ function checkLavaWaterWorld(x, y, w) {
 // ============================================================
 
 export function generateCaves(seed) {
-    const caveCount = 5 + Math.floor(Math.random() * 4); // 5-8 cave systems
+    const caveCount = 10 + Math.floor(Math.random() * 7); // 10-16 cave systems
 
     for (let c = 0; c < caveCount; c++) {
         const startX = 20 + Math.floor(Math.random() * (WORLD_WIDTH - 40));

@@ -652,6 +652,32 @@ export function drawBlock(blockType, screenX, screenY) {
         state.ctx.strokeRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
         return;
     }
+    if (blockType === BLOCKS.ORIUM_SHRINE) {
+        const t = performance.now() * 0.002;
+        // Dark stone base
+        state.ctx.fillStyle = "#3a2a1a";
+        state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
+        // Gold ornate frame
+        state.ctx.fillStyle = "#d4af37";
+        state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, 3);
+        state.ctx.fillRect(screenX, screenY + BLOCK_SIZE - 3, BLOCK_SIZE, 3);
+        state.ctx.fillRect(screenX, screenY, 3, BLOCK_SIZE);
+        state.ctx.fillRect(screenX + BLOCK_SIZE - 3, screenY, 3, BLOCK_SIZE);
+        // Diamond center gem
+        state.ctx.fillStyle = `hsla(${170 + Math.sin(t) * 20}, 80%, 65%, 0.9)`;
+        state.ctx.fillRect(screenX + 10, screenY + 10, 12, 12);
+        // Emerald accents
+        state.ctx.fillStyle = "#50c878";
+        state.ctx.fillRect(screenX + 5, screenY + 5, 4, 4);
+        state.ctx.fillRect(screenX + 23, screenY + 5, 4, 4);
+        state.ctx.fillRect(screenX + 5, screenY + 23, 4, 4);
+        state.ctx.fillRect(screenX + 23, screenY + 23, 4, 4);
+        // Pulsing glow
+        const glow = 0.15 + Math.sin(t * 2) * 0.1;
+        state.ctx.fillStyle = `rgba(255, 215, 0, ${glow})`;
+        state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
+        return;
+    }
     state.ctx.strokeStyle = "rgba(0, 0, 0, 0.15)";
     state.ctx.strokeRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
 }

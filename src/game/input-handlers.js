@@ -11,7 +11,7 @@ import { BLOCKS, ITEMS, BLOCK_SIZE, WORLD_WIDTH, WORLD_HEIGHT, BLOCK_INFO, ITEM_
 import { addToInventory, addFloatingText, getEquippedTool, getEquippedTier, damageEquippedTool, eatFood } from '../inventory.js';
 import { isBlockSolid, initChestData, removeChestData, checkLavaWaterInteraction } from '../world.js';
 import { playMineHit, playBlockBreak, playBlockPlace, playPickup } from '../audio.js';
-import { createBullet, createSniperBullet, createRocket, createFlame, createParticles } from '../mobs.js';
+import { createBullet, createSniperBullet, createRocket, createFlame, createParticles, createMob } from '../mobs.js';
 import { scheduleLeafDecay, WOOD_BLOCKS, TREE_BLOCKS, teleportToOtherDimension, teleportToWasteland, teleportToPossum, teleportToVoid } from './systems.js';
 
 function syncBlock(x, y, blockId) {
@@ -448,6 +448,49 @@ export function interact() {
             const bcx = wmx_d * BLOCK_SIZE + BLOCK_SIZE / 2, bcy = wmy_d * BLOCK_SIZE + BLOCK_SIZE / 2;
             if (Math.sqrt((pcx - bcx) ** 2 + (pcy - bcy) ** 2) < BLOCK_SIZE * 5) {
                 toggleDoor(wmx_d, wmy_d);
+                return;
+            }
+        }
+    }
+
+    // Check if pointing at an Orium Shrine within reach
+    if (wmx_d >= 0 && wmx_d < WORLD_WIDTH && wmy_d >= 0 && wmy_d < WORLD_HEIGHT) {
+        if (state.activeWorld[wmx_d][wmy_d] === BLOCKS.ORIUM_SHRINE) {
+            const pcx = state.player.x + state.player.width / 2, pcy = state.player.y + state.player.height / 2;
+            const bcx = wmx_d * BLOCK_SIZE + BLOCK_SIZE / 2, bcy = wmy_d * BLOCK_SIZE + BLOCK_SIZE / 2;
+            if (Math.sqrt((pcx - bcx) ** 2 + (pcy - bcy) ** 2) < BLOCK_SIZE * 5) {
+                // Check if already a boss alive
+                if (state.mobs.some(m => m.type === "orium")) {
+                    addFloatingText(state.player.x, state.player.y - 20, "Orium is already here!", "#ff4444");
+                    return;
+                }
+                // Need 5 diamonds
+                let diamondCount = 0;
+                for (const slot of state.inventory.slots) {
+                    if (slot.itemId === BLOCKS.DIAMOND) diamondCount += slot.count;
+                }
+                if (diamondCount < 5) {
+                    addFloatingText(state.player.x, state.player.y - 20, `Need 5 diamonds (have ${diamondCount})`, "#ff8888");
+                    return;
+                }
+                // Consume 5 diamonds
+                let toRemove = 5;
+                for (const slot of state.inventory.slots) {
+                    if (slot.itemId === BLOCKS.DIAMOND && toRemove > 0) {
+                        const take = Math.min(slot.count, toRemove);
+                        slot.count -= take;
+                        toRemove -= take;
+                        if (slot.count === 0) { slot.itemId = 0; slot.durability = 0; }
+                    }
+                }
+                // Spawn Orium
+                const spawnX = wmx_d * BLOCK_SIZE - 28;
+                const spawnY = wmy_d * BLOCK_SIZE - 80;
+                const boss = createMob("orium", spawnX, spawnY);
+                state.mobs.push(boss);
+                addFloatingText(state.player.x, state.player.y - 40, "Orium, the Dwarf King awakens!", "#ffd700");
+                createParticles(spawnX + 28, spawnY + 34, 30, "#ffd700", 8);
+                createParticles(spawnX + 28, spawnY + 34, 15, "#50c878", 6);
                 return;
             }
         }

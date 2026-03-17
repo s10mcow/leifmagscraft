@@ -225,7 +225,7 @@ export function updateMobs(dt, dayBrightness) {
         }
 
         // Sunlight burning (zombies/skeletons, not creepers/husks/endermen/pigmen/ghasts/gruntures, not in Nether/Wasteland)
-        if (def.hostile && mob.type !== "creeper" && mob.type !== "husk" && mob.type !== "enderman" && mob.type !== "spider" && mob.type !== "pigman" && mob.type !== "ghast" && mob.type !== "grunture" && mob.type !== "possum_protector" && mob.type !== "possum_god" && dayBrightness > 0.6 && !state.inNether && !state.inWasteland) {
+        if (def.hostile && mob.type !== "creeper" && mob.type !== "husk" && mob.type !== "enderman" && mob.type !== "spider" && mob.type !== "pigman" && mob.type !== "ghast" && mob.type !== "grunture" && mob.type !== "possum_protector" && mob.type !== "possum_god" && mob.type !== "orium" && dayBrightness > 0.6 && !state.inNether && !state.inWasteland) {
             if (isInSunlight(mob, def)) {
                 mob.burnTimer += dt;
                 if (mob.burnTimer >= 500) {
@@ -980,6 +980,36 @@ export function updateMobs(dt, dayBrightness) {
             }
         }
 
+        else if (mob.type === "orium") {
+            // Orium, the Dwarf King — melee boss, charges and slams
+            if (dist < def.detectRange * BLOCK_SIZE) {
+                mob.velX = dirToPlayer * def.speed;
+                mob.facing = dirToPlayer;
+
+                // Ground slam particles
+                mob.slamTimer = (mob.slamTimer || 0) - dt;
+                if (mob.slamTimer <= 0 && mob.onGround) {
+                    mob.slamTimer = 1500;
+                    createParticles(mob.x + def.width / 2, mob.y + def.height, 12, "#d4af37", 5);
+                    createParticles(mob.x + def.width / 2, mob.y + def.height, 8, "#50c878", 4);
+                    // Slam deals damage in a wider area
+                    if (dist < def.attackRange * 1.5) {
+                        hurtPlayer(def.damage, mob.x + def.width / 2);
+                        mob.attackCooldown = 800;
+                    }
+                }
+
+                // Normal melee attack
+                if (dist <= def.attackRange && mob.attackCooldown <= 0) {
+                    hurtPlayer(def.damage, mob.x + def.width / 2);
+                    mob.attackCooldown = 800;
+                    createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 8, "#ffd700", 4);
+                }
+            } else {
+                mob.velX *= 0.8;
+            }
+        }
+
         else if (mob.type === "raider") {
             mob.shootCooldown -= dt;
             // Reload timer
@@ -1172,8 +1202,8 @@ export function updateMobs(dt, dayBrightness) {
         if (mob.x > (WORLD_WIDTH - 1) * BLOCK_SIZE) mob.x = (WORLD_WIDTH - 1) * BLOCK_SIZE;
         if (mob.y > WORLD_HEIGHT * BLOCK_SIZE) { state.mobs.splice(i, 1); continue; }
 
-        // Contact damage for zombie/husk/spider
-        if ((mob.type === "zombie" || mob.type === "husk" || mob.type === "spider") && mob.attackCooldown <= 0) {
+        // Contact damage for zombie/husk/spider/orium
+        if ((mob.type === "zombie" || mob.type === "husk" || mob.type === "spider" || mob.type === "orium") && mob.attackCooldown <= 0) {
             const px = state.player.x, py = state.player.y;
             if (mob.x < px + state.player.width && mob.x + def.width > px &&
                 mob.y < py + state.player.height && mob.y + def.height > py) {

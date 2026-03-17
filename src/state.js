@@ -98,6 +98,8 @@ export const state = {
     voidReturnX: 0,
     voidReturnY: 0,
     voidReturnDim: 'overworld',
+    // Dungeon
+    dungeonLocation: null,
 
     // Player
     player: {

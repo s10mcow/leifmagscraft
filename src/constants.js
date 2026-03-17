@@ -36,6 +36,8 @@ export const BLOCKS = {
   VOID_WOOD: 63,
   VOID_LEAVES: 64,
   VOID_STONE: 65,
+  // Orium dungeon
+  ORIUM_SHRINE: 66,
 };
 
 // --- ITEM IDs (100+) ---
@@ -101,10 +103,10 @@ export const ITEMS = {
 
 // --- WORLD SETTINGS ---
 export const BLOCK_SIZE = 32;
-export const WORLD_WIDTH = 1600;
-export const WORLD_HEIGHT = 100;
-export const SURFACE_LEVEL = 35;
-export const SEA_LEVEL = 42;
+export const WORLD_WIDTH = 3200;
+export const WORLD_HEIGHT = 200;
+export const SURFACE_LEVEL = 70;
+export const SEA_LEVEL = 84;
 export const GRAVITY = 0.45;
 export const MAX_FALL_SPEED = 12;
 export const PLAYER_REACH = 5.5;
@@ -256,6 +258,8 @@ export const BLOCK_INFO = {
   [BLOCKS.VOID_WOOD]:    { name: "Void Wood",    color: "#3a3a4a", breakable: true,  mineTime: 500, toolType: "axe", minTier: 0, drops: BLOCKS.VOID_WOOD },
   [BLOCKS.VOID_LEAVES]:  { name: "Void Leaves",  color: "#4a4a5a", breakable: true,  mineTime: 100, toolType: null,  minTier: 0, drops: null },
   [BLOCKS.VOID_STONE]:   { name: "Void Stone",   color: "#888", breakable: true,  mineTime: 3000, toolType: "pickaxe", minTier: 6, drops: BLOCKS.VOID_STONE },
+  // Orium dungeon
+  [BLOCKS.ORIUM_SHRINE]: { name: "Orium Shrine", color: "#d4af37", breakable: false, mineTime: 0, toolType: null, minTier: 99, drops: null },
 };
 
 // --- ITEM PROPERTIES ---
@@ -401,6 +405,7 @@ export const MOB_DEFS = {
   possum:    { name: "Possum",         width: 26, height: 16, maxHealth: 8,   speed: 1.0, damage: 0, hostile: false, knockback: 2, drops: [{ id: ITEMS.FLOWER, min: 1, max: 2 }] },
   possum_protector: { name: "Possum Protector", width: 56, height: 66, maxHealth: 1280, speed: 2.5, damage: 12, hostile: true, detectRange: 9999, attackRange: 64, squeezeRange: 80, knockback: 8, drops: [{ id: ITEMS.FLOWER, min: 5, max: 10 }, { id: BLOCKS.DIAMOND, min: 1, max: 3, chance: 0.5 }, { id: ITEMS.POSSUM_TOOTH, min: 1, max: 1 }, { id: ITEMS.POSSUM_TAIL, min: 1, max: 1 }] },
   possum_god: { name: "The Possum God", width: 80, height: 90, maxHealth: 64000, speed: 7.5, damage: 10, hostile: true, detectRange: 9999, attackRange: 80, knockback: 14, drops: [{ id: BLOCKS.DIAMOND, min: 10, max: 20 }, { id: ITEMS.POSSUM_TOOTH, min: 3, max: 5 }] },
+  orium: { name: "Orium, the Dwarf King", width: 56, height: 68, maxHealth: 800, speed: 2.0, damage: 4, hostile: true, detectRange: 9999, attackRange: 64, knockback: 10, drops: [{ id: BLOCKS.GOLD, min: 8, max: 16 }, { id: BLOCKS.EMERALD, min: 4, max: 8 }, { id: BLOCKS.DIAMOND, min: 3, max: 6 }] },
 };
 
 // --- CRAFTING RECIPES ---
