@@ -6,10 +6,10 @@ import { state } from '../state.js';
 import { BLOCKS, WORLD_WIDTH, WORLD_HEIGHT, SURFACE_LEVEL } from '../constants.js';
 
 export function generateDungeon(seed) {
-    // Place dungeon deep underground — between 75% and 90% of world height
-    const dungeonY = Math.floor(WORLD_HEIGHT * 0.78) + Math.floor(Math.random() * Math.floor(WORLD_HEIGHT * 0.08));
-    // Random X, but not too close to edges
-    const dungeonX = 200 + Math.floor(Math.random() * (WORLD_WIDTH - 400));
+    // Place dungeon deep underground, directly below spawn point
+    const dungeonY = Math.floor(WORLD_HEIGHT * 0.78);
+    const spawnX = Math.floor(WORLD_WIDTH / 2);
+    const dungeonX = spawnX - Math.floor(25 / 2); // center chamber under spawn
 
     // Main chamber: 25 wide x 15 tall
     const chamberW = 25;
