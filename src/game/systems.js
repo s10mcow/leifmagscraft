@@ -219,8 +219,10 @@ export function teleportToPossum() {
 
     switchDimension('possum');
 
-    // Spawn near middle on surface
-    const spawnX = Math.floor(WORLD_WIDTH / 2);
+    // Spawn just left of the Possum King Pyramid (pyramid to the right)
+    const pyramidX = Math.floor(WORLD_WIDTH / 2) + 40;
+    const pyramidW = 25;
+    const spawnX = pyramidX - pyramidW - 3;
     const surfY = findSurfaceY(spawnX);
     state.player.x = spawnX * BLOCK_SIZE;
     state.player.y = (surfY - 2) * BLOCK_SIZE;
