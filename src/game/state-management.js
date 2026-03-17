@@ -421,23 +421,7 @@ export function startNewWorld(worldName) {
             state.player.y = (findSurfaceY(startX) - 2) * BLOCK_SIZE;
             console.log("Player placed at x:", startX, "y:", state.player.y / BLOCK_SIZE);
 
-            // Spawn loadout
-            addToInventory(ITEMS.NUCLEAR_LASER, 1);
-            addToInventory(ITEMS.POWER_FUSE, 5);
-            state.inventory.armor.helmet    = { itemId: ITEMS.RIOT_HELMET,     count: 1, durability: ITEM_INFO[ITEMS.RIOT_HELMET].durability };
-            state.inventory.armor.chestplate = { itemId: ITEMS.RIOT_CHESTPLATE, count: 1, durability: ITEM_INFO[ITEMS.RIOT_CHESTPLATE].durability };
-            state.inventory.armor.leggings  = { itemId: ITEMS.RIOT_LEGGINGS,   count: 1, durability: ITEM_INFO[ITEMS.RIOT_LEGGINGS].durability };
-            state.inventory.armor.boots     = { itemId: ITEMS.SILVER_BOOTS,    count: 1, durability: ITEM_INFO[ITEMS.SILVER_BOOTS].durability };
-            addToInventory(ITEMS.RIOT_BOOTS, 1);
-            addToInventory(ITEMS.SNIPER_RIFLE, 1);
-            addToInventory(ITEMS.SNIPER_BULLET, 32);
-            addToInventory(ITEMS.SNIPER_AP_BULLET, 32);
-            addToInventory(ITEMS.MINIATURE_NETHER_PORTAL, 1);
-            addToInventory(ITEMS.WASTELAND_TELEPORTER, 1);
-            addToInventory(ITEMS.POSSUM_TELEPORTER, 1);
-            addToInventory(ITEMS.VOID_TELEPORTER, 1);
-            addToInventory(BLOCKS.DIAMOND, 5);
-            addToInventory(BLOCKS.VOID_STONE, 5);
+            // Empty spawn — start with nothing
 
             state.currentWorldName = worldName || ("World " + Date.now());
             state.gameState = "playing";
@@ -485,23 +469,7 @@ export function startMultiplayerWorld(worldName) {
             state.player.x = startX * BLOCK_SIZE;
             state.player.y = (findSurfaceY(startX) - 2) * BLOCK_SIZE;
 
-            // Spawn loadout
-            addToInventory(ITEMS.NUCLEAR_LASER, 1);
-            addToInventory(ITEMS.POWER_FUSE, 5);
-            state.inventory.armor.helmet    = { itemId: ITEMS.RIOT_HELMET,     count: 1, durability: ITEM_INFO[ITEMS.RIOT_HELMET].durability };
-            state.inventory.armor.chestplate = { itemId: ITEMS.RIOT_CHESTPLATE, count: 1, durability: ITEM_INFO[ITEMS.RIOT_CHESTPLATE].durability };
-            state.inventory.armor.leggings  = { itemId: ITEMS.RIOT_LEGGINGS,   count: 1, durability: ITEM_INFO[ITEMS.RIOT_LEGGINGS].durability };
-            state.inventory.armor.boots     = { itemId: ITEMS.SILVER_BOOTS,    count: 1, durability: ITEM_INFO[ITEMS.SILVER_BOOTS].durability };
-            addToInventory(ITEMS.RIOT_BOOTS, 1);
-            addToInventory(ITEMS.SNIPER_RIFLE, 1);
-            addToInventory(ITEMS.SNIPER_BULLET, 32);
-            addToInventory(ITEMS.SNIPER_AP_BULLET, 32);
-            addToInventory(ITEMS.MINIATURE_NETHER_PORTAL, 1);
-            addToInventory(ITEMS.WASTELAND_TELEPORTER, 1);
-            addToInventory(ITEMS.POSSUM_TELEPORTER, 1);
-            addToInventory(ITEMS.VOID_TELEPORTER, 1);
-            addToInventory(BLOCKS.DIAMOND, 5);
-            addToInventory(BLOCKS.VOID_STONE, 5);
+            // Empty spawn — start with nothing
 
             state.currentWorldName = worldName || ("World " + Date.now());
             state.gameState = "playing";

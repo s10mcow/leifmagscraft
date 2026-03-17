@@ -1085,6 +1085,11 @@ export function drawModeSelectScreen() {
     for (let x = 0; x < w; x += 32) state.ctx.fillRect(x, 0, 1, h);
     for (let y = 0; y < h; y += 32) state.ctx.fillRect(0, y, w, 1);
 
+    // Apply scroll offset for mobile
+    const scrollY = state.modeSelectScroll || 0;
+    state.ctx.save();
+    state.ctx.translate(0, -scrollY);
+
     state.ctx.fillStyle = "#4ade80";
     state.ctx.font = "bold 28px 'Courier New', monospace";
     state.ctx.textAlign = "center";
@@ -1164,10 +1169,10 @@ export function drawModeSelectScreen() {
     state.ctx.font = "11px 'Courier New', monospace";
     state.ctx.fillText(descMap[state.pendingDifficulty], w / 2, diffBtnY + diffBtnH + 16);
 
-    // Store difficulty button hit areas
-    state.MENU_BUTTONS.diffEasy   = { x: diffStartX, y: diffBtnY, w: diffBtnW, h: diffBtnH };
-    state.MENU_BUTTONS.diffNormal = { x: diffStartX + diffBtnW + diffGap, y: diffBtnY, w: diffBtnW, h: diffBtnH };
-    state.MENU_BUTTONS.diffHard   = { x: diffStartX + 2 * (diffBtnW + diffGap), y: diffBtnY, w: diffBtnW, h: diffBtnH };
+    // Store difficulty button hit areas (offset by scroll for hit testing)
+    state.MENU_BUTTONS.diffEasy   = { x: diffStartX, y: diffBtnY - scrollY, w: diffBtnW, h: diffBtnH };
+    state.MENU_BUTTONS.diffNormal = { x: diffStartX + diffBtnW + diffGap, y: diffBtnY - scrollY, w: diffBtnW, h: diffBtnH };
+    state.MENU_BUTTONS.diffHard   = { x: diffStartX + 2 * (diffBtnW + diffGap), y: diffBtnY - scrollY, w: diffBtnW, h: diffBtnH };
 
     // --- Keep Inventory toggle ---
     const kiY = diffBtnY + diffBtnH + 32;
@@ -1190,7 +1195,7 @@ export function drawModeSelectScreen() {
     state.ctx.fillRect(toggleX, toggleY, toggleW, toggleH);
     state.ctx.fillStyle = "#ffffff";
     state.ctx.fillRect(kiOn ? toggleX + toggleW - 16 : toggleX + 2, toggleY + 2, 14, 14);
-    state.MENU_BUTTONS.keepInv = { x: kiX, y: kiY, w: kiW, h: kiH };
+    state.MENU_BUTTONS.keepInv = { x: kiX, y: kiY - scrollY, w: kiW, h: kiH };
 
     state.ctx.fillStyle = "#6b7280";
     state.ctx.font = "10px 'Courier New', monospace";
@@ -1209,7 +1214,7 @@ export function drawModeSelectScreen() {
     state.ctx.fillStyle = "#4ade80";
     state.ctx.font = "bold 16px 'Courier New', monospace";
     state.ctx.fillText("Create World", w / 2, cwY + 30);
-    state.MENU_BUTTONS.createWorld = { x: cwX, y: cwY, w: cwW, h: cwH };
+    state.MENU_BUTTONS.createWorld = { x: cwX, y: cwY - scrollY, w: cwW, h: cwH };
 
     // --- Back ---
     const backY = cwY + cwH + 14;
@@ -1224,10 +1229,11 @@ export function drawModeSelectScreen() {
     state.ctx.fillText("\u2190 Back", w / 2, backY + 23);
 
     // Store hit areas
-    state.MENU_BUTTONS.modeSP   = { x: btnX, y: spY,   w: btnW, h: btnH };
-    state.MENU_BUTTONS.modeMP   = { x: btnX, y: mpY,   w: btnW, h: btnH };
-    state.MENU_BUTTONS.modeBack = { x: btnX, y: backY, w: btnW, h: 36   };
+    state.MENU_BUTTONS.modeSP   = { x: btnX, y: spY - scrollY,    w: btnW, h: btnH };
+    state.MENU_BUTTONS.modeMP   = { x: btnX, y: mpY - scrollY,    w: btnW, h: btnH };
+    state.MENU_BUTTONS.modeBack = { x: btnX, y: backY - scrollY,  w: btnW, h: 36   };
 
+    state.ctx.restore();
     state.ctx.lineWidth = 1;
     state.ctx.textAlign = "center";
 }
@@ -1292,6 +1298,10 @@ export function drawAccountCreateScreen() {
     const { w, h } = drawAccountBg();
     const ctx = state.ctx;
 
+    const scrollY = state.accountCreateScroll || 0;
+    ctx.save();
+    ctx.translate(0, -scrollY);
+
     ctx.textAlign = "center";
     ctx.fillStyle = "#4ade80";
     ctx.font = "bold 30px 'Courier New', monospace";
@@ -1309,8 +1319,8 @@ export function drawAccountCreateScreen() {
     drawAccountInput(ctx, "PASSWORD  (min 6 chars)", state.accountPassword, true,
         state.accountActiveField === 'password', fieldX, pwY, fieldW, fieldH);
 
-    state.MENU_BUTTONS.accountUsernameField = { x: fieldX, y: unY, w: fieldW, h: fieldH };
-    state.MENU_BUTTONS.accountPasswordField = { x: fieldX, y: pwY, w: fieldW, h: fieldH };
+    state.MENU_BUTTONS.accountUsernameField = { x: fieldX, y: unY - scrollY, w: fieldW, h: fieldH };
+    state.MENU_BUTTONS.accountPasswordField = { x: fieldX, y: pwY - scrollY, w: fieldW, h: fieldH };
 
     // Error
     if (state.accountError) {
@@ -1339,7 +1349,7 @@ export function drawAccountCreateScreen() {
         ctx.fillStyle = ready ? "#4ade80" : "#6b7280";
         ctx.font = "bold 16px 'Courier New', monospace";
         ctx.fillText("Create Account", w / 2, btnY + 30);
-        state.MENU_BUTTONS.accountCreate = { x: btnX, y: btnY, w: btnW, h: btnH };
+        state.MENU_BUTTONS.accountCreate = { x: btnX, y: btnY - scrollY, w: btnW, h: btnH };
     }
 
     ctx.fillStyle = "#374151";
@@ -1353,7 +1363,8 @@ export function drawAccountCreateScreen() {
     ctx.font = "13px 'Courier New', monospace";
     ctx.fillText("Already have an account? Sign In", w / 2, signInY);
     const siLinkW = 260, siLinkH = 22;
-    state.MENU_BUTTONS.accountSignIn = { x: w / 2 - siLinkW / 2, y: signInY - 16, w: siLinkW, h: siLinkH };
+    state.MENU_BUTTONS.accountSignIn = { x: w / 2 - siLinkW / 2, y: signInY - 16 - scrollY, w: siLinkW, h: siLinkH };
+    ctx.restore();
     ctx.lineWidth = 1;
 }
 
@@ -1363,6 +1374,10 @@ export function drawAccountLoginScreen() {
     const ctx = state.ctx;
     const hasSession = !!state.supabaseSession;
     const btnW = 280, btnH = 50, btnX = w / 2 - 140;
+
+    const scrollY = state.accountLoginScroll || 0;
+    ctx.save();
+    ctx.translate(0, -scrollY);
 
     ctx.textAlign = "center";
 
@@ -1388,7 +1403,7 @@ export function drawAccountLoginScreen() {
         ctx.fillStyle = "#4ade80";
         ctx.font = "bold 16px 'Courier New', monospace";
         ctx.fillText(`Continue as ${state.playerAccount}`, w / 2, contY + 32);
-        state.MENU_BUTTONS.accountLogin = { x: btnX, y: contY, w: btnW, h: btnH };
+        state.MENU_BUTTONS.accountLogin = { x: btnX, y: contY - scrollY, w: btnW, h: btnH };
 
         const chY = contY + btnH + 14;
         const hChange = state.menuHover === "accountChange";
@@ -1400,7 +1415,7 @@ export function drawAccountLoginScreen() {
         ctx.fillStyle = "#9ca3af";
         ctx.font = "13px 'Courier New', monospace";
         ctx.fillText("Change Account", w / 2, chY + 25);
-        state.MENU_BUTTONS.accountChange = { x: btnX, y: chY, w: btnW, h: 40 };
+        state.MENU_BUTTONS.accountChange = { x: btnX, y: chY - scrollY, w: btnW, h: 40 };
     } else {
         // No active session — sign in with username + password
         ctx.fillStyle = "#4ade80";
@@ -1419,8 +1434,8 @@ export function drawAccountLoginScreen() {
         drawAccountInput(ctx, "PASSWORD", state.accountPassword, true,
             state.accountActiveField === 'password', fieldX, pwY, fieldW, fieldH);
 
-        state.MENU_BUTTONS.accountUsernameField = { x: fieldX, y: unY, w: fieldW, h: fieldH };
-        state.MENU_BUTTONS.accountPasswordField = { x: fieldX, y: pwY, w: fieldW, h: fieldH };
+        state.MENU_BUTTONS.accountUsernameField = { x: fieldX, y: unY - scrollY, w: fieldW, h: fieldH };
+        state.MENU_BUTTONS.accountPasswordField = { x: fieldX, y: pwY - scrollY, w: fieldW, h: fieldH };
 
         if (state.accountError) {
             ctx.fillStyle = "#f87171";
@@ -1443,7 +1458,7 @@ export function drawAccountLoginScreen() {
             ctx.fillStyle = "#4ade80";
             ctx.font = "bold 16px 'Courier New', monospace";
             ctx.fillText("Sign In", w / 2, loginY + 32);
-            state.MENU_BUTTONS.accountLogin = { x: btnX, y: loginY, w: btnW, h: btnH };
+            state.MENU_BUTTONS.accountLogin = { x: btnX, y: loginY - scrollY, w: btnW, h: btnH };
         }
 
         const chY = loginY + (state.accountLoading ? 60 : btnH + 14);
@@ -1456,13 +1471,14 @@ export function drawAccountLoginScreen() {
         ctx.fillStyle = "#9ca3af";
         ctx.font = "13px 'Courier New', monospace";
         ctx.fillText("Create Account", w / 2, chY + 25);
-        state.MENU_BUTTONS.accountChange = { x: btnX, y: chY, w: btnW, h: 40 };
+        state.MENU_BUTTONS.accountChange = { x: btnX, y: chY - scrollY, w: btnW, h: 40 };
 
         ctx.fillStyle = "#374151";
         ctx.font = "12px 'Courier New', monospace";
         ctx.fillText("Tab to switch fields  •  Enter to sign in", w / 2, chY + 56);
     }
 
+    ctx.restore();
     ctx.lineWidth = 1;
 }
 

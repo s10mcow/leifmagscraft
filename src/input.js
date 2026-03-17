@@ -636,6 +636,16 @@ export function setupInput() {
             const rowH = 60;
             const maxScroll = Math.max(0, state.menuSaveList.length * rowH - (state.canvas.height - 420));
             state.menuScrollOffset = Math.max(0, Math.min(state.menuScrollOffset + dy, maxScroll));
+        } else if (state.gameState === "modeSelect") {
+            // Mode select / create world screen — total content ~500px, allow scroll on small screens
+            const maxScroll = Math.max(0, 600 - state.canvas.height);
+            state.modeSelectScroll = Math.max(0, Math.min(state.modeSelectScroll + dy, maxScroll));
+        } else if (state.gameState === "accountCreate") {
+            const maxScroll = Math.max(0, 550 - state.canvas.height);
+            state.accountCreateScroll = Math.max(0, Math.min(state.accountCreateScroll + dy, maxScroll));
+        } else if (state.gameState === "accountLogin") {
+            const maxScroll = Math.max(0, 550 - state.canvas.height);
+            state.accountLoginScroll = Math.max(0, Math.min(state.accountLoginScroll + dy, maxScroll));
         } else if (state.gameState === "playing" && state.craftingOpen) {
             state.craftingScroll += dy;
             const recipeAreaH = UI.CRAFTING_PANEL_H - UI.RECIPE_START_Y - UI.INV_BOTTOM_MARGIN;
@@ -675,6 +685,7 @@ export function setupInput() {
                 state.accountActiveField = 'username';
                 state.accountError = null;
                 state.gameState = 'accountLogin';
+                state.accountLoginScroll = 0;
             }
             return;
         }
@@ -711,6 +722,7 @@ export function setupInput() {
                 state.accountPassword = "";
                 state.accountActiveField = 'username';
                 state.gameState = "accountCreate";
+                state.accountCreateScroll = 0;
                 document.title = "Make an Account";
                 return;
             }
@@ -723,6 +735,7 @@ export function setupInput() {
             if (nb && state.mouse.x >= nb.x && state.mouse.x <= nb.x + nb.w && state.mouse.y >= nb.y && state.mouse.y <= nb.y + nb.h) {
                 state.pendingWorldName = "World " + (state.menuSaveList.length + 1);
                 state.gameState = "modeSelect";
+                state.modeSelectScroll = 0;
                 state.menuHover = null;
                 return;
             }
@@ -1112,9 +1125,12 @@ export function setupInput() {
             }, 450);
         }
 
-        // In scrollable contexts (main menu, crafting), defer tap to touchend
+        // In scrollable contexts, defer tap to touchend
         // so the user can swipe to scroll without accidentally triggering buttons.
         const isScrollable = state.gameState === "menu" ||
+            state.gameState === "modeSelect" ||
+            state.gameState === "accountCreate" ||
+            state.gameState === "accountLogin" ||
             (state.gameState === "playing" && state.craftingOpen);
         if (!isScrollable) handleLeftClick(true);
     }, { passive: false });
@@ -1145,7 +1161,9 @@ export function setupInput() {
             const dx = cx - swipeStartX;
             const totalDy = Math.abs(swipeLastY - swipeStartY);
             // Scrollable contexts: fire click only if it was a tap (barely moved)
-            if (state.gameState === "menu" || (state.gameState === "playing" && state.craftingOpen)) {
+            if (state.gameState === "menu" || state.gameState === "modeSelect" ||
+                state.gameState === "accountCreate" || state.gameState === "accountLogin" ||
+                (state.gameState === "playing" && state.craftingOpen)) {
                 if (Math.abs(dx) < 18 && totalDy < 18) handleLeftClick(true);
             }
             // Hotbar switching is mouse-wheel only (no mobile swipe)
