@@ -124,6 +124,7 @@ export const state = {
         candyBuffType: null,  // "speed" | "jump" | "strength" | "regen"
         regenHealTimer: 0,
         sugarCrashTimer: 0,
+        squishTimer: 0, // Blocky smash — player is flattened
     },
     camera: { x: 0, y: 0 },
     screenShake: { x: 0, y: 0, intensity: 0 },

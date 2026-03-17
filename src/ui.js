@@ -873,7 +873,7 @@ export function drawDeathScreen() {
 // --- HUD ---
 export function drawHUD() {
     // Boss health bar at top of screen
-    const boss = state.mobs.find(m => m.type === "orium" || m.type === "gasly" || m.type === "possum_king");
+    const boss = state.mobs.find(m => m.type === "orium" || m.type === "gasly" || m.type === "possum_king" || m.type === "void_god");
     if (boss) {
         const def = MOB_DEFS[boss.type];
         const barW = 400, barH = 16;
@@ -908,6 +908,7 @@ export function drawHUD() {
                 if (b === BLOCKS.ORIUM_SHRINE) tip += " (F to sacrifice 5 diamonds)";
                 if (b === BLOCKS.GASLY_SHRINE) tip += " (F to challenge the Prince)";
                 if (b === BLOCKS.POSSUM_KING_SHRINE) tip += " (F to sacrifice Possum Core)";
+                if (b === BLOCKS.VOID_GOD_SHRINE) tip += " (F to sacrifice 5 Void Stone)";
                 if (info.minTier > 0 && info.minTier < 99 && b !== BLOCKS.OBSIDIAN) {
                     tip += ` (needs ${["Hand","Wood","Stone","Iron","Diamond","Silver","Netherite","","Rock Candy"][info.minTier] || "Special"} pickaxe)`;
                 }

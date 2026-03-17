@@ -252,7 +252,7 @@ export function updateMobs(dt, dayBrightness) {
         }
 
         // Sunlight burning (zombies/skeletons, not creepers/husks/endermen/pigmen/ghasts/gruntures, not in Nether/Wasteland)
-        if (def.hostile && mob.type !== "creeper" && mob.type !== "husk" && mob.type !== "enderman" && mob.type !== "spider" && mob.type !== "pigman" && mob.type !== "ghast" && mob.type !== "grunture" && mob.type !== "possum_protector" && mob.type !== "possum_god" && mob.type !== "possum_king" && mob.type !== "orium" && mob.type !== "gasly" && dayBrightness > 0.6 && !state.inNether && !state.inWasteland) {
+        if (def.hostile && mob.type !== "creeper" && mob.type !== "husk" && mob.type !== "enderman" && mob.type !== "spider" && mob.type !== "pigman" && mob.type !== "ghast" && mob.type !== "grunture" && mob.type !== "possum_protector" && mob.type !== "possum_god" && mob.type !== "possum_king" && mob.type !== "orium" && mob.type !== "gasly" && mob.type !== "void_god" && dayBrightness > 0.6 && !state.inNether && !state.inWasteland) {
             if (isInSunlight(mob, def)) {
                 mob.burnTimer += dt;
                 if (mob.burnTimer >= 500) {
@@ -1224,6 +1224,149 @@ export function updateMobs(dt, dayBrightness) {
                     hurtPlayer(def.damage, mob.x + def.width / 2);
                     mob.attackCooldown = 600;
                     createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 8, "#ffaacc", 4);
+                }
+            } else {
+                mob.velX *= 0.8;
+            }
+        }
+
+        else if (mob.type === "void_god") {
+            // Blocky, the Void God — stone throw, smash, laser blast
+            if (mob.throwCooldown === undefined) mob.throwCooldown = 0;
+            if (mob.smashCooldownVG === undefined) mob.smashCooldownVG = 3000;
+            if (mob.laserCooldown === undefined) mob.laserCooldown = 8000;
+            if (mob.smashingVG === undefined) mob.smashingVG = false;
+            mob.throwCooldown -= dt;
+            mob.smashCooldownVG -= dt;
+            mob.laserCooldown -= dt;
+
+            if (dist < def.detectRange * BLOCK_SIZE) {
+                if (!mob.smashingVG) {
+                    mob.velX = dirToPlayer * def.speed;
+                    mob.facing = dirToPlayer;
+                }
+
+                // STONE THROW — pelts player with rainbow void stones
+                if (mob.throwCooldown <= 0 && dist < def.throwRange && dist > def.attackRange && !mob.smashingVG) {
+                    mob.throwCooldown = 1200;
+                    // Launch 5 void stone projectiles
+                    const colors = ["#ff4444", "#44ff44", "#4444ff", "#ffff44", "#ff44ff"];
+                    for (let si = 0; si < 5; si++) {
+                        const angle = Math.atan2(
+                            (state.player.y + state.player.height / 2) - (mob.y + def.height / 2),
+                            (state.player.x + state.player.width / 2) - (mob.x + def.width / 2)
+                        ) + (si - 2) * 0.15;
+                        const speed = 6 + Math.random() * 2;
+                        state.projectiles.push({
+                            x: mob.x + def.width / 2,
+                            y: mob.y + def.height / 3,
+                            velX: Math.cos(angle) * speed,
+                            velY: Math.sin(angle) * speed,
+                            damage: 8,
+                            life: 120,
+                            isFireball: true,
+                            fromMob: true,
+                            color: colors[si],
+                        });
+                    }
+                    addFloatingText(mob.x + def.width / 2, mob.y - 20, "STONE THROW!", "#aabbff");
+                }
+
+                // SMASH — jump up and slam down, flatten player
+                if (mob.smashCooldownVG <= 0 && dist < 200 && !mob.smashingVG) {
+                    mob.smashingVG = true;
+                    mob.smashPhase = "jump";
+                    mob.smashTimer = 0;
+                    mob.smashTargetX = state.player.x;
+                    mob.smashCooldownVG = 6000;
+                    addFloatingText(mob.x + def.width / 2, mob.y - 20, "SMASH!", "#ff2222");
+                }
+
+                if (mob.smashingVG) {
+                    mob.smashTimer += dt;
+                    mob.velX = 0;
+                    if (mob.smashPhase === "jump") {
+                        mob.velY = -8;
+                        if (mob.smashTimer > 500) {
+                            mob.smashPhase = "hover";
+                            mob.smashTimer = 0;
+                            mob.x = mob.smashTargetX - def.width / 2 + state.player.width / 2;
+                        }
+                    } else if (mob.smashPhase === "hover") {
+                        mob.velY = 0;
+                        if (mob.smashTimer > 300) {
+                            mob.smashPhase = "slam";
+                            mob.smashTimer = 0;
+                        }
+                    } else if (mob.smashPhase === "slam") {
+                        mob.velY = 14;
+                        // Check if we hit the ground
+                        if (mob.onGround) {
+                            mob.smashingVG = false;
+                            // Check if player is close enough to get squished
+                            const smashDist = Math.abs((mob.x + def.width / 2) - (state.player.x + state.player.width / 2));
+                            if (smashDist < 50) {
+                                const smashDmg = Math.max(4, Math.floor(state.player.maxHealth * 0.5));
+                                hurtPlayer(smashDmg, mob.x + def.width / 2);
+                                state.player.squishTimer = 2500; // flatten for 2.5 seconds
+                                addFloatingText(state.player.x, state.player.y - 20, `SQUISHED! -${smashDmg}`, "#ff2222");
+                            }
+                            createParticles(mob.x + def.width / 2, mob.y + def.height, 20, "#6644aa", 6);
+                            // Screen shake
+                            state.screenShake.intensity = 12;
+                        }
+                    }
+                }
+
+                // LASER BLAST — rare, powerful beam
+                if (mob.laserCooldown <= 0 && dist < 350 && !mob.smashingVG && Math.random() < 0.15) {
+                    mob.laserCooldown = 10000;
+                    mob.laserFiring = true;
+                    mob.laserTimer = 0;
+                    mob.laserAngle = Math.atan2(
+                        (state.player.y + state.player.height / 2) - (mob.y + def.height / 3),
+                        (state.player.x + state.player.width / 2) - (mob.x + def.width / 2)
+                    );
+                    addFloatingText(mob.x + def.width / 2, mob.y - 20, "LASER BLAST!", "#ff00ff");
+                }
+
+                if (mob.laserFiring) {
+                    mob.laserTimer += dt;
+                    mob.velX = 0;
+                    if (mob.laserTimer > 600) {
+                        // Fire the laser
+                        const lx = mob.x + def.width / 2;
+                        const ly = mob.y + def.height / 3;
+                        const range = 500;
+                        const endX = lx + Math.cos(mob.laserAngle) * range;
+                        const endY = ly + Math.sin(mob.laserAngle) * range;
+                        // Check if player is in the beam path
+                        const pcx = state.player.x + state.player.width / 2;
+                        const pcy = state.player.y + state.player.height / 2;
+                        const dx2 = endX - lx, dy2 = endY - ly;
+                        const len = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+                        const nx = dx2 / len, ny = dy2 / len;
+                        const t2 = (pcx - lx) * nx + (pcy - ly) * ny;
+                        if (t2 > 0 && t2 < range) {
+                            const closestX = lx + nx * t2, closestY = ly + ny * t2;
+                            const distToBeam = Math.sqrt((pcx - closestX) ** 2 + (pcy - closestY) ** 2);
+                            if (distToBeam < 30) {
+                                const laserDmg = 25;
+                                hurtPlayer(laserDmg, mob.x + def.width / 2);
+                                addFloatingText(state.player.x, state.player.y - 20, `-${laserDmg}`, "#ff00ff");
+                            }
+                        }
+                        state.laserBeam = { x1: lx, y1: ly, x2: endX, y2: endY, timer: 200 };
+                        createParticles(endX, endY, 10, "#ff00ff", 5);
+                        mob.laserFiring = false;
+                    }
+                }
+
+                // Basic melee when close
+                if (!mob.smashingVG && !mob.laserFiring && dist <= def.attackRange && mob.attackCooldown <= 0) {
+                    hurtPlayer(def.damage, mob.x + def.width / 2);
+                    mob.attackCooldown = 800;
+                    createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 6, "#6644aa", 4);
                 }
             } else {
                 mob.velX *= 0.8;

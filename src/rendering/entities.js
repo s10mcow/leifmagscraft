@@ -27,9 +27,19 @@ export function drawPlayer() {
         state.ctx.globalAlpha = 0.4;
     }
 
+    // Squished by Blocky — super flat and tiny
+    if (state.player.squishTimer > 0) {
+        state.ctx.save();
+        const pcx = sx + state.player.width / 2;
+        state.ctx.translate(pcx, playerBottomY);
+        state.ctx.scale(1.8, 0.15);
+        state.ctx.translate(-pcx, -playerBottomY);
+    }
+
     // Full Posse armor — draw player as Possum King (player-sized)
     if (isWearingFullPosseArmor()) {
         drawPosseSkin(sx, sy);
+        if (state.player.squishTimer > 0) state.ctx.restore();
         state.ctx.globalAlpha = 1;
         return;
     }
@@ -149,6 +159,7 @@ export function drawPlayer() {
         state.ctx.fillRect(sx + 2, sy - 10, state.player.width - 4, 8);
     }
 
+    if (state.player.squishTimer > 0) state.ctx.restore();
     state.ctx.globalAlpha = 1;
 }
 
@@ -1824,6 +1835,88 @@ function drawMob(mob) {
         state.ctx.fillRect(sx - 2, sy - 10, def.width + 4, 5);
         state.ctx.fillStyle = hpFrac > 0.5 ? "#22cc44" : hpFrac > 0.25 ? "#ffaa00" : "#ee2222";
         state.ctx.fillRect(sx - 1, sy - 9, (def.width + 2) * hpFrac, 3);
+    }
+
+    else if (mob.type === "void_god") {
+        // BLOCKY, THE VOID GOD — big dark purple blocky figure with rainbow accents
+        const f = mob.facing;
+        const t = performance.now() * 0.002;
+
+        // Legs (thick blocky)
+        state.ctx.fillStyle = isHurt ? "#9988cc" : "#3a3a5a";
+        state.ctx.fillRect(sx + 10, sy + 58, 16, 22);
+        state.ctx.fillRect(sx + 38, sy + 58, 16, 22);
+        // Feet
+        state.ctx.fillStyle = isHurt ? "#aaaadd" : "#2a2a4a";
+        state.ctx.fillRect(sx + 8, sy + 76, 20, 4);
+        state.ctx.fillRect(sx + 36, sy + 76, 20, 4);
+
+        // Body (big blocky torso)
+        state.ctx.fillStyle = isHurt ? "#8877bb" : "#2a2a3a";
+        state.ctx.fillRect(sx + 4, sy + 20, 56, 40);
+        // Rainbow void energy core
+        const coreHue = (t * 60) % 360;
+        state.ctx.fillStyle = `hsl(${coreHue}, 80%, 50%)`;
+        state.ctx.fillRect(sx + 20, sy + 32, 24, 20);
+        state.ctx.fillStyle = `hsl(${(coreHue + 120) % 360}, 80%, 60%)`;
+        state.ctx.fillRect(sx + 24, sy + 36, 16, 12);
+
+        // Arms (blocky, thick)
+        state.ctx.fillStyle = isHurt ? "#8877bb" : "#2a2a3a";
+        state.ctx.fillRect(sx - 6, sy + 22, 14, 28);
+        state.ctx.fillRect(sx + 56, sy + 22, 14, 28);
+        // Fists with rainbow glow
+        state.ctx.fillStyle = `hsl(${(coreHue + 60) % 360}, 70%, 45%)`;
+        state.ctx.fillRect(sx - 8, sy + 46, 16, 10);
+        state.ctx.fillRect(sx + 56, sy + 46, 16, 10);
+
+        // Head (big square)
+        state.ctx.fillStyle = isHurt ? "#8877bb" : "#2a2a3a";
+        state.ctx.fillRect(sx + 8, sy, 48, 24);
+        // Glowing eyes (rainbow shift)
+        state.ctx.fillStyle = `hsl(${coreHue}, 100%, 70%)`;
+        if (f === 1) {
+            state.ctx.fillRect(sx + 28, sy + 6, 10, 8);
+            state.ctx.fillRect(sx + 42, sy + 6, 10, 8);
+        } else {
+            state.ctx.fillRect(sx + 12, sy + 6, 10, 8);
+            state.ctx.fillRect(sx + 26, sy + 6, 10, 8);
+        }
+        // Eye pupils
+        state.ctx.fillStyle = "#000000";
+        if (f === 1) {
+            state.ctx.fillRect(sx + 32, sy + 8, 4, 4);
+            state.ctx.fillRect(sx + 46, sy + 8, 4, 4);
+        } else {
+            state.ctx.fillRect(sx + 14, sy + 8, 4, 4);
+            state.ctx.fillRect(sx + 28, sy + 8, 4, 4);
+        }
+
+        // Crown/horns (void energy spikes)
+        state.ctx.fillStyle = `hsl(${(coreHue + 180) % 360}, 80%, 50%)`;
+        state.ctx.fillRect(sx + 10, sy - 10, 8, 12);
+        state.ctx.fillRect(sx + 28, sy - 14, 8, 16);
+        state.ctx.fillRect(sx + 46, sy - 10, 8, 12);
+
+        // Smash effect — glowing aura when smashing
+        if (mob.smashingVG) {
+            state.ctx.fillStyle = `rgba(100, 68, 170, ${0.3 + Math.sin(t * 8) * 0.2})`;
+            state.ctx.fillRect(sx - 12, sy - 16, def.width + 24, def.height + 20);
+        }
+
+        // Laser charge-up glow
+        if (mob.laserFiring) {
+            const chargeGlow = Math.min(1, mob.laserTimer / 600);
+            state.ctx.fillStyle = `rgba(255, 0, 255, ${chargeGlow * 0.5})`;
+            state.ctx.fillRect(sx + 20, sy + 20, 24, 24);
+        }
+
+        // Boss health bar
+        const hpFrac = mob.health / def.maxHealth;
+        state.ctx.fillStyle = "rgba(0,0,0,0.7)";
+        state.ctx.fillRect(sx - 4, sy - 22, def.width + 8, 8);
+        state.ctx.fillStyle = hpFrac > 0.5 ? "#22cc44" : hpFrac > 0.25 ? "#ffaa00" : "#ee2222";
+        state.ctx.fillRect(sx - 2, sy - 20, (def.width + 4) * hpFrac, 4);
     }
 
     else if (mob.type === "gasly") {

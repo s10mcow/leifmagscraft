@@ -552,6 +552,45 @@ export function interact() {
         }
     }
 
+    // Check if pointing at a Void God Shrine within reach
+    if (wmx_d >= 0 && wmx_d < WORLD_WIDTH && wmy_d >= 0 && wmy_d < WORLD_HEIGHT) {
+        if (state.activeWorld[wmx_d][wmy_d] === BLOCKS.VOID_GOD_SHRINE) {
+            const pcx = state.player.x + state.player.width / 2, pcy = state.player.y + state.player.height / 2;
+            const bcx = wmx_d * BLOCK_SIZE + BLOCK_SIZE / 2, bcy = wmy_d * BLOCK_SIZE + BLOCK_SIZE / 2;
+            if (Math.sqrt((pcx - bcx) ** 2 + (pcy - bcy) ** 2) < BLOCK_SIZE * 5) {
+                if (state.mobs.some(m => m.type === "void_god")) {
+                    addFloatingText(state.player.x, state.player.y - 20, "Blocky is already here!", "#6644aa");
+                    return;
+                }
+                // Check for void stone (5 required)
+                let voidCount = 0;
+                for (const s of state.inventory.slots) { if (s.itemId === BLOCKS.VOID_STONE) voidCount += s.count; }
+                if (voidCount < 5) {
+                    addFloatingText(state.player.x, state.player.y - 20, "You need 5 Void Stone!", "#ff4444");
+                    return;
+                }
+                // Consume 5 void stones
+                let toRemove = 5;
+                for (const s of state.inventory.slots) {
+                    if (s.itemId === BLOCKS.VOID_STONE && toRemove > 0) {
+                        const take = Math.min(s.count, toRemove);
+                        s.count -= take;
+                        toRemove -= take;
+                        if (s.count <= 0) { s.itemId = 0; s.durability = 0; }
+                    }
+                }
+                const spawnX = wmx_d * BLOCK_SIZE - 32;
+                const spawnY = wmy_d * BLOCK_SIZE - 90;
+                const boss = createMob("void_god", spawnX, spawnY);
+                state.mobs.push(boss);
+                addFloatingText(state.player.x, state.player.y - 40, "Blocky, the Void God appears!", "#6644aa");
+                createParticles(spawnX + 32, spawnY + 40, 30, "#6644aa", 8);
+                createParticles(spawnX + 32, spawnY + 40, 15, "#ff00ff", 6);
+                return;
+            }
+        }
+    }
+
     // Check if pointing at a chest or blast furnace within reach
     const wmx_c = Math.floor((state.mouse.x + state.camera.x) / BLOCK_SIZE);
     const wmy_c = Math.floor((state.mouse.y + state.camera.y) / BLOCK_SIZE);

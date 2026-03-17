@@ -51,6 +51,7 @@ export function updatePlayer(dt) {
         }
     }
     if (state.player.sugarCrashTimer > 0) state.player.sugarCrashTimer -= dt;
+    if (state.player.squishTimer > 0) state.player.squishTimer -= dt;
 
     // --- Temperature system ---
     {

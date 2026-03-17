@@ -703,6 +703,32 @@ export function drawBlock(blockType, screenX, screenY) {
         state.ctx.fillRect(screenX + 23, screenY + 23, 4, 4);
         return;
     }
+    if (blockType === BLOCKS.VOID_GOD_SHRINE) {
+        const t = performance.now() * 0.002;
+        // Dark void base
+        state.ctx.fillStyle = "#1a1a2a";
+        state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
+        // Rainbow shifting frame
+        const hue = (t * 50) % 360;
+        state.ctx.fillStyle = `hsl(${hue}, 80%, 50%)`;
+        state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, 3);
+        state.ctx.fillRect(screenX, screenY + BLOCK_SIZE - 3, BLOCK_SIZE, 3);
+        state.ctx.fillRect(screenX, screenY, 3, BLOCK_SIZE);
+        state.ctx.fillRect(screenX + BLOCK_SIZE - 3, screenY, 3, BLOCK_SIZE);
+        // Pulsing void core
+        const pulse = 0.5 + Math.sin(t * 3) * 0.4;
+        state.ctx.fillStyle = `rgba(100, 68, 170, ${pulse})`;
+        state.ctx.fillRect(screenX + 10, screenY + 10, 12, 12);
+        state.ctx.fillStyle = `hsl(${(hue + 120) % 360}, 80%, 60%)`;
+        state.ctx.fillRect(screenX + 12, screenY + 12, 8, 8);
+        // Corner accents (rainbow)
+        state.ctx.fillStyle = `hsl(${(hue + 60) % 360}, 70%, 50%)`;
+        state.ctx.fillRect(screenX + 5, screenY + 5, 4, 4);
+        state.ctx.fillRect(screenX + 23, screenY + 5, 4, 4);
+        state.ctx.fillRect(screenX + 5, screenY + 23, 4, 4);
+        state.ctx.fillRect(screenX + 23, screenY + 23, 4, 4);
+        return;
+    }
     if (blockType === BLOCKS.ROCK_CANDY) {
         // Rock Candy ore — purple crystalline rock
         state.ctx.fillStyle = "#8a7090";

@@ -42,6 +42,7 @@ export const BLOCKS = {
   POSSUM_KING_SHRINE: 68,
   GOLD_CANDY: 69,
   ROCK_CANDY: 70,
+  VOID_GOD_SHRINE: 71,
 };
 
 // --- ITEM IDs (100+) ---
@@ -273,6 +274,7 @@ export const BLOCK_INFO = {
   [BLOCKS.POSSUM_KING_SHRINE]: { name: "Possum King Shrine", color: "#ff88cc", breakable: false, mineTime: 0, toolType: null, minTier: 99, drops: null },
   [BLOCKS.GOLD_CANDY]: { name: "Gold Candy", color: "#ffd700", breakable: false, mineTime: 0, toolType: null, minTier: 99, drops: null },
   [BLOCKS.ROCK_CANDY]: { name: "Rock Candy", color: "#e066ff", breakable: true, mineTime: 800, toolType: "pickaxe", minTier: 8, drops: BLOCKS.ROCK_CANDY },
+  [BLOCKS.VOID_GOD_SHRINE]: { name: "Void God Shrine", color: "#6644aa", breakable: false, mineTime: 0, toolType: null, minTier: 99, drops: null },
 };
 
 // --- ITEM PROPERTIES ---
@@ -429,6 +431,7 @@ export const MOB_DEFS = {
   orium: { name: "Orium, the Dwarf King", width: 56, height: 68, maxHealth: 1600, speed: 2.0, damage: 10, hostile: true, detectRange: 9999, attackRange: 72, smashRange: 90, knockback: 12, drops: [{ id: BLOCKS.GOLD, min: 8, max: 16 }, { id: BLOCKS.EMERALD, min: 4, max: 8 }, { id: BLOCKS.DIAMOND, min: 3, max: 6 }, { id: ITEMS.ORIUM_STAFF, min: 1, max: 1 }] },
   possum_king: { name: "Posse, the Possum King", width: 60, height: 72, maxHealth: 16000, speed: 2.2, damage: 8, hostile: true, detectRange: 9999, attackRange: 68, tailRange: 300, knockback: 10, drops: [{ id: BLOCKS.DIAMOND, min: 5, max: 10 }, { id: ITEMS.POSSUM_TOOTH, min: 3, max: 5 }, { id: ITEMS.POSSUM_CORE, min: 2, max: 3 }, { id: ITEMS.ROCK_CANDY_PICKAXE, min: 1, max: 1 }, { id: ITEMS.POSSE_HELMET, min: 1, max: 1 }, { id: ITEMS.POSSE_CHESTPLATE, min: 1, max: 1 }, { id: ITEMS.POSSE_LEGGINGS, min: 1, max: 1 }, { id: ITEMS.POSSE_BOOTS, min: 1, max: 1 }] },
   possum_pet: { name: "Posse", width: 28, height: 22, maxHealth: 16000, speed: 2.5, damage: 4, hostile: false, detectRange: 10, attackRange: 34, tailRange: 150, knockback: 4, drops: [] },
+  void_god: { name: "Blocky, the Void God", width: 64, height: 80, maxHealth: 32000, speed: 2.5, damage: 12, hostile: true, detectRange: 9999, attackRange: 70, throwRange: 400, knockback: 14, drops: [{ id: BLOCKS.VOID_STONE, min: 10, max: 20 }, { id: BLOCKS.DIAMOND, min: 8, max: 15 }] },
   gasly: { name: "Gasly, the Gruncher Prince", width: 72, height: 84, maxHealth: 6000, speed: 2.8, damage: 7, fireDamage: 10, hostile: true, detectRange: 9999, attackRange: 80, shootRange: 500, shootInterval: 800, knockback: 12, drops: [{ id: BLOCKS.GLOWSTONE, min: 5, max: 10 }, { id: BLOCKS.GOLD, min: 5, max: 10 }, { id: ITEMS.GASLY_STAFF, min: 1, max: 1 }] },
 };
 

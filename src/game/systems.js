@@ -265,8 +265,9 @@ export function teleportToVoid() {
 
     switchDimension('void');
 
-    // Spawn near middle on surface
-    const spawnX = Math.floor(WORLD_WIDTH / 2);
+    // Spawn just left of the Void God Palace
+    const palaceX = Math.floor(WORLD_WIDTH / 2) + 30;
+    const spawnX = palaceX - 23;
     const surfY = findSurfaceY(spawnX);
     state.player.x = spawnX * BLOCK_SIZE;
     state.player.y = (surfY - 2) * BLOCK_SIZE;
