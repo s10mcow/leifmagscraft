@@ -197,6 +197,30 @@ export function updateMobs(dt, dayBrightness) {
                     addFloatingText(mob.x + def.width / 2, mob.y - 30, `Protector killed (${state.possumProtectorKills}/3)`, "#ff88cc");
                 }
             }
+            // Possum King killed — shrinks into pet Posse
+            if (mob.type === "possum_king") {
+                createParticles(mob.x + def.width / 2, mob.y + def.height / 2, 25, "#ff88cc", 8);
+                addFloatingText(mob.x + def.width / 2, mob.y - 20, "Posse shrinks and joins you!", "#ff88cc");
+                // Drop items before transforming
+                for (const drop of def.drops) {
+                    if (drop.chance !== undefined && Math.random() > drop.chance) continue;
+                    const count = drop.min + Math.floor(Math.random() * (drop.max - drop.min + 1));
+                    if (count > 0) {
+                        addToInventory(drop.id, count);
+                        addFloatingText(mob.x + def.width / 2, mob.y - 10, `+${count} ${getItemName(drop.id)}`, "#4ade80");
+                    }
+                }
+                // Transform into pet
+                mob.type = "possum_pet";
+                mob.health = MOB_DEFS.possum_pet.maxHealth;
+                mob.dead = false;
+                mob.tamed = true;
+                mob.sitting = false;
+                mob.tailGrabbing = false;
+                mob.tailGrabCooldown = 5000;
+                mob.biteCooldown = 0;
+                continue;
+            }
             // Companion killed — rises as The Glitched
             if (mob.type === "companion") {
                 createParticles(mob.x + def.width / 2, mob.y + def.height / 2, 20, "#220033", 5);
@@ -824,6 +848,81 @@ export function updateMobs(dt, dayBrightness) {
                     }
                     mob.velX = mob.wanderDir * def.speed * 0.5;
                     if (mob.wanderDir !== 0) mob.facing = mob.wanderDir;
+                }
+            }
+        }
+
+        else if (mob.type === "possum_pet") {
+            // Mini Posse — follows player, attacks hostile mobs with half-damage versions of king's attacks
+            if (mob.tailGrabCooldown === undefined) mob.tailGrabCooldown = 5000;
+            if (mob.biteCooldown === undefined) mob.biteCooldown = 0;
+            mob.tailGrabCooldown -= dt;
+            mob.biteCooldown -= dt;
+
+            // Follow player
+            if (dist > 3 * BLOCK_SIZE) {
+                mob.velX = dirToPlayer * def.speed * (dist > 8 * BLOCK_SIZE ? 2.0 : 1.0);
+                mob.facing = dirToPlayer;
+            } else {
+                mob.velX *= 0.5;
+            }
+
+            // Find nearest hostile mob to attack
+            let petTarget = null, petTargetDist = Infinity;
+            for (const m of state.mobs) {
+                if (m === mob) continue;
+                if (!MOB_DEFS[m.type].hostile) continue;
+                const mdx = (m.x + MOB_DEFS[m.type].width / 2) - (mob.x + def.width / 2);
+                const mdy = (m.y + MOB_DEFS[m.type].height / 2) - (mob.y + def.height / 2);
+                const md = Math.sqrt(mdx * mdx + mdy * mdy);
+                if (md < 10 * BLOCK_SIZE && md < petTargetDist) { petTarget = m; petTargetDist = md; }
+            }
+
+            if (petTarget) {
+                const tdef = MOB_DEFS[petTarget.type];
+                const tDir = petTarget.x > mob.x ? 1 : -1;
+                mob.velX = tDir * def.speed * 1.5;
+                mob.facing = tDir;
+
+                // TAIL GRAB (rare, long range)
+                if (mob.tailGrabCooldown <= 0 && petTargetDist < def.tailRange && petTargetDist > def.attackRange && !mob.tailGrabbing && Math.random() < 0.08) {
+                    mob.tailGrabbing = true;
+                    mob.tailGrabTimer = 0;
+                    mob.tailGrabPhase = "shoot";
+                    mob.tailGrabCooldown = 8000;
+                    mob.tailTargetMob = petTarget;
+                }
+
+                if (mob.tailGrabbing) {
+                    mob.tailGrabTimer += dt;
+                    mob.velX = 0;
+                    if (mob.tailGrabPhase === "shoot" && mob.tailGrabTimer > 300) {
+                        mob.tailGrabPhase = "pull";
+                        mob.tailGrabTimer = 0;
+                    } else if (mob.tailGrabPhase === "pull" && mob.tailTargetMob) {
+                        const pullDir = mob.x > mob.tailTargetMob.x ? 1 : -1;
+                        mob.tailTargetMob.x += pullDir * 5;
+                        if (mob.tailGrabTimer > 400) mob.tailGrabbing = false;
+                    }
+                }
+
+                // BITE (medium, close range)
+                if (!mob.tailGrabbing && petTargetDist <= def.attackRange && mob.biteCooldown <= 0 && Math.random() < 0.3) {
+                    const biteDmg = Math.floor(def.damage * 3);
+                    petTarget.health -= biteDmg;
+                    petTarget.hurtTimer = 300;
+                    mob.biteCooldown = 2500;
+                    mob.attackCooldown = 1000;
+                    addFloatingText(petTarget.x + tdef.width / 2, petTarget.y - 10, `-${biteDmg}`, "#ff2266");
+                    createParticles(petTarget.x + tdef.width / 2, petTarget.y + tdef.height / 2, 8, "#ff4488", 4);
+                }
+                // SLASH (common, close range)
+                else if (!mob.tailGrabbing && petTargetDist <= def.attackRange && mob.attackCooldown <= 0) {
+                    petTarget.health -= def.damage;
+                    petTarget.hurtTimer = 300;
+                    mob.attackCooldown = 600;
+                    addFloatingText(petTarget.x + tdef.width / 2, petTarget.y - 10, `-${def.damage}`, "#ff8800");
+                    createParticles(petTarget.x + tdef.width / 2, petTarget.y + tdef.height / 2, 6, "#ffaacc", 3);
                 }
             }
         }

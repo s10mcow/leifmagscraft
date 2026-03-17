@@ -41,6 +41,7 @@ export const BLOCKS = {
   GASLY_SHRINE: 67,
   POSSUM_KING_SHRINE: 68,
   GOLD_CANDY: 69,
+  ROCK_CANDY: 70,
 };
 
 // --- ITEM IDs (100+) ---
@@ -105,6 +106,7 @@ export const ITEMS = {
   ORIUM_STAFF: 206,
   GASLY_STAFF: 207,
   POSSUM_CORE: 208,
+  ROCK_CANDY_PICKAXE: 209,
 };
 
 // --- WORLD SETTINGS ---
@@ -269,6 +271,7 @@ export const BLOCK_INFO = {
   [BLOCKS.GASLY_SHRINE]: { name: "Gasly Shrine", color: "#ff4400", breakable: false, mineTime: 0, toolType: null, minTier: 99, drops: null },
   [BLOCKS.POSSUM_KING_SHRINE]: { name: "Possum King Shrine", color: "#ff88cc", breakable: false, mineTime: 0, toolType: null, minTier: 99, drops: null },
   [BLOCKS.GOLD_CANDY]: { name: "Gold Candy", color: "#ffd700", breakable: false, mineTime: 0, toolType: null, minTier: 99, drops: null },
+  [BLOCKS.ROCK_CANDY]: { name: "Rock Candy", color: "#e066ff", breakable: true, mineTime: 800, toolType: "pickaxe", minTier: 8, drops: BLOCKS.ROCK_CANDY },
 };
 
 // --- ITEM PROPERTIES ---
@@ -390,6 +393,7 @@ export const ITEM_INFO = {
   [ITEMS.ORIUM_STAFF]:          { name: "Orium's Staff",        stackable: false, toolType: "sword",   tier: 7, speed: 1, durability: 1200, color: "#d4af37", damage: 15 },
   [ITEMS.GASLY_STAFF]:          { name: "Gasly's Fire Staff",   stackable: false, toolType: "sword",   tier: 7, speed: 1, durability: 1000, color: "#ff4400", damage: 12 },
   [ITEMS.POSSUM_CORE]:          { name: "Possum Core",          stackable: true, maxStack: 64, color: "#ff88cc" },
+  [ITEMS.ROCK_CANDY_PICKAXE]:   { name: "Rock Candy Pickaxe",   stackable: false, toolType: "pickaxe", tier: 8, speed: 7, durability: 1500, color: "#e066ff", damage: 8 },
 };
 
 // --- MOB DEFINITIONS ---
@@ -418,7 +422,8 @@ export const MOB_DEFS = {
   possum_protector: { name: "Possum Protector", width: 56, height: 66, maxHealth: 1280, speed: 2.5, damage: 12, hostile: true, detectRange: 9999, attackRange: 64, squeezeRange: 80, knockback: 8, drops: [{ id: ITEMS.FLOWER, min: 5, max: 10 }, { id: BLOCKS.DIAMOND, min: 1, max: 3, chance: 0.5 }, { id: ITEMS.POSSUM_TOOTH, min: 1, max: 1 }, { id: ITEMS.POSSUM_TAIL, min: 1, max: 1 }, { id: ITEMS.POSSUM_CORE, min: 1, max: 1 }] },
   possum_god: { name: "The Possum God", width: 80, height: 90, maxHealth: 64000, speed: 7.5, damage: 10, hostile: true, detectRange: 9999, attackRange: 80, knockback: 14, drops: [{ id: BLOCKS.DIAMOND, min: 10, max: 20 }, { id: ITEMS.POSSUM_TOOTH, min: 3, max: 5 }] },
   orium: { name: "Orium, the Dwarf King", width: 56, height: 68, maxHealth: 1600, speed: 2.0, damage: 10, hostile: true, detectRange: 9999, attackRange: 72, smashRange: 90, knockback: 12, drops: [{ id: BLOCKS.GOLD, min: 8, max: 16 }, { id: BLOCKS.EMERALD, min: 4, max: 8 }, { id: BLOCKS.DIAMOND, min: 3, max: 6 }, { id: ITEMS.ORIUM_STAFF, min: 1, max: 1 }] },
-  possum_king: { name: "Posse, the Possum King", width: 60, height: 72, maxHealth: 32000, speed: 2.2, damage: 8, hostile: true, detectRange: 9999, attackRange: 68, tailRange: 300, knockback: 10, drops: [{ id: BLOCKS.DIAMOND, min: 5, max: 10 }, { id: ITEMS.POSSUM_TOOTH, min: 3, max: 5 }, { id: ITEMS.POSSUM_CORE, min: 2, max: 3 }] },
+  possum_king: { name: "Posse, the Possum King", width: 60, height: 72, maxHealth: 32000, speed: 2.2, damage: 8, hostile: true, detectRange: 9999, attackRange: 68, tailRange: 300, knockback: 10, drops: [{ id: BLOCKS.DIAMOND, min: 5, max: 10 }, { id: ITEMS.POSSUM_TOOTH, min: 3, max: 5 }, { id: ITEMS.POSSUM_CORE, min: 2, max: 3 }, { id: ITEMS.ROCK_CANDY_PICKAXE, min: 1, max: 1 }] },
+  possum_pet: { name: "Posse", width: 28, height: 22, maxHealth: 200, speed: 2.5, damage: 4, hostile: false, detectRange: 10, attackRange: 34, tailRange: 150, knockback: 4, drops: [] },
   gasly: { name: "Gasly, the Gruncher Prince", width: 72, height: 84, maxHealth: 6000, speed: 2.8, damage: 7, fireDamage: 10, hostile: true, detectRange: 9999, attackRange: 80, shootRange: 500, shootInterval: 800, knockback: 12, drops: [{ id: BLOCKS.GLOWSTONE, min: 5, max: 10 }, { id: BLOCKS.GOLD, min: 5, max: 10 }, { id: ITEMS.GASLY_STAFF, min: 1, max: 1 }] },
 };
 

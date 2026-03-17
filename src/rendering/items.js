@@ -552,6 +552,23 @@ export function drawItemIcon(itemId, x, y, size) {
         // Small diamond accent at bottom
         state.ctx.fillStyle = "#4dfff3";
         state.ctx.fillRect(x + size * 0.4, y + size * 0.8, size * 0.2, size * 0.08);
+    } else if (itemId === ITEMS.ROCK_CANDY_PICKAXE) {
+        // Rock Candy Pickaxe — purple crystalline head, wooden handle
+        // Handle
+        state.ctx.fillStyle = "#8B6914";
+        state.ctx.fillRect(x + size * 0.22, y + size * 0.45, size * 0.56, size * 0.12);
+        state.ctx.fillRect(x + size * 0.44, y + size * 0.3, size * 0.12, size * 0.55);
+        // Pickaxe head
+        state.ctx.fillStyle = "#e066ff";
+        state.ctx.fillRect(x + size * 0.1, y + size * 0.12, size * 0.8, size * 0.2);
+        // Crystal highlights
+        state.ctx.fillStyle = "#f0aaff";
+        state.ctx.fillRect(x + size * 0.14, y + size * 0.14, size * 0.2, size * 0.1);
+        state.ctx.fillRect(x + size * 0.66, y + size * 0.14, size * 0.2, size * 0.1);
+        // Sparkle
+        state.ctx.fillStyle = "#ffffff";
+        state.ctx.fillRect(x + size * 0.18, y + size * 0.15, size * 0.06, size * 0.06);
+        state.ctx.fillRect(x + size * 0.72, y + size * 0.15, size * 0.06, size * 0.06);
     } else if (itemId === ITEMS.POSSUM_CORE) {
         // Possum Core — glowing pink gem with sparkle
         const t = performance.now() * 0.003;

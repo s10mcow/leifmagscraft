@@ -909,7 +909,7 @@ export function drawHUD() {
                 if (b === BLOCKS.GASLY_SHRINE) tip += " (F to challenge the Prince)";
                 if (b === BLOCKS.POSSUM_KING_SHRINE) tip += " (F to sacrifice Possum Core)";
                 if (info.minTier > 0 && info.minTier < 99 && b !== BLOCKS.OBSIDIAN) {
-                    tip += ` (needs ${["Hand","Wood","Stone","Iron","Diamond","Silver","Netherite"][info.minTier] || "Special"} pickaxe)`;
+                    tip += ` (needs ${["Hand","Wood","Stone","Iron","Diamond","Silver","Netherite","","Rock Candy"][info.minTier] || "Special"} pickaxe)`;
                 }
                 state.ctx.font = "13px 'Courier New', monospace"; state.ctx.textAlign = "left";
                 const tw = state.ctx.measureText(tip).width;

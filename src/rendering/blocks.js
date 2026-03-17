@@ -703,6 +703,26 @@ export function drawBlock(blockType, screenX, screenY) {
         state.ctx.fillRect(screenX + 23, screenY + 23, 4, 4);
         return;
     }
+    if (blockType === BLOCKS.ROCK_CANDY) {
+        // Rock Candy ore — purple crystalline rock
+        state.ctx.fillStyle = "#8a7090";
+        state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
+        // Crystal chunks
+        state.ctx.fillStyle = "#e066ff";
+        state.ctx.fillRect(screenX + 4, screenY + 6, 8, 10);
+        state.ctx.fillRect(screenX + 18, screenY + 16, 10, 8);
+        state.ctx.fillRect(screenX + 8, screenY + 22, 6, 7);
+        // Bright highlights
+        state.ctx.fillStyle = "#f0aaff";
+        state.ctx.fillRect(screenX + 5, screenY + 7, 4, 4);
+        state.ctx.fillRect(screenX + 20, screenY + 17, 4, 4);
+        state.ctx.fillRect(screenX + 22, screenY + 4, 6, 8);
+        // Sparkle
+        state.ctx.fillStyle = "#ffffff";
+        state.ctx.fillRect(screenX + 6, screenY + 8, 2, 2);
+        state.ctx.fillRect(screenX + 21, screenY + 18, 2, 2);
+        return;
+    }
     if (blockType === BLOCKS.GOLD_CANDY) {
         // Gold candy block — shiny gold with candy sheen
         state.ctx.fillStyle = "#ffd700";

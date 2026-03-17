@@ -46,6 +46,15 @@ export function generatePossumWorld() {
         }
     }
 
+    // Scatter Rock Candy ore underground
+    for (let x = 0; x < WORLD_WIDTH; x++) {
+        for (let y = 0; y < WORLD_HEIGHT; y++) {
+            if (state.possumWorld[x][y] === BLOCKS.STONE && Math.random() < 0.02) {
+                state.possumWorld[x][y] = BLOCKS.ROCK_CANDY;
+            }
+        }
+    }
+
     // Place lollipop trees (candy cane trunk + lollipop top ball)
     for (let x = 4; x < WORLD_WIDTH - 4; x++) {
         if (Math.random() < 0.06) {
