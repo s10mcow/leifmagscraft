@@ -405,7 +405,7 @@ export const MOB_DEFS = {
   possum:    { name: "Possum",         width: 26, height: 16, maxHealth: 8,   speed: 1.0, damage: 0, hostile: false, knockback: 2, drops: [{ id: ITEMS.FLOWER, min: 1, max: 2 }] },
   possum_protector: { name: "Possum Protector", width: 56, height: 66, maxHealth: 1280, speed: 2.5, damage: 12, hostile: true, detectRange: 9999, attackRange: 64, squeezeRange: 80, knockback: 8, drops: [{ id: ITEMS.FLOWER, min: 5, max: 10 }, { id: BLOCKS.DIAMOND, min: 1, max: 3, chance: 0.5 }, { id: ITEMS.POSSUM_TOOTH, min: 1, max: 1 }, { id: ITEMS.POSSUM_TAIL, min: 1, max: 1 }] },
   possum_god: { name: "The Possum God", width: 80, height: 90, maxHealth: 64000, speed: 7.5, damage: 10, hostile: true, detectRange: 9999, attackRange: 80, knockback: 14, drops: [{ id: BLOCKS.DIAMOND, min: 10, max: 20 }, { id: ITEMS.POSSUM_TOOTH, min: 3, max: 5 }] },
-  orium: { name: "Orium, the Dwarf King", width: 56, height: 68, maxHealth: 800, speed: 2.0, damage: 4, hostile: true, detectRange: 9999, attackRange: 64, knockback: 10, drops: [{ id: BLOCKS.GOLD, min: 8, max: 16 }, { id: BLOCKS.EMERALD, min: 4, max: 8 }, { id: BLOCKS.DIAMOND, min: 3, max: 6 }] },
+  orium: { name: "Orium, the Dwarf King", width: 56, height: 68, maxHealth: 1600, speed: 2.0, damage: 10, hostile: true, detectRange: 9999, attackRange: 72, smashRange: 90, knockback: 12, drops: [{ id: BLOCKS.GOLD, min: 8, max: 16 }, { id: BLOCKS.EMERALD, min: 4, max: 8 }, { id: BLOCKS.DIAMOND, min: 3, max: 6 }] },
 };
 
 // --- CRAFTING RECIPES ---

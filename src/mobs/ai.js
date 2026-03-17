@@ -981,29 +981,53 @@ export function updateMobs(dt, dayBrightness) {
         }
 
         else if (mob.type === "orium") {
-            // Orium, the Dwarf King — melee boss, charges and slams
+            // Orium, the Dwarf King — walks with staff, two attacks:
+            //   Punch: deals half the player's current health
+            //   Staff smash (overswing): deals MORE than the punch
             if (dist < def.detectRange * BLOCK_SIZE) {
                 mob.velX = dirToPlayer * def.speed;
                 mob.facing = dirToPlayer;
 
-                // Ground slam particles
-                mob.slamTimer = (mob.slamTimer || 0) - dt;
-                if (mob.slamTimer <= 0 && mob.onGround) {
-                    mob.slamTimer = 1500;
-                    createParticles(mob.x + def.width / 2, mob.y + def.height, 12, "#d4af37", 5);
-                    createParticles(mob.x + def.width / 2, mob.y + def.height, 8, "#50c878", 4);
-                    // Slam deals damage in a wider area
-                    if (dist < def.attackRange * 1.5) {
-                        hurtPlayer(def.damage, mob.x + def.width / 2);
-                        mob.attackCooldown = 800;
+                // Track attack pattern — alternates punch and staff smash
+                if (mob.attackPattern === undefined) mob.attackPattern = 0; // 0=punch, 1=smash
+                if (mob.smashWindup === undefined) mob.smashWindup = 0;
+
+                if (dist <= def.smashRange && mob.attackCooldown <= 0) {
+                    if (mob.attackPattern === 0) {
+                        // PUNCH — deals half the player's current health
+                        const punchDmg = Math.max(1, Math.floor(state.player.health / 2));
+                        hurtPlayer(punchDmg, mob.x + def.width / 2);
+                        mob.attackCooldown = 1200;
+                        mob.attackPattern = 1;
+                        createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 10, "#ffd700", 5);
+                    } else {
+                        // STAFF SMASH — windup then big hit
+                        if (mob.smashWindup <= 0) {
+                            // Start windup — pause briefly
+                            mob.smashWindup = 500;
+                            mob.velX = 0; // stop moving during windup
+                            mob.isWindingUp = true;
+                        }
                     }
                 }
 
-                // Normal melee attack
-                if (dist <= def.attackRange && mob.attackCooldown <= 0) {
-                    hurtPlayer(def.damage, mob.x + def.width / 2);
-                    mob.attackCooldown = 800;
-                    createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 8, "#ffd700", 4);
+                // Staff smash windup countdown
+                if (mob.smashWindup > 0) {
+                    mob.smashWindup -= dt;
+                    mob.velX = 0; // frozen during windup
+                    if (mob.smashWindup <= 0) {
+                        mob.isWindingUp = false;
+                        // SMASH — does more damage than the punch (3/4 of max health)
+                        if (dist <= def.smashRange) {
+                            const smashDmg = Math.max(2, Math.floor(state.player.maxHealth * 0.75));
+                            hurtPlayer(smashDmg, mob.x + def.width / 2);
+                            createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 20, "#ff4400", 8);
+                            createParticles(mob.x + def.width / 2, mob.y + def.height, 15, "#d4af37", 6);
+                            createParticles(mob.x + def.width / 2, mob.y + def.height, 10, "#50c878", 5);
+                        }
+                        mob.attackCooldown = 1800;
+                        mob.attackPattern = 0;
+                    }
                 }
             } else {
                 mob.velX *= 0.8;

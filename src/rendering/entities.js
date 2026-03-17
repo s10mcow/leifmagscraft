@@ -1400,13 +1400,43 @@ function drawMob(mob) {
         state.ctx.fillRect(sx + 14, sy + 16, 28, 10);
         state.ctx.fillRect(sx + 18, sy + 26, 20, 4);
 
-        // Weapon: big golden axe
+        // Weapon: big staff with gold, diamond, and emerald
+        const staffX = f === 1 ? sx + 52 : sx - 10;
+        const isSmashing = mob.isWindingUp || false;
+        // Staff angle: normally idle sway, pulled back during windup
+        const staffAngle = isSmashing ? -0.6 : Math.sin(t * 1.5) * 0.1;
+
+        state.ctx.save();
+        state.ctx.translate(staffX + 4, sy + 16);
+        state.ctx.rotate(staffAngle);
+        // Staff shaft (dark wood)
+        state.ctx.fillStyle = "#5a3a1e";
+        state.ctx.fillRect(-3, 0, 6, 52);
+        // Gold band at top
         state.ctx.fillStyle = "#ffd700";
-        const axeX = f === 1 ? sx + 54 : sx - 14;
-        const swing = Math.sin(t * 3) * 4;
-        state.ctx.fillRect(axeX, sy + 24 + swing, 10, 20);
+        state.ctx.fillRect(-5, -4, 10, 8);
+        // Diamond gem at top
+        state.ctx.fillStyle = "#4dfff3";
+        state.ctx.fillRect(-3, -8, 6, 6);
+        // Emerald gem below gold band
+        state.ctx.fillStyle = "#50c878";
+        state.ctx.fillRect(-4, 6, 8, 5);
+        // Gold band at middle
         state.ctx.fillStyle = "#d4af37";
-        state.ctx.fillRect(axeX - 2, sy + 26 + swing, 14, 8);
+        state.ctx.fillRect(-4, 22, 8, 4);
+        // Small diamond accent at bottom
+        state.ctx.fillStyle = "#4dfff3";
+        state.ctx.fillRect(-2, 44, 4, 4);
+        state.ctx.restore();
+
+        // Windup glow effect — staff charges up before smash
+        if (isSmashing) {
+            const pulse = 0.3 + Math.sin(t * 10) * 0.2;
+            state.ctx.fillStyle = `rgba(255, 68, 0, ${pulse})`;
+            state.ctx.fillRect(staffX - 6, sy + 4, 20, 20);
+            state.ctx.fillStyle = `rgba(255, 215, 0, ${pulse * 0.8})`;
+            state.ctx.fillRect(sx - 4, sy - 6, def.width + 8, def.height + 8);
+        }
 
         // Golden aura shimmer
         const shimmer = 0.15 + Math.sin(t * 2) * 0.1;
