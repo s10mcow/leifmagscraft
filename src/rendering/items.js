@@ -532,6 +532,26 @@ export function drawItemIcon(itemId, x, y, size) {
             state.ctx.fillStyle = "#444455";
             state.ctx.fillRect(x + size * 0.1, y + size * 0.1, size * 0.2, size * 0.35);
         }
+    } else if (itemId === ITEMS.ORIUM_STAFF) {
+        // Orium's Staff — matches the boss's weapon
+        // Shaft (dark wood)
+        state.ctx.fillStyle = "#5a3a1e";
+        state.ctx.fillRect(x + size * 0.42, y + size * 0.2, size * 0.16, size * 0.7);
+        // Gold band at top
+        state.ctx.fillStyle = "#ffd700";
+        state.ctx.fillRect(x + size * 0.35, y + size * 0.12, size * 0.3, size * 0.12);
+        // Diamond gem at top
+        state.ctx.fillStyle = "#4dfff3";
+        state.ctx.fillRect(x + size * 0.38, y + size * 0.02, size * 0.24, size * 0.12);
+        // Emerald gem below gold band
+        state.ctx.fillStyle = "#50c878";
+        state.ctx.fillRect(x + size * 0.36, y + size * 0.26, size * 0.28, size * 0.1);
+        // Gold band at middle
+        state.ctx.fillStyle = "#d4af37";
+        state.ctx.fillRect(x + size * 0.36, y + size * 0.5, size * 0.28, size * 0.08);
+        // Small diamond accent at bottom
+        state.ctx.fillStyle = "#4dfff3";
+        state.ctx.fillRect(x + size * 0.4, y + size * 0.8, size * 0.2, size * 0.08);
     } else if (itemId === ITEMS.NETHERITE_INGOT) {
         // Dark metallic ingot bar
         state.ctx.fillStyle = "#2a2a35";
