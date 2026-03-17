@@ -552,6 +552,23 @@ export function drawItemIcon(itemId, x, y, size) {
         // Small diamond accent at bottom
         state.ctx.fillStyle = "#4dfff3";
         state.ctx.fillRect(x + size * 0.4, y + size * 0.8, size * 0.2, size * 0.08);
+    } else if (itemId === ITEMS.POSSUM_CORE) {
+        // Possum Core — glowing pink gem with sparkle
+        const t = performance.now() * 0.003;
+        const glow = 0.5 + Math.sin(t * 2) * 0.3;
+        // Outer glow
+        state.ctx.fillStyle = `rgba(255, 136, 204, ${glow * 0.3})`;
+        state.ctx.fillRect(x + size * 0.15, y + size * 0.15, size * 0.7, size * 0.7);
+        // Core shape (diamond-ish)
+        state.ctx.fillStyle = "#ff88cc";
+        state.ctx.fillRect(x + size * 0.3, y + size * 0.15, size * 0.4, size * 0.7);
+        state.ctx.fillRect(x + size * 0.2, y + size * 0.3, size * 0.6, size * 0.4);
+        // Inner bright spot
+        state.ctx.fillStyle = "#ffccee";
+        state.ctx.fillRect(x + size * 0.38, y + size * 0.3, size * 0.24, size * 0.3);
+        // Sparkle
+        state.ctx.fillStyle = `rgba(255, 255, 255, ${glow})`;
+        state.ctx.fillRect(x + size * 0.45, y + size * 0.2, size * 0.1, size * 0.1);
     } else if (itemId === ITEMS.GASLY_STAFF) {
         // Gasly's Fire Staff — dark shaft with fire orb
         // Shaft

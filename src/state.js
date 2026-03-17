@@ -101,6 +101,7 @@ export const state = {
     // Dungeon
     dungeonLocation: null,
     gaslyArenaX: 0, // left edge X of Gasly's arena in nether
+    possumProtectorKills: 0, // track kills for possum god summoning
 
     // Player
     player: {

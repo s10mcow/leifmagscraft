@@ -1451,6 +1451,129 @@ function drawMob(mob) {
         state.ctx.fillRect(sx - 2, sy - 16, (def.width + 4) * hpFrac, 4);
     }
 
+    else if (mob.type === "possum_king") {
+        // POSSE, THE POSSUM KING — cute big possum plush, crown, cape, two legs
+        const f = mob.facing;
+        const t = performance.now() * 0.002;
+
+        // Cape (behind body, billowing)
+        const capeWave = Math.sin(t * 2) * 4;
+        state.ctx.fillStyle = isHurt ? "#ffaadd" : "#cc2266";
+        const capeX = f === 1 ? sx - 6 : sx + def.width - 10;
+        state.ctx.fillRect(capeX, sy + 14, 16, 40 + capeWave);
+        state.ctx.fillStyle = isHurt ? "#ffccee" : "#dd4488";
+        state.ctx.fillRect(capeX + 2, sy + 16, 12, 36 + capeWave);
+        // Cape gold trim
+        state.ctx.fillStyle = "#ffd700";
+        state.ctx.fillRect(capeX, sy + 14, 16, 3);
+
+        // Legs (standing on two legs, stubby cute)
+        state.ctx.fillStyle = isHurt ? "#ffcccc" : "#c8b8a8";
+        state.ctx.fillRect(sx + 12, sy + 52, 14, 20);
+        state.ctx.fillRect(sx + 34, sy + 52, 14, 20);
+        // Little feet
+        state.ctx.fillStyle = isHurt ? "#ffdddd" : "#b0a090";
+        state.ctx.fillRect(sx + 10, sy + 68, 18, 4);
+        state.ctx.fillRect(sx + 32, sy + 68, 18, 4);
+
+        // Body (round plush)
+        state.ctx.fillStyle = isHurt ? "#ffdddd" : "#d0c8c0";
+        state.ctx.fillRect(sx + 6, sy + 18, 48, 36);
+        // White belly
+        state.ctx.fillStyle = isHurt ? "#ffffff" : "#f0ece8";
+        state.ctx.fillRect(sx + 14, sy + 24, 32, 26);
+        // Blush marks on belly (cute)
+        state.ctx.fillStyle = "rgba(255, 150, 180, 0.3)";
+        state.ctx.fillRect(sx + 16, sy + 38, 8, 6);
+        state.ctx.fillRect(sx + 36, sy + 38, 8, 6);
+
+        // Arms (little stubby arms)
+        state.ctx.fillStyle = isHurt ? "#ffdddd" : "#d0c8c0";
+        state.ctx.fillRect(sx, sy + 22, 10, 18);
+        state.ctx.fillRect(sx + 50, sy + 22, 10, 18);
+        // Little paws
+        state.ctx.fillStyle = isHurt ? "#ffcccc" : "#b0a090";
+        state.ctx.fillRect(sx - 2, sy + 36, 10, 6);
+        state.ctx.fillRect(sx + 52, sy + 36, 10, 6);
+
+        // Head (big round cute head)
+        state.ctx.fillStyle = isHurt ? "#ffdddd" : "#d0c8c0";
+        state.ctx.fillRect(sx + 8, sy + 2, 44, 22);
+        // Ears (big round pink-inside ears)
+        state.ctx.fillStyle = isHurt ? "#ffdddd" : "#d0c8c0";
+        state.ctx.fillRect(sx + 8, sy - 8, 12, 14);
+        state.ctx.fillRect(sx + 40, sy - 8, 12, 14);
+        state.ctx.fillStyle = "#ff99bb";
+        state.ctx.fillRect(sx + 10, sy - 5, 8, 10);
+        state.ctx.fillRect(sx + 42, sy - 5, 8, 10);
+
+        // CROWN
+        state.ctx.fillStyle = "#ffd700";
+        state.ctx.fillRect(sx + 14, sy - 6, 32, 8);
+        state.ctx.fillRect(sx + 16, sy - 12, 8, 8);
+        state.ctx.fillRect(sx + 26, sy - 14, 8, 10);
+        state.ctx.fillRect(sx + 36, sy - 12, 8, 8);
+        // Crown gem
+        state.ctx.fillStyle = "#ff44aa";
+        state.ctx.fillRect(sx + 28, sy - 10, 4, 4);
+
+        // Eyes (big cute sparkly eyes)
+        state.ctx.fillStyle = "#222222";
+        if (f === 1) {
+            state.ctx.fillRect(sx + 28, sy + 6, 8, 8);
+            state.ctx.fillRect(sx + 40, sy + 6, 8, 8);
+            // Sparkle
+            state.ctx.fillStyle = "#ffffff";
+            state.ctx.fillRect(sx + 30, sy + 7, 3, 3);
+            state.ctx.fillRect(sx + 42, sy + 7, 3, 3);
+        } else {
+            state.ctx.fillRect(sx + 12, sy + 6, 8, 8);
+            state.ctx.fillRect(sx + 24, sy + 6, 8, 8);
+            state.ctx.fillStyle = "#ffffff";
+            state.ctx.fillRect(sx + 14, sy + 7, 3, 3);
+            state.ctx.fillRect(sx + 26, sy + 7, 3, 3);
+        }
+
+        // Cute pink nose
+        state.ctx.fillStyle = "#ff88aa";
+        const noseX = f === 1 ? sx + 44 : sx + 10;
+        state.ctx.fillRect(noseX, sy + 14, 6, 4);
+
+        // Blush cheeks
+        state.ctx.fillStyle = "rgba(255, 130, 170, 0.4)";
+        if (f === 1) {
+            state.ctx.fillRect(sx + 24, sy + 14, 8, 5);
+            state.ctx.fillRect(sx + 44, sy + 14, 8, 5);
+        } else {
+            state.ctx.fillRect(sx + 8, sy + 14, 8, 5);
+            state.ctx.fillRect(sx + 28, sy + 14, 8, 5);
+        }
+
+        // Tail (animated, extends when grabbing)
+        const tailX = f === 1 ? sx - 8 : sx + def.width + 2;
+        if (mob.tailGrabbing) {
+            // Extended tail reaching toward player
+            state.ctx.fillStyle = "#d0c8c0";
+            const tailLen = 40 + Math.sin(t * 5) * 6;
+            const tailDir = f === 1 ? -1 : 1;
+            state.ctx.fillRect(tailX, sy + 40, tailLen * tailDir, 6);
+            state.ctx.fillStyle = "#ff88cc";
+            state.ctx.fillRect(tailX + tailLen * tailDir - (tailDir > 0 ? 8 : 0), sy + 38, 8, 10);
+        } else {
+            state.ctx.fillStyle = "#d0c8c0";
+            const tailCurl = Math.sin(t * 1.5) * 3;
+            state.ctx.fillRect(tailX, sy + 40, 12, 5);
+            state.ctx.fillRect(tailX + (f === 1 ? -6 : 10), sy + 38 + tailCurl, 8, 5);
+        }
+
+        // Boss health bar above sprite
+        const hpFrac = mob.health / def.maxHealth;
+        state.ctx.fillStyle = "rgba(0,0,0,0.7)";
+        state.ctx.fillRect(sx - 4, sy - 20, def.width + 8, 8);
+        state.ctx.fillStyle = hpFrac > 0.5 ? "#22cc44" : hpFrac > 0.25 ? "#ffaa00" : "#ee2222";
+        state.ctx.fillRect(sx - 2, sy - 18, (def.width + 4) * hpFrac, 4);
+    }
+
     else if (mob.type === "gasly") {
         // GASLY, THE GRUNCHER PRINCE — big grunture with crown and fire staff
         const f = mob.facing;

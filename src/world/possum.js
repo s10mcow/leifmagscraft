@@ -84,4 +84,60 @@ export function generatePossumWorld() {
             initChestData(cx, surf - 1, 'possum_cache');
         }
     }
+
+    // Place Possum King Pyramid near center of world
+    const pyramidX = Math.floor(WORLD_WIDTH / 2) + 40;
+    const pyramidW = 25; // width at base
+    const pyramidH = 12; // height
+    const pyramidBase = heights[pyramidX]; // ground level at pyramid center
+
+    // Flatten terrain under pyramid
+    for (let x = pyramidX - pyramidW; x <= pyramidX + pyramidW; x++) {
+        if (x < 0 || x >= WORLD_WIDTH) continue;
+        heights[x] = pyramidBase;
+        for (let y = 0; y < WORLD_HEIGHT; y++) {
+            if (y < pyramidBase) {
+                state.possumWorld[x][y] = BLOCKS.AIR;
+            } else if (y === pyramidBase) {
+                state.possumWorld[x][y] = BLOCKS.CANDY_GROUND;
+            } else if (y <= pyramidBase + 4) {
+                state.possumWorld[x][y] = BLOCKS.CANDY_GROUND;
+            }
+        }
+    }
+
+    // Build pyramid (candy cane walls, hollow inside)
+    const baseY = pyramidBase; // pyramid sits on surface
+    for (let layer = 0; layer < pyramidH; layer++) {
+        const halfW = pyramidW - layer; // narrows each layer
+        const y = baseY - 1 - layer;
+        if (y < 0) break;
+        for (let dx = -halfW; dx <= halfW; dx++) {
+            const px = pyramidX + dx;
+            if (px < 0 || px >= WORLD_WIDTH) continue;
+            // Outer shell: edges of each layer
+            const isEdge = Math.abs(dx) >= halfW - 1 || layer === 0 || layer === pyramidH - 1;
+            if (isEdge) {
+                state.possumWorld[px][y] = BLOCKS.CANDY_CANE;
+            } else {
+                state.possumWorld[px][y] = BLOCKS.AIR;
+            }
+        }
+    }
+
+    // Carve entrance on the left side (3 blocks wide, 4 tall)
+    const entranceX = pyramidX - pyramidW + 1;
+    for (let dy = 0; dy < 4; dy++) {
+        for (let dx = 0; dx < 3; dx++) {
+            const ex = entranceX + dx;
+            const ey = baseY - 1 - dy;
+            if (ex >= 0 && ex < WORLD_WIDTH && ey >= 0) {
+                state.possumWorld[ex][ey] = BLOCKS.AIR;
+            }
+        }
+    }
+
+    // Place shrine in center of pyramid
+    const shrineY = baseY - 2;
+    state.possumWorld[pyramidX][shrineY] = BLOCKS.POSSUM_KING_SHRINE;
 }

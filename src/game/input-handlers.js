@@ -518,6 +518,40 @@ export function interact() {
         }
     }
 
+    // Check if pointing at a Possum King Shrine within reach
+    if (wmx_d >= 0 && wmx_d < WORLD_WIDTH && wmy_d >= 0 && wmy_d < WORLD_HEIGHT) {
+        if (state.activeWorld[wmx_d][wmy_d] === BLOCKS.POSSUM_KING_SHRINE) {
+            const pcx = state.player.x + state.player.width / 2, pcy = state.player.y + state.player.height / 2;
+            const bcx = wmx_d * BLOCK_SIZE + BLOCK_SIZE / 2, bcy = wmy_d * BLOCK_SIZE + BLOCK_SIZE / 2;
+            if (Math.sqrt((pcx - bcx) ** 2 + (pcy - bcy) ** 2) < BLOCK_SIZE * 5) {
+                if (state.mobs.some(m => m.type === "possum_king")) {
+                    addFloatingText(state.player.x, state.player.y - 20, "Posse is already here!", "#ff88cc");
+                    return;
+                }
+                // Check for possum core
+                const coreSlot = state.inventory.slots.findIndex(s => s.itemId === ITEMS.POSSUM_CORE && s.count > 0);
+                if (coreSlot === -1) {
+                    addFloatingText(state.player.x, state.player.y - 20, "You need a Possum Core!", "#ff4444");
+                    return;
+                }
+                // Consume one possum core
+                state.inventory.slots[coreSlot].count--;
+                if (state.inventory.slots[coreSlot].count <= 0) {
+                    state.inventory.slots[coreSlot].itemId = 0;
+                    state.inventory.slots[coreSlot].durability = 0;
+                }
+                const spawnX = wmx_d * BLOCK_SIZE - 30;
+                const spawnY = wmy_d * BLOCK_SIZE - 80;
+                const boss = createMob("possum_king", spawnX, spawnY);
+                state.mobs.push(boss);
+                addFloatingText(state.player.x, state.player.y - 40, "Posse, the Possum King appears!", "#ff88cc");
+                createParticles(spawnX + 30, spawnY + 36, 30, "#ff88cc", 8);
+                createParticles(spawnX + 30, spawnY + 36, 15, "#ffccee", 6);
+                return;
+            }
+        }
+    }
+
     // Check if pointing at a chest or blast furnace within reach
     const wmx_c = Math.floor((state.mouse.x + state.camera.x) / BLOCK_SIZE);
     const wmy_c = Math.floor((state.mouse.y + state.camera.y) / BLOCK_SIZE);

@@ -39,6 +39,7 @@ export const BLOCKS = {
   // Orium dungeon
   ORIUM_SHRINE: 66,
   GASLY_SHRINE: 67,
+  POSSUM_KING_SHRINE: 68,
 };
 
 // --- ITEM IDs (100+) ---
@@ -102,6 +103,7 @@ export const ITEMS = {
   NETHERITE_PICKAXE: 203, NETHERITE_SWORD: 204, NETHERITE_AXE: 205,
   ORIUM_STAFF: 206,
   GASLY_STAFF: 207,
+  POSSUM_CORE: 208,
 };
 
 // --- WORLD SETTINGS ---
@@ -264,6 +266,7 @@ export const BLOCK_INFO = {
   // Orium dungeon
   [BLOCKS.ORIUM_SHRINE]: { name: "Orium Shrine", color: "#d4af37", breakable: false, mineTime: 0, toolType: null, minTier: 99, drops: null },
   [BLOCKS.GASLY_SHRINE]: { name: "Gasly Shrine", color: "#ff4400", breakable: false, mineTime: 0, toolType: null, minTier: 99, drops: null },
+  [BLOCKS.POSSUM_KING_SHRINE]: { name: "Possum King Shrine", color: "#ff88cc", breakable: false, mineTime: 0, toolType: null, minTier: 99, drops: null },
 };
 
 // --- ITEM PROPERTIES ---
@@ -384,6 +387,7 @@ export const ITEM_INFO = {
   [ITEMS.NETHERITE_AXE]:        { name: "Netherite Axe",        stackable: false, toolType: "axe",     tier: 6, speed: 6, durability: 800, color: "#444455" },
   [ITEMS.ORIUM_STAFF]:          { name: "Orium's Staff",        stackable: false, toolType: "sword",   tier: 7, speed: 1, durability: 1200, color: "#d4af37", damage: 15 },
   [ITEMS.GASLY_STAFF]:          { name: "Gasly's Fire Staff",   stackable: false, toolType: "sword",   tier: 7, speed: 1, durability: 1000, color: "#ff4400", damage: 12 },
+  [ITEMS.POSSUM_CORE]:          { name: "Possum Core",          stackable: true, maxStack: 64, color: "#ff88cc" },
 };
 
 // --- MOB DEFINITIONS ---
@@ -409,9 +413,10 @@ export const MOB_DEFS = {
   companion: { name: "The Companion", width: 24, height: 46, maxHealth: 60,  speed: 3.0, damage: 3, hostile: false, detectRange: 0,    attackRange: 36,  knockback: 4, drops: [] },
   glitched:  { name: "The Glitched",  width: 24, height: 46, maxHealth: 200, speed: 5.5, damage: 8, hostile: true,  detectRange: 9999, attackRange: 40,  knockback: 6, drops: [] },
   possum:    { name: "Possum",         width: 26, height: 16, maxHealth: 8,   speed: 1.0, damage: 0, hostile: false, knockback: 2, drops: [{ id: ITEMS.FLOWER, min: 1, max: 2 }] },
-  possum_protector: { name: "Possum Protector", width: 56, height: 66, maxHealth: 1280, speed: 2.5, damage: 12, hostile: true, detectRange: 9999, attackRange: 64, squeezeRange: 80, knockback: 8, drops: [{ id: ITEMS.FLOWER, min: 5, max: 10 }, { id: BLOCKS.DIAMOND, min: 1, max: 3, chance: 0.5 }, { id: ITEMS.POSSUM_TOOTH, min: 1, max: 1 }, { id: ITEMS.POSSUM_TAIL, min: 1, max: 1 }] },
+  possum_protector: { name: "Possum Protector", width: 56, height: 66, maxHealth: 1280, speed: 2.5, damage: 12, hostile: true, detectRange: 9999, attackRange: 64, squeezeRange: 80, knockback: 8, drops: [{ id: ITEMS.FLOWER, min: 5, max: 10 }, { id: BLOCKS.DIAMOND, min: 1, max: 3, chance: 0.5 }, { id: ITEMS.POSSUM_TOOTH, min: 1, max: 1 }, { id: ITEMS.POSSUM_TAIL, min: 1, max: 1 }, { id: ITEMS.POSSUM_CORE, min: 1, max: 1 }] },
   possum_god: { name: "The Possum God", width: 80, height: 90, maxHealth: 64000, speed: 7.5, damage: 10, hostile: true, detectRange: 9999, attackRange: 80, knockback: 14, drops: [{ id: BLOCKS.DIAMOND, min: 10, max: 20 }, { id: ITEMS.POSSUM_TOOTH, min: 3, max: 5 }] },
   orium: { name: "Orium, the Dwarf King", width: 56, height: 68, maxHealth: 1600, speed: 2.0, damage: 10, hostile: true, detectRange: 9999, attackRange: 72, smashRange: 90, knockback: 12, drops: [{ id: BLOCKS.GOLD, min: 8, max: 16 }, { id: BLOCKS.EMERALD, min: 4, max: 8 }, { id: BLOCKS.DIAMOND, min: 3, max: 6 }, { id: ITEMS.ORIUM_STAFF, min: 1, max: 1 }] },
+  possum_king: { name: "Posse, the Possum King", width: 60, height: 72, maxHealth: 3200, speed: 2.2, damage: 8, hostile: true, detectRange: 9999, attackRange: 68, tailRange: 300, knockback: 10, drops: [{ id: BLOCKS.DIAMOND, min: 5, max: 10 }, { id: ITEMS.POSSUM_TOOTH, min: 3, max: 5 }, { id: ITEMS.POSSUM_CORE, min: 2, max: 3 }] },
   gasly: { name: "Gasly, the Gruncher Prince", width: 72, height: 84, maxHealth: 6000, speed: 2.8, damage: 7, fireDamage: 10, hostile: true, detectRange: 9999, attackRange: 80, shootRange: 500, shootInterval: 800, knockback: 12, drops: [{ id: BLOCKS.GLOWSTONE, min: 5, max: 10 }, { id: BLOCKS.GOLD, min: 5, max: 10 }, { id: ITEMS.GASLY_STAFF, min: 1, max: 1 }] },
 };
 

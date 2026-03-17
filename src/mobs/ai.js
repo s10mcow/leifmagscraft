@@ -181,10 +181,11 @@ export function updateMobs(dt, dayBrightness) {
                 addFloatingText(mob.x + def.width / 2, mob.y - 30, "POSSUM PROTECTOR AWAKENS!", "#ff44aa");
                 createParticles(mob.x + def.width / 2, mob.y + def.height / 2, 20, "#ff88cc", 6);
             }
-            // Possum Protector killed — summon The Possum God!
+            // Possum Protector killed — track kills, summon God after 3
             if (mob.type === "possum_protector") {
+                state.possumProtectorKills = (state.possumProtectorKills || 0) + 1;
                 const alreadyGod = state.mobs.some(m => m.type === "possum_god");
-                if (!alreadyGod) {
+                if (state.possumProtectorKills >= 3 && !alreadyGod) {
                     const godDef = MOB_DEFS.possum_god;
                     const god = createMob("possum_god", mob.x - godDef.width / 2, mob.y - godDef.height);
                     god.aggroed = true;
@@ -192,6 +193,8 @@ export function updateMobs(dt, dayBrightness) {
                     speakPossumGod();
                     addFloatingText(mob.x + def.width / 2, mob.y - 40, "THE POSSUM GOD AWAKENS!", "#ffd700");
                     createParticles(mob.x + def.width / 2, mob.y + def.height / 2, 30, "#ffd700", 8);
+                } else if (!alreadyGod) {
+                    addFloatingText(mob.x + def.width / 2, mob.y - 30, `Protector killed (${state.possumProtectorKills}/3)`, "#ff88cc");
                 }
             }
             // Companion killed — rises as The Glitched
@@ -225,7 +228,7 @@ export function updateMobs(dt, dayBrightness) {
         }
 
         // Sunlight burning (zombies/skeletons, not creepers/husks/endermen/pigmen/ghasts/gruntures, not in Nether/Wasteland)
-        if (def.hostile && mob.type !== "creeper" && mob.type !== "husk" && mob.type !== "enderman" && mob.type !== "spider" && mob.type !== "pigman" && mob.type !== "ghast" && mob.type !== "grunture" && mob.type !== "possum_protector" && mob.type !== "possum_god" && mob.type !== "orium" && mob.type !== "gasly" && dayBrightness > 0.6 && !state.inNether && !state.inWasteland) {
+        if (def.hostile && mob.type !== "creeper" && mob.type !== "husk" && mob.type !== "enderman" && mob.type !== "spider" && mob.type !== "pigman" && mob.type !== "ghast" && mob.type !== "grunture" && mob.type !== "possum_protector" && mob.type !== "possum_god" && mob.type !== "possum_king" && mob.type !== "orium" && mob.type !== "gasly" && dayBrightness > 0.6 && !state.inNether && !state.inWasteland) {
             if (isInSunlight(mob, def)) {
                 mob.burnTimer += dt;
                 if (mob.burnTimer >= 500) {
@@ -1028,6 +1031,84 @@ export function updateMobs(dt, dayBrightness) {
                         mob.attackCooldown = 1800;
                         mob.attackPattern = 0;
                     }
+                }
+            } else {
+                mob.velX *= 0.8;
+            }
+        }
+
+        else if (mob.type === "possum_king") {
+            // Posse, the Possum King — cute but deadly
+            // Attacks: slash (common), bite (medium), tail grab (rare)
+            if (dist < def.detectRange * BLOCK_SIZE) {
+                mob.velX = dirToPlayer * def.speed;
+                mob.facing = dirToPlayer;
+
+                // Initialize attack state
+                if (mob.tailGrabCooldown === undefined) mob.tailGrabCooldown = 5000;
+                if (mob.biteCooldown === undefined) mob.biteCooldown = 0;
+                mob.tailGrabCooldown -= dt;
+                mob.biteCooldown -= dt;
+
+                // TAIL GRAB (rare — ~10% when available, long range)
+                if (mob.tailGrabCooldown <= 0 && dist < def.tailRange && dist > def.attackRange && !mob.tailGrabbing && Math.random() < 0.1) {
+                    mob.tailGrabbing = true;
+                    mob.tailGrabTimer = 0;
+                    mob.tailGrabPhase = "shoot"; // shoot → pull → release
+                    mob.tailTargetX = state.player.x + state.player.width / 2;
+                    mob.tailTargetY = state.player.y + state.player.height / 2;
+                    mob.tailGrabCooldown = 8000;
+                    addFloatingText(mob.x + def.width / 2, mob.y - 20, "TAIL GRAB!", "#ff44aa");
+                }
+
+                // Tail grab state machine
+                if (mob.tailGrabbing) {
+                    mob.tailGrabTimer += dt;
+                    mob.velX = 0; // stand still during grab
+
+                    if (mob.tailGrabPhase === "shoot" && mob.tailGrabTimer > 400) {
+                        // Check if player is still roughly in the tail's path (they can jump over)
+                        const playerCenterY = state.player.y + state.player.height / 2;
+                        const mobCenterY = mob.y + def.height * 0.7;
+                        // If player jumped high enough (more than 40px above tail level), they dodge
+                        if (Math.abs(playerCenterY - mobCenterY) > 40) {
+                            mob.tailGrabbing = false;
+                            addFloatingText(state.player.x, state.player.y - 20, "Dodged!", "#4ade80");
+                        } else {
+                            mob.tailGrabPhase = "pull";
+                            mob.tailGrabTimer = 0;
+                            createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 8, "#ff88cc", 4);
+                        }
+                    } else if (mob.tailGrabPhase === "pull") {
+                        // Pull player toward the king
+                        const pullSpeed = 6;
+                        const dx2 = mob.x + def.width / 2 - (state.player.x + state.player.width / 2);
+                        const pullDir = dx2 > 0 ? 1 : -1;
+                        state.player.x += pullDir * pullSpeed;
+                        if (mob.tailGrabTimer > 600) {
+                            // Release — player is now close
+                            mob.tailGrabbing = false;
+                            addFloatingText(state.player.x, state.player.y - 20, "Released!", "#ffaacc");
+                            createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 10, "#ff88dd", 5);
+                        }
+                    }
+                }
+
+                // BITE (medium use — ~30% when available, close range)
+                if (!mob.tailGrabbing && dist <= def.attackRange && mob.biteCooldown <= 0 && Math.random() < 0.3) {
+                    const biteDmg = Math.max(2, Math.floor(state.player.maxHealth * 0.4));
+                    hurtPlayer(biteDmg, mob.x + def.width / 2);
+                    mob.biteCooldown = 2500;
+                    mob.attackCooldown = 1000;
+                    createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 12, "#ff4488", 6);
+                    addFloatingText(state.player.x, state.player.y - 20, `BITE! -${biteDmg}`, "#ff2266");
+                }
+
+                // SLASH (most common — close range, default attack)
+                else if (!mob.tailGrabbing && dist <= def.attackRange && mob.attackCooldown <= 0) {
+                    hurtPlayer(def.damage, mob.x + def.width / 2);
+                    mob.attackCooldown = 600;
+                    createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 8, "#ffaacc", 4);
                 }
             } else {
                 mob.velX *= 0.8;

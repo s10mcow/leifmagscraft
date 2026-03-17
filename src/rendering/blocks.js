@@ -678,6 +678,31 @@ export function drawBlock(blockType, screenX, screenY) {
         state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
         return;
     }
+    if (blockType === BLOCKS.POSSUM_KING_SHRINE) {
+        const t = performance.now() * 0.002;
+        // Pink stone base
+        state.ctx.fillStyle = "#cc6699";
+        state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
+        // Sparkly pink frame
+        state.ctx.fillStyle = "#ff88cc";
+        state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, 3);
+        state.ctx.fillRect(screenX, screenY + BLOCK_SIZE - 3, BLOCK_SIZE, 3);
+        state.ctx.fillRect(screenX, screenY, 3, BLOCK_SIZE);
+        state.ctx.fillRect(screenX + BLOCK_SIZE - 3, screenY, 3, BLOCK_SIZE);
+        // Possum core gem center (pulsing)
+        const pulse = 0.6 + Math.sin(t * 3) * 0.4;
+        state.ctx.fillStyle = `rgba(255, 136, 204, ${pulse})`;
+        state.ctx.fillRect(screenX + 10, screenY + 10, 12, 12);
+        state.ctx.fillStyle = `rgba(255, 200, 230, ${pulse * 0.8})`;
+        state.ctx.fillRect(screenX + 12, screenY + 12, 8, 8);
+        // Heart accents
+        state.ctx.fillStyle = "#ff66aa";
+        state.ctx.fillRect(screenX + 5, screenY + 5, 4, 4);
+        state.ctx.fillRect(screenX + 23, screenY + 5, 4, 4);
+        state.ctx.fillRect(screenX + 5, screenY + 23, 4, 4);
+        state.ctx.fillRect(screenX + 23, screenY + 23, 4, 4);
+        return;
+    }
     if (blockType === BLOCKS.GASLY_SHRINE) {
         const t = performance.now() * 0.002;
         // Dark netherrack base
