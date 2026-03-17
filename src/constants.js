@@ -38,6 +38,7 @@ export const BLOCKS = {
   VOID_STONE: 65,
   // Orium dungeon
   ORIUM_SHRINE: 66,
+  GASLY_SHRINE: 67,
 };
 
 // --- ITEM IDs (100+) ---
@@ -100,6 +101,7 @@ export const ITEMS = {
   NETHERITE_HELMET: 199, NETHERITE_CHESTPLATE: 200, NETHERITE_LEGGINGS: 201, NETHERITE_BOOTS: 202,
   NETHERITE_PICKAXE: 203, NETHERITE_SWORD: 204, NETHERITE_AXE: 205,
   ORIUM_STAFF: 206,
+  GASLY_STAFF: 207,
 };
 
 // --- WORLD SETTINGS ---
@@ -261,6 +263,7 @@ export const BLOCK_INFO = {
   [BLOCKS.VOID_STONE]:   { name: "Void Stone",   color: "#888", breakable: true,  mineTime: 3000, toolType: "pickaxe", minTier: 6, drops: BLOCKS.VOID_STONE },
   // Orium dungeon
   [BLOCKS.ORIUM_SHRINE]: { name: "Orium Shrine", color: "#d4af37", breakable: false, mineTime: 0, toolType: null, minTier: 99, drops: null },
+  [BLOCKS.GASLY_SHRINE]: { name: "Gasly Shrine", color: "#ff4400", breakable: false, mineTime: 0, toolType: null, minTier: 99, drops: null },
 };
 
 // --- ITEM PROPERTIES ---
@@ -380,6 +383,7 @@ export const ITEM_INFO = {
   [ITEMS.NETHERITE_SWORD]:      { name: "Netherite Sword",      stackable: false, toolType: "sword",   tier: 6, speed: 1, durability: 800, color: "#444455", damage: 10 },
   [ITEMS.NETHERITE_AXE]:        { name: "Netherite Axe",        stackable: false, toolType: "axe",     tier: 6, speed: 6, durability: 800, color: "#444455" },
   [ITEMS.ORIUM_STAFF]:          { name: "Orium's Staff",        stackable: false, toolType: "sword",   tier: 7, speed: 1, durability: 1200, color: "#d4af37", damage: 15 },
+  [ITEMS.GASLY_STAFF]:          { name: "Gasly's Fire Staff",   stackable: false, toolType: "sword",   tier: 7, speed: 1, durability: 1000, color: "#ff4400", damage: 12 },
 };
 
 // --- MOB DEFINITIONS ---
@@ -408,6 +412,7 @@ export const MOB_DEFS = {
   possum_protector: { name: "Possum Protector", width: 56, height: 66, maxHealth: 1280, speed: 2.5, damage: 12, hostile: true, detectRange: 9999, attackRange: 64, squeezeRange: 80, knockback: 8, drops: [{ id: ITEMS.FLOWER, min: 5, max: 10 }, { id: BLOCKS.DIAMOND, min: 1, max: 3, chance: 0.5 }, { id: ITEMS.POSSUM_TOOTH, min: 1, max: 1 }, { id: ITEMS.POSSUM_TAIL, min: 1, max: 1 }] },
   possum_god: { name: "The Possum God", width: 80, height: 90, maxHealth: 64000, speed: 7.5, damage: 10, hostile: true, detectRange: 9999, attackRange: 80, knockback: 14, drops: [{ id: BLOCKS.DIAMOND, min: 10, max: 20 }, { id: ITEMS.POSSUM_TOOTH, min: 3, max: 5 }] },
   orium: { name: "Orium, the Dwarf King", width: 56, height: 68, maxHealth: 1600, speed: 2.0, damage: 10, hostile: true, detectRange: 9999, attackRange: 72, smashRange: 90, knockback: 12, drops: [{ id: BLOCKS.GOLD, min: 8, max: 16 }, { id: BLOCKS.EMERALD, min: 4, max: 8 }, { id: BLOCKS.DIAMOND, min: 3, max: 6 }, { id: ITEMS.ORIUM_STAFF, min: 1, max: 1 }] },
+  gasly: { name: "Gasly, the Gruncher Prince", width: 72, height: 84, maxHealth: 1200, speed: 2.8, damage: 7, fireDamage: 10, hostile: true, detectRange: 9999, attackRange: 80, shootRange: 500, shootInterval: 800, knockback: 12, drops: [{ id: BLOCKS.GLOWSTONE, min: 5, max: 10 }, { id: BLOCKS.GOLD, min: 5, max: 10 }, { id: ITEMS.GASLY_STAFF, min: 1, max: 1 }] },
 };
 
 // --- CRAFTING RECIPES ---

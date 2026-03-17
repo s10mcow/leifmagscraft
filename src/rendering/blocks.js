@@ -678,6 +678,31 @@ export function drawBlock(blockType, screenX, screenY) {
         state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
         return;
     }
+    if (blockType === BLOCKS.GASLY_SHRINE) {
+        const t = performance.now() * 0.002;
+        // Dark netherrack base
+        state.ctx.fillStyle = "#3a1515";
+        state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
+        // Fiery frame
+        state.ctx.fillStyle = "#ff4400";
+        state.ctx.fillRect(screenX, screenY, BLOCK_SIZE, 3);
+        state.ctx.fillRect(screenX, screenY + BLOCK_SIZE - 3, BLOCK_SIZE, 3);
+        state.ctx.fillRect(screenX, screenY, 3, BLOCK_SIZE);
+        state.ctx.fillRect(screenX + BLOCK_SIZE - 3, screenY, 3, BLOCK_SIZE);
+        // Fire orb center
+        const flicker = 0.7 + Math.sin(t * 4) * 0.3;
+        state.ctx.fillStyle = `rgba(255, 100, 0, ${flicker})`;
+        state.ctx.fillRect(screenX + 10, screenY + 10, 12, 12);
+        state.ctx.fillStyle = `rgba(255, 200, 0, ${flicker * 0.8})`;
+        state.ctx.fillRect(screenX + 12, screenY + 12, 8, 8);
+        // Gold accents
+        state.ctx.fillStyle = "#ffd700";
+        state.ctx.fillRect(screenX + 5, screenY + 5, 4, 4);
+        state.ctx.fillRect(screenX + 23, screenY + 5, 4, 4);
+        state.ctx.fillRect(screenX + 5, screenY + 23, 4, 4);
+        state.ctx.fillRect(screenX + 23, screenY + 23, 4, 4);
+        return;
+    }
     state.ctx.strokeStyle = "rgba(0, 0, 0, 0.15)";
     state.ctx.strokeRect(screenX, screenY, BLOCK_SIZE, BLOCK_SIZE);
 }

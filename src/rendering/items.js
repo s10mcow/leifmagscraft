@@ -552,6 +552,20 @@ export function drawItemIcon(itemId, x, y, size) {
         // Small diamond accent at bottom
         state.ctx.fillStyle = "#4dfff3";
         state.ctx.fillRect(x + size * 0.4, y + size * 0.8, size * 0.2, size * 0.08);
+    } else if (itemId === ITEMS.GASLY_STAFF) {
+        // Gasly's Fire Staff — dark shaft with fire orb
+        // Shaft
+        state.ctx.fillStyle = "#3a1508";
+        state.ctx.fillRect(x + size * 0.42, y + size * 0.2, size * 0.16, size * 0.7);
+        // Fire orb at top
+        state.ctx.fillStyle = "#ff4400";
+        state.ctx.fillRect(x + size * 0.3, y + size * 0.02, size * 0.4, size * 0.22);
+        state.ctx.fillStyle = "#ffcc00";
+        state.ctx.fillRect(x + size * 0.36, y + size * 0.06, size * 0.28, size * 0.14);
+        // Gold rings
+        state.ctx.fillStyle = "#ffd700";
+        state.ctx.fillRect(x + size * 0.36, y + size * 0.32, size * 0.28, size * 0.08);
+        state.ctx.fillRect(x + size * 0.36, y + size * 0.58, size * 0.28, size * 0.08);
     } else if (itemId === ITEMS.NETHERITE_INGOT) {
         // Dark metallic ingot bar
         state.ctx.fillStyle = "#2a2a35";

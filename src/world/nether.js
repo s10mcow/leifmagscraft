@@ -307,6 +307,91 @@ export function generateNetherWorld() {
         }
     }
 
+    // Gasly's Dungeon — above ground, 3x the size of Orium's dungeon (75 wide x 45 tall)
+    {
+        const dungeonX = Math.floor(WORLD_WIDTH / 2) - 37; // centered
+        // Find surface at center
+        let dungeonSurfY = -1;
+        for (let y = 0; y < WORLD_HEIGHT; y++) {
+            if (state.netherWorld[Math.floor(WORLD_WIDTH / 2)][y] !== BLOCKS.AIR) { dungeonSurfY = y; break; }
+        }
+        if (dungeonSurfY < 0) dungeonSurfY = SURFACE_LEVEL;
+        const chamberW = 75;
+        const chamberH = 45;
+        const cx = dungeonX;
+        const cy = dungeonSurfY - chamberH; // sits above ground
+
+        // Build chamber walls and interior
+        for (let dx = 0; dx < chamberW; dx++) {
+            for (let dy = 0; dy < chamberH; dy++) {
+                const bx = cx + dx;
+                const by = cy + dy;
+                if (bx >= 0 && bx < WORLD_WIDTH && by >= 0 && by < WORLD_HEIGHT) {
+                    if (dx === 0 || dx === chamberW - 1 || dy === 0 || dy === chamberH - 1) {
+                        state.netherWorld[bx][by] = BLOCKS.NETHER_BRICK;
+                    } else {
+                        state.netherWorld[bx][by] = BLOCKS.AIR;
+                    }
+                }
+            }
+        }
+
+        // Floor: alternating nether brick and obsidian
+        for (let dx = 1; dx < chamberW - 1; dx++) {
+            const bx = cx + dx;
+            const by = cy + chamberH - 1;
+            if (bx >= 0 && bx < WORLD_WIDTH && by < WORLD_HEIGHT) {
+                state.netherWorld[bx][by] = (dx % 2 === 0) ? BLOCKS.OBSIDIAN : BLOCKS.NETHER_BRICK;
+            }
+        }
+
+        // Entrance hole on the left wall (4 blocks wide, 5 tall)
+        for (let ey = 0; ey < 5; ey++) {
+            const bx = cx;
+            const by = cy + chamberH - 2 - ey;
+            if (bx >= 0 && bx < WORLD_WIDTH && by >= 0 && by < WORLD_HEIGHT) {
+                state.netherWorld[bx][by] = BLOCKS.AIR;
+            }
+        }
+        // Also open a few blocks outside so player can walk in
+        for (let ex = -3; ex < 0; ex++) {
+            for (let ey = 0; ey < 5; ey++) {
+                const bx = cx + ex;
+                const by = cy + chamberH - 2 - ey;
+                if (bx >= 0 && bx < WORLD_WIDTH && by >= 0 && by < WORLD_HEIGHT) {
+                    if (state.netherWorld[bx][by] !== BLOCKS.AIR) {
+                        state.netherWorld[bx][by] = BLOCKS.AIR;
+                    }
+                }
+            }
+        }
+
+        // Entrance hole on the right wall too
+        for (let ey = 0; ey < 5; ey++) {
+            const bx = cx + chamberW - 1;
+            const by = cy + chamberH - 2 - ey;
+            if (bx >= 0 && bx < WORLD_WIDTH && by >= 0 && by < WORLD_HEIGHT) {
+                state.netherWorld[bx][by] = BLOCKS.AIR;
+            }
+        }
+
+        // Glowstone lighting on ceiling
+        for (let dx = 5; dx < chamberW - 5; dx += 6) {
+            const bx = cx + dx;
+            const by = cy + 1;
+            if (bx >= 0 && bx < WORLD_WIDTH && by >= 0 && by < WORLD_HEIGHT) {
+                state.netherWorld[bx][by] = BLOCKS.GLOWSTONE;
+            }
+        }
+
+        // Place shrine in center
+        const shrineX = cx + Math.floor(chamberW / 2);
+        const shrineY = cy + chamberH - 2;
+        if (shrineX >= 0 && shrineX < WORLD_WIDTH && shrineY >= 0 && shrineY < WORLD_HEIGHT) {
+            state.netherWorld[shrineX][shrineY] = BLOCKS.GASLY_SHRINE;
+        }
+    }
+
     // Nether Fortresses — 2 per world at 25% and 75% x positions
     const fortressPositions = [
         Math.floor(WORLD_WIDTH * 0.25 + (Math.random() - 0.5) * 100),

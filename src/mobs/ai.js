@@ -225,7 +225,7 @@ export function updateMobs(dt, dayBrightness) {
         }
 
         // Sunlight burning (zombies/skeletons, not creepers/husks/endermen/pigmen/ghasts/gruntures, not in Nether/Wasteland)
-        if (def.hostile && mob.type !== "creeper" && mob.type !== "husk" && mob.type !== "enderman" && mob.type !== "spider" && mob.type !== "pigman" && mob.type !== "ghast" && mob.type !== "grunture" && mob.type !== "possum_protector" && mob.type !== "possum_god" && mob.type !== "orium" && dayBrightness > 0.6 && !state.inNether && !state.inWasteland) {
+        if (def.hostile && mob.type !== "creeper" && mob.type !== "husk" && mob.type !== "enderman" && mob.type !== "spider" && mob.type !== "pigman" && mob.type !== "ghast" && mob.type !== "grunture" && mob.type !== "possum_protector" && mob.type !== "possum_god" && mob.type !== "orium" && mob.type !== "gasly" && dayBrightness > 0.6 && !state.inNether && !state.inWasteland) {
             if (isInSunlight(mob, def)) {
                 mob.burnTimer += dt;
                 if (mob.burnTimer >= 500) {
@@ -1028,6 +1028,49 @@ export function updateMobs(dt, dayBrightness) {
                         mob.attackCooldown = 1800;
                         mob.attackPattern = 0;
                     }
+                }
+            } else {
+                mob.velX *= 0.8;
+            }
+        }
+
+        else if (mob.type === "gasly") {
+            // Gasly, the Gruncher Prince — big grunture with fire staff
+            mob.shootCooldown -= dt;
+            if (dist < def.detectRange * BLOCK_SIZE) {
+                mob.velX = dirToPlayer * def.speed;
+                mob.facing = dirToPlayer;
+
+                // Smoke from nostrils
+                mob.smokeTimer = (mob.smokeTimer || 0) - dt;
+                if (mob.smokeTimer <= 0) {
+                    mob.smokeTimer = 180;
+                    const muzzX = mob.x + (mob.facing === 1 ? def.width + 6 : -6);
+                    const muzzY = mob.y + def.height * 0.35;
+                    createParticles(muzzX, muzzY, 5, "#333333", 3);
+                }
+
+                // Melee slash when close
+                if (dist <= def.attackRange && mob.attackCooldown <= 0) {
+                    hurtPlayer(def.damage, mob.x + def.width / 2);
+                    mob.attackCooldown = 700;
+                    createParticles(state.player.x + state.player.width / 2, state.player.y + state.player.height / 2, 12, "#ff4400", 5);
+                }
+
+                // FIRE STAFF SHOWER — only below half health
+                const belowHalf = mob.health < def.maxHealth / 2;
+                if (belowHalf && mob.shootCooldown <= 0 && dist < def.shootRange && dist > def.attackRange) {
+                    // Rapid fire shower — spray 3 fireballs in a spread
+                    const baseX = mob.x + def.width / 2;
+                    const baseY = mob.y + def.height / 4;
+                    const targetX = state.player.x + state.player.width / 2;
+                    const targetY = state.player.y + state.player.height / 2;
+                    for (let i = -1; i <= 1; i++) {
+                        createFireball(baseX, baseY, targetX + i * 40, targetY + i * 20, def.fireDamage);
+                    }
+                    mob.shootCooldown = def.shootInterval;
+                    createParticles(baseX, baseY, 10, "#ff6600", 6);
+                    createParticles(baseX, baseY, 6, "#ffcc00", 4);
                 }
             } else {
                 mob.velX *= 0.8;

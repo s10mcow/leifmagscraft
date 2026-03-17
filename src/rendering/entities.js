@@ -1451,6 +1451,127 @@ function drawMob(mob) {
         state.ctx.fillRect(sx - 2, sy - 16, (def.width + 4) * hpFrac, 4);
     }
 
+    else if (mob.type === "gasly") {
+        // GASLY, THE GRUNCHER PRINCE — big grunture with crown and fire staff
+        const f = mob.facing;
+        const t = performance.now() * 0.002;
+        const fur     = isHurt ? "#ff7755" : "#5a2510";
+        const belly   = isHurt ? "#ff9977" : "#8a4525";
+        const darkFur = isHurt ? "#dd5533" : "#3a1508";
+        const eyeCol  = "#ff5500";
+
+        // Legs (thick)
+        state.ctx.fillStyle = fur;
+        state.ctx.fillRect(sx + 10, sy + 60, 18, 24);
+        state.ctx.fillRect(sx + 44, sy + 60, 18, 24);
+        state.ctx.fillStyle = darkFur;
+        state.ctx.fillRect(sx + 8, sy + 78, 22, 6);
+        state.ctx.fillRect(sx + 42, sy + 78, 22, 6);
+
+        // Body (massive barrel chest)
+        state.ctx.fillStyle = fur;
+        state.ctx.fillRect(sx + 6, sy + 24, 60, 38);
+        state.ctx.fillStyle = belly;
+        state.ctx.fillRect(sx + 16, sy + 28, 40, 30);
+        state.ctx.fillStyle = "rgba(0,0,0,0.12)";
+        state.ctx.fillRect(sx + 6, sy + 38, 60, 3);
+        state.ctx.fillRect(sx + 6, sy + 50, 60, 3);
+
+        // Arms
+        state.ctx.fillStyle = fur;
+        state.ctx.fillRect(sx - 8, sy + 26, 16, 28);
+        state.ctx.fillRect(sx + 64, sy + 26, 16, 28);
+        // Claws
+        state.ctx.fillStyle = darkFur;
+        state.ctx.fillRect(sx - 10, sy + 52, 6, 8);
+        state.ctx.fillRect(sx - 4, sy + 54, 6, 8);
+        state.ctx.fillRect(sx + 66, sy + 52, 6, 8);
+        state.ctx.fillRect(sx + 72, sy + 54, 6, 8);
+
+        // Head (big)
+        state.ctx.fillStyle = fur;
+        state.ctx.fillRect(sx + 10, sy + 4, 52, 24);
+        state.ctx.fillStyle = darkFur;
+        state.ctx.fillRect(sx + 10, sy + 4, 52, 7);
+
+        // Horns
+        state.ctx.fillStyle = "#c8b070";
+        state.ctx.fillRect(sx + 14, sy - 8, 8, 14);
+        state.ctx.fillRect(sx + 8, sy - 18, 8, 12);
+        state.ctx.fillRect(sx + 50, sy - 8, 8, 14);
+        state.ctx.fillRect(sx + 56, sy - 18, 8, 12);
+        state.ctx.fillStyle = "#a09050";
+        state.ctx.fillRect(sx + 6, sy - 26, 7, 10);
+        state.ctx.fillRect(sx + 59, sy - 26, 7, 10);
+
+        // CROWN — golden crown on top of head
+        state.ctx.fillStyle = "#ffd700";
+        state.ctx.fillRect(sx + 16, sy - 4, 40, 8);
+        state.ctx.fillRect(sx + 18, sy - 10, 8, 8);
+        state.ctx.fillRect(sx + 32, sy - 12, 10, 10);
+        state.ctx.fillRect(sx + 46, sy - 10, 8, 8);
+        // Crown gems
+        state.ctx.fillStyle = "#ff2200";
+        state.ctx.fillRect(sx + 35, sy - 8, 4, 4);
+        state.ctx.fillStyle = "#4dfff3";
+        state.ctx.fillRect(sx + 21, sy - 6, 3, 3);
+        state.ctx.fillRect(sx + 49, sy - 6, 3, 3);
+
+        // Muzzle
+        const muzzX = f === 1 ? sx + 48 : sx + 2;
+        state.ctx.fillStyle = belly;
+        state.ctx.fillRect(muzzX, sy + 14, 22, 14);
+        state.ctx.fillStyle = darkFur;
+        state.ctx.fillRect(muzzX + 4, sy + 20, 4, 4);
+        state.ctx.fillRect(muzzX + 14, sy + 20, 4, 4);
+
+        // Eyes — glowing
+        state.ctx.fillStyle = eyeCol;
+        state.ctx.fillRect(f === 1 ? sx + 38 : sx + 20, sy + 10, 10, 8);
+        // Below half health: eyes glow brighter
+        const belowHalf = mob.health < def.maxHealth / 2;
+        if (belowHalf) {
+            const glow = 0.4 + Math.sin(t * 5) * 0.3;
+            state.ctx.fillStyle = `rgba(255, 100, 0, ${glow})`;
+            state.ctx.fillRect(f === 1 ? sx + 34 : sx + 16, sy + 6, 18, 16);
+        }
+
+        // FIRE STAFF — held in one hand
+        const staffX = f === 1 ? sx + 74 : sx - 18;
+        state.ctx.save();
+        state.ctx.translate(staffX + 5, sy + 20);
+        const staffSwing = belowHalf ? Math.sin(t * 4) * 0.15 : Math.sin(t * 1.5) * 0.05;
+        state.ctx.rotate(staffSwing);
+        // Shaft
+        state.ctx.fillStyle = "#3a1508";
+        state.ctx.fillRect(-4, 0, 8, 60);
+        // Fire orb at top
+        const fireGlow = belowHalf ? 0.8 + Math.sin(t * 6) * 0.2 : 0.5;
+        state.ctx.fillStyle = `rgba(255, 68, 0, ${fireGlow})`;
+        state.ctx.fillRect(-8, -12, 16, 14);
+        state.ctx.fillStyle = `rgba(255, 200, 0, ${fireGlow * 0.7})`;
+        state.ctx.fillRect(-5, -8, 10, 8);
+        // Gold rings
+        state.ctx.fillStyle = "#ffd700";
+        state.ctx.fillRect(-5, 14, 10, 4);
+        state.ctx.fillRect(-5, 36, 10, 4);
+        state.ctx.restore();
+
+        // Fire aura when below half health
+        if (belowHalf) {
+            const pulse = 0.12 + Math.sin(t * 3) * 0.08;
+            state.ctx.fillStyle = `rgba(255, 68, 0, ${pulse})`;
+            state.ctx.fillRect(sx - 10, sy - 8, def.width + 20, def.height + 12);
+        }
+
+        // Boss health bar above sprite
+        const hpFrac = mob.health / def.maxHealth;
+        state.ctx.fillStyle = "rgba(0,0,0,0.7)";
+        state.ctx.fillRect(sx - 4, sy - 32, def.width + 8, 8);
+        state.ctx.fillStyle = hpFrac > 0.5 ? "#22cc44" : hpFrac > 0.25 ? "#ffaa00" : "#ee2222";
+        state.ctx.fillRect(sx - 2, sy - 30, (def.width + 4) * hpFrac, 4);
+    }
+
     // Mob equipment overlay (non-pigman)
     if (mob.equipment && mob.type !== "pigman") {
         if (mob.equipment.armor) {

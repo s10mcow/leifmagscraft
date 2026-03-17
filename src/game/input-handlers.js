@@ -496,6 +496,28 @@ export function interact() {
         }
     }
 
+    // Check if pointing at a Gasly Shrine within reach
+    if (wmx_d >= 0 && wmx_d < WORLD_WIDTH && wmy_d >= 0 && wmy_d < WORLD_HEIGHT) {
+        if (state.activeWorld[wmx_d][wmy_d] === BLOCKS.GASLY_SHRINE) {
+            const pcx = state.player.x + state.player.width / 2, pcy = state.player.y + state.player.height / 2;
+            const bcx = wmx_d * BLOCK_SIZE + BLOCK_SIZE / 2, bcy = wmy_d * BLOCK_SIZE + BLOCK_SIZE / 2;
+            if (Math.sqrt((pcx - bcx) ** 2 + (pcy - bcy) ** 2) < BLOCK_SIZE * 5) {
+                if (state.mobs.some(m => m.type === "gasly")) {
+                    addFloatingText(state.player.x, state.player.y - 20, "Gasly is already here!", "#ff4444");
+                    return;
+                }
+                const spawnX = wmx_d * BLOCK_SIZE - 36;
+                const spawnY = wmy_d * BLOCK_SIZE - 100;
+                const boss = createMob("gasly", spawnX, spawnY);
+                state.mobs.push(boss);
+                addFloatingText(state.player.x, state.player.y - 40, "Gasly, the Gruncher Prince appears!", "#ff6600");
+                createParticles(spawnX + 36, spawnY + 42, 30, "#ff4400", 8);
+                createParticles(spawnX + 36, spawnY + 42, 15, "#ffd700", 6);
+                return;
+            }
+        }
+    }
+
     // Check if pointing at a chest or blast furnace within reach
     const wmx_c = Math.floor((state.mouse.x + state.camera.x) / BLOCK_SIZE);
     const wmy_c = Math.floor((state.mouse.y + state.camera.y) / BLOCK_SIZE);

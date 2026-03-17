@@ -873,9 +873,9 @@ export function drawDeathScreen() {
 // --- HUD ---
 export function drawHUD() {
     // Boss health bar at top of screen
-    const boss = state.mobs.find(m => m.type === "orium");
+    const boss = state.mobs.find(m => m.type === "orium" || m.type === "gasly");
     if (boss) {
-        const def = MOB_DEFS.orium;
+        const def = MOB_DEFS[boss.type];
         const barW = 400, barH = 16;
         const bx = (state.canvas.width - barW) / 2;
         const by = 12;
@@ -888,7 +888,7 @@ export function drawHUD() {
         state.ctx.fillStyle = "#fff";
         state.ctx.font = "bold 12px 'Courier New', monospace";
         state.ctx.textAlign = "center";
-        state.ctx.fillText("Orium, the Dwarf King", state.canvas.width / 2, by + 13);
+        state.ctx.fillText(def.name, state.canvas.width / 2, by + 13);
         state.ctx.textAlign = "left";
     }
 
@@ -906,6 +906,7 @@ export function drawHUD() {
                 if (b === BLOCKS.OBSIDIAN) tip += " (needs Diamond pickaxe)";
                 if (b === BLOCKS.PRESSURE_PLATE) tip += " (activates nearby doors)";
                 if (b === BLOCKS.ORIUM_SHRINE) tip += " (F to sacrifice 5 diamonds)";
+                if (b === BLOCKS.GASLY_SHRINE) tip += " (F to challenge the Prince)";
                 if (info.minTier > 0 && info.minTier < 99 && b !== BLOCKS.OBSIDIAN) {
                     tip += ` (needs ${["Hand","Wood","Stone","Iron","Diamond","Silver","Netherite"][info.minTier] || "Special"} pickaxe)`;
                 }
