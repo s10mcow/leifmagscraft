@@ -307,166 +307,123 @@ export function generateNetherWorld() {
         }
     }
 
-    // Gasly's Dungeon — sits on top of ground, follows terrain
-    // Made of netherrack and obsidian, with staircases at entrances
+    // Gasly's Arena — spawns only in Nether Wastes, flattens terrain, on the ground
     {
         const chamberW = 75;
         const chamberH = 45;
-        const cx = Math.floor(WORLD_WIDTH / 2) + 30; // to the right of nether spawn
+        const padding = 10; // extra flat area outside the arena on each side
 
-        // Find the ground surface Y for each column of the dungeon
-        const surfaceYs = [];
-        for (let dx = 0; dx < chamberW; dx++) {
-            const bx = cx + dx;
-            let sy = -1;
-            if (bx >= 0 && bx < WORLD_WIDTH) {
-                for (let y = 0; y < WORLD_HEIGHT; y++) {
-                    if (state.netherWorld[bx][y] !== BLOCKS.AIR) { sy = y; break; }
+        // Find a Nether Wastes region to place the arena
+        let cx = -1;
+        for (let x = 20; x < WORLD_WIDTH - chamberW - 20; x++) {
+            // Check if this whole stretch is Wastes
+            let allWastes = true;
+            for (let dx = -padding; dx < chamberW + padding; dx++) {
+                const bx = x + dx;
+                if (bx < 0 || bx >= WORLD_WIDTH || state.netherBiomeMap[bx] !== NETHER_BIOMES.WASTES) {
+                    allWastes = false; break;
                 }
             }
-            if (sy < 0) sy = SURFACE_LEVEL;
-            surfaceYs[dx] = sy;
+            if (allWastes) { cx = x; break; }
+        }
+        // Fallback: if no wastes stretch found, pick center
+        if (cx < 0) cx = Math.floor(WORLD_WIDTH / 2) + 30;
+
+        // Find a consistent flat surface Y — use the surface at the arena center
+        let flatY = SURFACE_LEVEL;
+        const midX = cx + Math.floor(chamberW / 2);
+        if (midX >= 0 && midX < WORLD_WIDTH) {
+            for (let y = 0; y < WORLD_HEIGHT; y++) {
+                if (state.netherWorld[midX][y] !== BLOCKS.AIR) { flatY = y; break; }
+            }
         }
 
-        // The dungeon floor at each column is 1 block above the ground surface
-        // The ceiling is chamberH blocks above the floor
-        // For each column: floor = surfaceY - 1, ceiling = floor - chamberH + 1
+        // Flatten the terrain across the arena + padding on each side
+        for (let dx = -padding; dx < chamberW + padding; dx++) {
+            const bx = cx + dx;
+            if (bx < 0 || bx >= WORLD_WIDTH) continue;
+            // Clear everything above flatY
+            for (let y = 0; y < flatY; y++) {
+                state.netherWorld[bx][y] = BLOCKS.AIR;
+            }
+            // Fill from flatY down with netherrack (solid ground)
+            for (let y = flatY; y < WORLD_HEIGHT - 1; y++) {
+                if (state.netherWorld[bx][y] === BLOCKS.AIR) {
+                    state.netherWorld[bx][y] = BLOCKS.NETHERRACK;
+                }
+            }
+        }
+
+        // Build the arena on the flat ground
+        const floorY = flatY - 1; // 1 block above ground
+        const ceilY = floorY - chamberH + 1;
 
         for (let dx = 0; dx < chamberW; dx++) {
             const bx = cx + dx;
             if (bx < 0 || bx >= WORLD_WIDTH) continue;
-            const floorY = surfaceYs[dx] - 1; // 1 block above ground
-            const ceilY = floorY - chamberH + 1;
             const isWall = dx === 0 || dx === chamberW - 1;
 
             for (let by = ceilY; by <= floorY; by++) {
                 if (by < 0 || by >= WORLD_HEIGHT) continue;
                 if (by === ceilY || by === floorY || isWall) {
-                    // Walls, ceiling, floor — alternating netherrack and obsidian
                     state.netherWorld[bx][by] = ((dx + by) % 2 === 0) ? BLOCKS.NETHERRACK : BLOCKS.OBSIDIAN;
                 } else {
                     state.netherWorld[bx][by] = BLOCKS.AIR;
                 }
             }
-
-            // Fill in any gap between dungeon floor and the actual ground with solid material
-            for (let by = floorY + 1; by < surfaceYs[dx]; by++) {
-                if (by >= 0 && by < WORLD_HEIGHT) {
-                    state.netherWorld[bx][by] = ((dx + by) % 2 === 0) ? BLOCKS.NETHERRACK : BLOCKS.OBSIDIAN;
-                }
-            }
         }
 
-        // Left entrance — hole in the wall + staircase down to ground
+        // Left entrance — hole in wall + staircase if needed
         {
-            // Find ground level just outside left wall
-            let outerGroundY = SURFACE_LEVEL;
-            const outerX = cx - 1;
-            if (outerX >= 0 && outerX < WORLD_WIDTH) {
-                for (let y = 0; y < WORLD_HEIGHT; y++) {
-                    if (state.netherWorld[outerX][y] !== BLOCKS.AIR) { outerGroundY = y; break; }
-                }
-            }
-            const leftFloorY = surfaceYs[0] - 1;
-            // Open entrance hole (5 tall)
             for (let ey = 0; ey < 5; ey++) {
-                const by = leftFloorY - ey;
+                const by = floorY - ey;
                 if (cx >= 0 && cx < WORLD_WIDTH && by >= 0 && by < WORLD_HEIGHT) {
                     state.netherWorld[cx][by] = BLOCKS.AIR;
                 }
             }
-            // Build staircase from entrance down to ground level
-            const stairDiff = outerGroundY - leftFloorY;
-            if (stairDiff > 0) {
-                // Entrance is higher than ground — build stairs going down outside
-                for (let s = 0; s < stairDiff; s++) {
-                    const sx = cx - 1 - s;
-                    const sy = leftFloorY + s;
-                    if (sx >= 0 && sx < WORLD_WIDTH && sy >= 0 && sy < WORLD_HEIGHT) {
-                        // Stair step
-                        state.netherWorld[sx][sy] = BLOCKS.NETHERRACK;
-                        // Clear space above for walking (5 blocks)
-                        for (let ey = 1; ey <= 5; ey++) {
-                            if (sy - ey >= 0) state.netherWorld[sx][sy - ey] = BLOCKS.AIR;
-                        }
-                    }
-                }
-            } else {
-                // Entrance is at or below ground — just clear path
-                for (let ex = -3; ex < 0; ex++) {
-                    const bx2 = cx + ex;
-                    if (bx2 >= 0 && bx2 < WORLD_WIDTH) {
-                        for (let ey = 0; ey < 5; ey++) {
-                            const by = leftFloorY - ey;
-                            if (by >= 0 && by < WORLD_HEIGHT) state.netherWorld[bx2][by] = BLOCKS.AIR;
-                        }
+            // Ground outside is flat, so just clear a path
+            for (let ex = -3; ex < 0; ex++) {
+                const bx2 = cx + ex;
+                if (bx2 >= 0 && bx2 < WORLD_WIDTH) {
+                    for (let ey = 0; ey < 5; ey++) {
+                        const by = floorY - ey;
+                        if (by >= 0 && by < WORLD_HEIGHT) state.netherWorld[bx2][by] = BLOCKS.AIR;
                     }
                 }
             }
         }
 
-        // Right entrance — hole in the wall + staircase down to ground
+        // Right entrance
         {
-            let outerGroundY = SURFACE_LEVEL;
-            const outerX = cx + chamberW;
-            if (outerX >= 0 && outerX < WORLD_WIDTH) {
-                for (let y = 0; y < WORLD_HEIGHT; y++) {
-                    if (state.netherWorld[outerX][y] !== BLOCKS.AIR) { outerGroundY = y; break; }
-                }
-            }
-            const rightFloorY = surfaceYs[chamberW - 1] - 1;
-            // Open entrance hole (5 tall)
             for (let ey = 0; ey < 5; ey++) {
-                const by = rightFloorY - ey;
+                const by = floorY - ey;
                 const bx = cx + chamberW - 1;
                 if (bx >= 0 && bx < WORLD_WIDTH && by >= 0 && by < WORLD_HEIGHT) {
                     state.netherWorld[bx][by] = BLOCKS.AIR;
                 }
             }
-            // Build staircase from entrance down to ground level
-            const stairDiff = outerGroundY - rightFloorY;
-            if (stairDiff > 0) {
-                for (let s = 0; s < stairDiff; s++) {
-                    const sx = cx + chamberW + s;
-                    const sy = rightFloorY + s;
-                    if (sx >= 0 && sx < WORLD_WIDTH && sy >= 0 && sy < WORLD_HEIGHT) {
-                        state.netherWorld[sx][sy] = BLOCKS.NETHERRACK;
-                        for (let ey = 1; ey <= 5; ey++) {
-                            if (sy - ey >= 0) state.netherWorld[sx][sy - ey] = BLOCKS.AIR;
-                        }
-                    }
-                }
-            } else {
-                for (let ex = 0; ex < 3; ex++) {
-                    const bx2 = cx + chamberW + ex;
-                    if (bx2 >= 0 && bx2 < WORLD_WIDTH) {
-                        for (let ey = 0; ey < 5; ey++) {
-                            const by = rightFloorY - ey;
-                            if (by >= 0 && by < WORLD_HEIGHT) state.netherWorld[bx2][by] = BLOCKS.AIR;
-                        }
+            for (let ex = 0; ex < 3; ex++) {
+                const bx2 = cx + chamberW + ex;
+                if (bx2 >= 0 && bx2 < WORLD_WIDTH) {
+                    for (let ey = 0; ey < 5; ey++) {
+                        const by = floorY - ey;
+                        if (by >= 0 && by < WORLD_HEIGHT) state.netherWorld[bx2][by] = BLOCKS.AIR;
                     }
                 }
             }
         }
 
-        // Glowstone lighting on ceiling (use each column's ceiling)
+        // Glowstone lighting on ceiling
         for (let dx = 5; dx < chamberW - 5; dx += 6) {
             const bx = cx + dx;
-            if (bx >= 0 && bx < WORLD_WIDTH) {
-                const floorY = surfaceYs[dx] - 1;
-                const ceilY = floorY - chamberH + 1;
-                const by = ceilY + 1;
-                if (by >= 0 && by < WORLD_HEIGHT) {
-                    state.netherWorld[bx][by] = BLOCKS.GLOWSTONE;
-                }
+            if (bx >= 0 && bx < WORLD_WIDTH && ceilY + 1 >= 0 && ceilY + 1 < WORLD_HEIGHT) {
+                state.netherWorld[bx][ceilY + 1] = BLOCKS.GLOWSTONE;
             }
         }
 
         // Place shrine in center on the floor
-        const midDx = Math.floor(chamberW / 2);
-        const shrineX = cx + midDx;
-        const shrineFloorY = surfaceYs[midDx] - 1;
-        const shrineY = shrineFloorY - 1; // on top of floor
+        const shrineX = cx + Math.floor(chamberW / 2);
+        const shrineY = floorY - 1;
         if (shrineX >= 0 && shrineX < WORLD_WIDTH && shrineY >= 0 && shrineY < WORLD_HEIGHT) {
             state.netherWorld[shrineX][shrineY] = BLOCKS.GASLY_SHRINE;
         }
