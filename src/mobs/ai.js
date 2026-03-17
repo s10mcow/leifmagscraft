@@ -853,11 +853,19 @@ export function updateMobs(dt, dayBrightness) {
         }
 
         else if (mob.type === "possum_pet") {
-            // Mini Posse — follows player, attacks hostile mobs with half-damage versions of king's attacks
+            // Mini Posse — follows player, attacks hostile mobs and player's targets
             if (mob.tailGrabCooldown === undefined) mob.tailGrabCooldown = 5000;
             if (mob.biteCooldown === undefined) mob.biteCooldown = 0;
             mob.tailGrabCooldown -= dt;
             mob.biteCooldown -= dt;
+
+            // Teleport to player if too far away (16+ blocks)
+            if (dist > 16 * BLOCK_SIZE) {
+                mob.x = state.player.x + (state.player.facing === 1 ? -40 : 40);
+                mob.y = state.player.y;
+                mob.velX = 0;
+                mob.velY = 0;
+            }
 
             // Follow player
             if (dist > 3 * BLOCK_SIZE) {
@@ -867,15 +875,23 @@ export function updateMobs(dt, dayBrightness) {
                 mob.velX *= 0.5;
             }
 
-            // Find nearest hostile mob to attack
+            // Priority 1: attack mob the player hit (stored on state)
+            // Priority 2: attack nearest hostile mob
             let petTarget = null, petTargetDist = Infinity;
-            for (const m of state.mobs) {
-                if (m === mob) continue;
-                if (!MOB_DEFS[m.type].hostile) continue;
-                const mdx = (m.x + MOB_DEFS[m.type].width / 2) - (mob.x + def.width / 2);
-                const mdy = (m.y + MOB_DEFS[m.type].height / 2) - (mob.y + def.height / 2);
-                const md = Math.sqrt(mdx * mdx + mdy * mdy);
-                if (md < 10 * BLOCK_SIZE && md < petTargetDist) { petTarget = m; petTargetDist = md; }
+            if (state.possumPetTarget && !state.possumPetTarget.dead && state.possumPetTarget.health > 0) {
+                const tdx = (state.possumPetTarget.x + MOB_DEFS[state.possumPetTarget.type].width / 2) - (mob.x + def.width / 2);
+                const tdy = (state.possumPetTarget.y + MOB_DEFS[state.possumPetTarget.type].height / 2) - (mob.y + def.height / 2);
+                petTarget = state.possumPetTarget;
+                petTargetDist = Math.sqrt(tdx * tdx + tdy * tdy);
+            } else {
+                for (const m of state.mobs) {
+                    if (m === mob) continue;
+                    if (!MOB_DEFS[m.type].hostile) continue;
+                    const mdx = (m.x + MOB_DEFS[m.type].width / 2) - (mob.x + def.width / 2);
+                    const mdy = (m.y + MOB_DEFS[m.type].height / 2) - (mob.y + def.height / 2);
+                    const md = Math.sqrt(mdx * mdx + mdy * mdy);
+                    if (md < 10 * BLOCK_SIZE && md < petTargetDist) { petTarget = m; petTargetDist = md; }
+                }
             }
 
             if (petTarget) {

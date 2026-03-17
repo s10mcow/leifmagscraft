@@ -532,6 +532,44 @@ export function drawItemIcon(itemId, x, y, size) {
             state.ctx.fillStyle = "#444455";
             state.ctx.fillRect(x + size * 0.1, y + size * 0.1, size * 0.2, size * 0.35);
         }
+    } else if (itemId === ITEMS.POSSE_HELMET || itemId === ITEMS.POSSE_CHESTPLATE ||
+               itemId === ITEMS.POSSE_LEGGINGS || itemId === ITEMS.POSSE_BOOTS) {
+        // Posse armor — possum-colored with pink accents and crown on helmet
+        state.ctx.fillStyle = "#d0c8c0";
+        if (itemId === ITEMS.POSSE_HELMET) {
+            state.ctx.fillRect(x + size * 0.15, y + size * 0.2, size * 0.7, size * 0.5);
+            // Ears
+            state.ctx.fillRect(x + size * 0.15, y + size * 0.08, size * 0.2, size * 0.2);
+            state.ctx.fillRect(x + size * 0.65, y + size * 0.08, size * 0.2, size * 0.2);
+            state.ctx.fillStyle = "#ff99bb";
+            state.ctx.fillRect(x + size * 0.19, y + size * 0.12, size * 0.12, size * 0.12);
+            state.ctx.fillRect(x + size * 0.69, y + size * 0.12, size * 0.12, size * 0.12);
+            // Crown
+            state.ctx.fillStyle = "#ffd700";
+            state.ctx.fillRect(x + size * 0.25, y + size * 0.02, size * 0.5, size * 0.12);
+            state.ctx.fillRect(x + size * 0.4, y - size * 0.04, size * 0.2, size * 0.1);
+        } else if (itemId === ITEMS.POSSE_CHESTPLATE) {
+            state.ctx.fillRect(x + size * 0.1, y + size * 0.1, size * 0.8, size * 0.8);
+            // White belly
+            state.ctx.fillStyle = "#f0ece8";
+            state.ctx.fillRect(x + size * 0.25, y + size * 0.2, size * 0.5, size * 0.5);
+            // Cape hint
+            state.ctx.fillStyle = "#cc2266";
+            state.ctx.fillRect(x + size * 0.05, y + size * 0.15, size * 0.12, size * 0.6);
+        } else if (itemId === ITEMS.POSSE_LEGGINGS) {
+            state.ctx.fillRect(x + size * 0.15, y + size * 0.1, size * 0.3, size * 0.8);
+            state.ctx.fillRect(x + size * 0.55, y + size * 0.1, size * 0.3, size * 0.8);
+            state.ctx.fillStyle = "#c8b8a8";
+            state.ctx.fillRect(x + size * 0.15, y + size * 0.1, size * 0.7, size * 0.2);
+        } else {
+            // Boots — little possum feet
+            state.ctx.fillStyle = "#b0a090";
+            state.ctx.fillRect(x + size * 0.1, y + size * 0.4, size * 0.35, size * 0.45);
+            state.ctx.fillRect(x + size * 0.55, y + size * 0.4, size * 0.35, size * 0.45);
+            state.ctx.fillStyle = "#d0c8c0";
+            state.ctx.fillRect(x + size * 0.1, y + size * 0.4, size * 0.35, size * 0.15);
+            state.ctx.fillRect(x + size * 0.55, y + size * 0.4, size * 0.35, size * 0.15);
+        }
     } else if (itemId === ITEMS.ORIUM_STAFF) {
         // Orium's Staff — matches the boss's weapon
         // Shaft (dark wood)

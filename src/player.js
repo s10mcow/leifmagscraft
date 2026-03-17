@@ -560,6 +560,9 @@ export function attackMob(mob) {
     state.player.attackCooldown = 400;
     playMobHit();
 
+    // Tell pet Posse to attack this mob
+    state.possumPetTarget = mob;
+
     // Wolf pack provocation: hitting any wolf causes nearby wild wolves to attack
     if (mob.type === "wolf" && !mob.tamed) {
         mob.provoked = true;

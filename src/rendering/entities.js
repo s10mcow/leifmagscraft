@@ -3,9 +3,17 @@
 // ============================================================
 
 import { state } from '../state.js';
-import { ITEMS, MOB_DEFS } from '../constants.js';
+import { ITEMS, ITEM_INFO, MOB_DEFS } from '../constants.js';
 import { getArmorColor } from '../inventory.js';
 import { drawItemIcon } from './items.js';
+
+function isWearingFullPosseArmor() {
+    const a = state.inventory.armor;
+    return a.helmet.itemId && ITEM_INFO[a.helmet.itemId]?.posseArmor &&
+           a.chestplate.itemId && ITEM_INFO[a.chestplate.itemId]?.posseArmor &&
+           a.leggings.itemId && ITEM_INFO[a.leggings.itemId]?.posseArmor &&
+           a.boots.itemId && ITEM_INFO[a.boots.itemId]?.posseArmor;
+}
 
 // --- PLAYER ---
 export function drawPlayer() {
@@ -18,6 +26,13 @@ export function drawPlayer() {
 
     if (state.player.invincibleTimer > 0 && Math.floor(state.player.invincibleTimer / 80) % 2 === 0) {
         state.ctx.globalAlpha = 0.4;
+    }
+
+    // Full Posse armor — draw player as Possum King (player-sized)
+    if (isWearingFullPosseArmor()) {
+        drawPosseSkin(sx, sy);
+        state.ctx.globalAlpha = 1;
+        return;
     }
 
     // Crouch: squish player vertically from the bottom
@@ -136,6 +151,122 @@ export function drawPlayer() {
     }
 
     state.ctx.globalAlpha = 1;
+}
+
+function drawPosseSkin(sx, sy) {
+    const f = state.player.facing;
+    const t = performance.now() * 0.002;
+    const pw = state.player.width; // 24
+    const ph = 46; // draw height
+
+    // Scale possum king art (60x72) to fit player size (24x46)
+    const scaleX = pw / 60;
+    const scaleY = ph / 72;
+
+    state.ctx.save();
+    state.ctx.translate(sx, sy);
+    state.ctx.scale(scaleX, scaleY);
+
+    // Cape
+    const capeWave = Math.sin(t * 2) * 4;
+    state.ctx.fillStyle = "#cc2266";
+    const capeX = f === 1 ? -6 : 60 - 10;
+    state.ctx.fillRect(capeX, 14, 16, 40 + capeWave);
+    state.ctx.fillStyle = "#dd4488";
+    state.ctx.fillRect(capeX + 2, 16, 12, 36 + capeWave);
+    state.ctx.fillStyle = "#ffd700";
+    state.ctx.fillRect(capeX, 14, 16, 3);
+
+    // Legs
+    state.ctx.fillStyle = "#c8b8a8";
+    state.ctx.fillRect(12, 52, 14, 20);
+    state.ctx.fillRect(34, 52, 14, 20);
+    state.ctx.fillStyle = "#b0a090";
+    state.ctx.fillRect(10, 68, 18, 4);
+    state.ctx.fillRect(32, 68, 18, 4);
+
+    // Body
+    state.ctx.fillStyle = "#d0c8c0";
+    state.ctx.fillRect(6, 18, 48, 36);
+    state.ctx.fillStyle = "#f0ece8";
+    state.ctx.fillRect(14, 24, 32, 26);
+    state.ctx.fillStyle = "rgba(255, 150, 180, 0.3)";
+    state.ctx.fillRect(16, 38, 8, 6);
+    state.ctx.fillRect(36, 38, 8, 6);
+
+    // Arms
+    state.ctx.fillStyle = "#d0c8c0";
+    state.ctx.fillRect(0, 22, 10, 18);
+    state.ctx.fillRect(50, 22, 10, 18);
+    state.ctx.fillStyle = "#b0a090";
+    state.ctx.fillRect(-2, 36, 10, 6);
+    state.ctx.fillRect(52, 36, 10, 6);
+
+    // Head
+    state.ctx.fillStyle = "#d0c8c0";
+    state.ctx.fillRect(8, 2, 44, 22);
+    // Ears
+    state.ctx.fillRect(8, -8, 12, 14);
+    state.ctx.fillRect(40, -8, 12, 14);
+    state.ctx.fillStyle = "#ff99bb";
+    state.ctx.fillRect(10, -5, 8, 10);
+    state.ctx.fillRect(42, -5, 8, 10);
+
+    // Crown
+    state.ctx.fillStyle = "#ffd700";
+    state.ctx.fillRect(14, -6, 32, 8);
+    state.ctx.fillRect(16, -12, 8, 8);
+    state.ctx.fillRect(26, -14, 8, 10);
+    state.ctx.fillRect(36, -12, 8, 8);
+    state.ctx.fillStyle = "#ff44aa";
+    state.ctx.fillRect(28, -10, 4, 4);
+
+    // Eyes
+    state.ctx.fillStyle = "#222222";
+    if (f === 1) {
+        state.ctx.fillRect(28, 6, 8, 8);
+        state.ctx.fillRect(40, 6, 8, 8);
+        state.ctx.fillStyle = "#ffffff";
+        state.ctx.fillRect(30, 7, 3, 3);
+        state.ctx.fillRect(42, 7, 3, 3);
+    } else {
+        state.ctx.fillRect(12, 6, 8, 8);
+        state.ctx.fillRect(24, 6, 8, 8);
+        state.ctx.fillStyle = "#ffffff";
+        state.ctx.fillRect(14, 7, 3, 3);
+        state.ctx.fillRect(26, 7, 3, 3);
+    }
+
+    // Nose
+    state.ctx.fillStyle = "#ff88aa";
+    const noseX = f === 1 ? 44 : 10;
+    state.ctx.fillRect(noseX, 14, 6, 4);
+
+    // Blush
+    state.ctx.fillStyle = "rgba(255, 130, 170, 0.4)";
+    if (f === 1) {
+        state.ctx.fillRect(24, 14, 8, 5);
+        state.ctx.fillRect(44, 14, 8, 5);
+    } else {
+        state.ctx.fillRect(8, 14, 8, 5);
+        state.ctx.fillRect(28, 14, 8, 5);
+    }
+
+    // Tail
+    const tailX = f === 1 ? -8 : 62;
+    state.ctx.fillStyle = "#d0c8c0";
+    const tailCurl = Math.sin(t * 1.5) * 3;
+    state.ctx.fillRect(tailX, 40, 12, 5);
+    state.ctx.fillRect(tailX + (f === 1 ? -6 : 10), 38 + tailCurl, 8, 5);
+
+    state.ctx.restore();
+
+    // Held item (drawn at normal scale)
+    const held = state.inventory.slots[state.inventory.selectedSlot];
+    if (held.count > 0 && held.itemId !== 0) {
+        const hx = f === 1 ? sx + 22 : sx - 8;
+        drawItemIcon(held.itemId, hx, sy + 16, 14);
+    }
 }
 
 // --- MOBS ---
