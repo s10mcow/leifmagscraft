@@ -309,11 +309,12 @@ export function generateNetherWorld() {
 
     // Gasly's Dungeon — above ground, 3x the size of Orium's dungeon (75 wide x 45 tall)
     {
-        const dungeonX = Math.floor(WORLD_WIDTH / 2) - 37; // centered
+        const dungeonX = Math.floor(WORLD_WIDTH / 2) + 30; // to the right of nether spawn
         // Find surface at center
         let dungeonSurfY = -1;
+        const dungeonMidX = Math.min(dungeonX + 37, WORLD_WIDTH - 1);
         for (let y = 0; y < WORLD_HEIGHT; y++) {
-            if (state.netherWorld[Math.floor(WORLD_WIDTH / 2)][y] !== BLOCKS.AIR) { dungeonSurfY = y; break; }
+            if (state.netherWorld[dungeonMidX][y] !== BLOCKS.AIR) { dungeonSurfY = y; break; }
         }
         if (dungeonSurfY < 0) dungeonSurfY = SURFACE_LEVEL;
         const chamberW = 75;
