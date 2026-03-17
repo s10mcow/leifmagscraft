@@ -288,6 +288,50 @@ export function drawItemIcon(itemId, x, y, size) {
         return;
     }
 
+    // Void Stone — rainbow shifting stone
+    if (itemId === BLOCKS.VOID_STONE) {
+        const t = performance.now() * 0.003;
+        const hue = (t * 60) % 360;
+        // Stone base
+        state.ctx.fillStyle = "#555566";
+        state.ctx.fillRect(x, y, size, size);
+        // Rainbow crystal chunks
+        state.ctx.fillStyle = `hsl(${hue}, 80%, 55%)`;
+        state.ctx.fillRect(x + size * 0.1, y + size * 0.15, size * 0.35, size * 0.35);
+        state.ctx.fillStyle = `hsl(${(hue + 120) % 360}, 80%, 55%)`;
+        state.ctx.fillRect(x + size * 0.55, y + size * 0.4, size * 0.35, size * 0.3);
+        state.ctx.fillStyle = `hsl(${(hue + 240) % 360}, 80%, 55%)`;
+        state.ctx.fillRect(x + size * 0.25, y + size * 0.55, size * 0.3, size * 0.3);
+        // Bright highlights
+        state.ctx.fillStyle = `hsl(${(hue + 60) % 360}, 90%, 75%)`;
+        state.ctx.fillRect(x + size * 0.15, y + size * 0.2, size * 0.12, size * 0.12);
+        state.ctx.fillRect(x + size * 0.6, y + size * 0.45, size * 0.12, size * 0.12);
+        // Sparkle
+        state.ctx.fillStyle = "#ffffff";
+        state.ctx.fillRect(x + size * 0.2, y + size * 0.22, size * 0.06, size * 0.06);
+        return;
+    }
+
+    // Silver Ore — silver/grey stone with metallic sheen
+    if (itemId === BLOCKS.SILVER_ORE) {
+        // Grey stone base
+        state.ctx.fillStyle = "#6a6a72";
+        state.ctx.fillRect(x, y, size, size);
+        // Silver ore veins
+        state.ctx.fillStyle = "#c0c8d8";
+        state.ctx.fillRect(x + size * 0.1, y + size * 0.2, size * 0.3, size * 0.25);
+        state.ctx.fillRect(x + size * 0.5, y + size * 0.5, size * 0.35, size * 0.25);
+        state.ctx.fillRect(x + size * 0.3, y + size * 0.65, size * 0.25, size * 0.2);
+        // Metallic highlights
+        state.ctx.fillStyle = "#dde4f0";
+        state.ctx.fillRect(x + size * 0.14, y + size * 0.22, size * 0.14, size * 0.1);
+        state.ctx.fillRect(x + size * 0.55, y + size * 0.52, size * 0.14, size * 0.1);
+        // Shine
+        state.ctx.fillStyle = "#ffffff";
+        state.ctx.fillRect(x + size * 0.16, y + size * 0.24, size * 0.06, size * 0.06);
+        return;
+    }
+
     if (isBlockId(itemId)) {
         const info = BLOCK_INFO[itemId];
         if (!info || !info.color) return;
