@@ -437,6 +437,7 @@ export function startNewWorld(worldName) {
             addToInventory(ITEMS.POSSUM_TELEPORTER, 1);
             addToInventory(ITEMS.VOID_TELEPORTER, 1);
             addToInventory(BLOCKS.DIAMOND, 5);
+            addToInventory(BLOCKS.VOID_STONE, 5);
 
             state.currentWorldName = worldName || ("World " + Date.now());
             state.gameState = "playing";
@@ -500,6 +501,7 @@ export function startMultiplayerWorld(worldName) {
             addToInventory(ITEMS.POSSUM_TELEPORTER, 1);
             addToInventory(ITEMS.VOID_TELEPORTER, 1);
             addToInventory(BLOCKS.DIAMOND, 5);
+            addToInventory(BLOCKS.VOID_STONE, 5);
 
             state.currentWorldName = worldName || ("World " + Date.now());
             state.gameState = "playing";

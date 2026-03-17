@@ -116,7 +116,7 @@ export function generateVoidWorld() {
 
     // Scatter Void Stone in clusters on the surface
     for (let x = 2; x < WORLD_WIDTH - 2; x++) {
-        if (Math.random() < 0.008) {
+        if (Math.random() < 0.024) {
             const surf = heights[x];
             // Place a cluster of 2-5 Void Stone at and just below the surface
             const clusterSize = 2 + Math.floor(Math.random() * 4);
