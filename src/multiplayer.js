@@ -96,6 +96,14 @@ export function connectMultiplayer() {
                 delete state.otherPlayers[msg.id];
                 pushChat(`${msg.name || 'A player'} left.`, '#9ca3af');
                 break;
+            case 'pvp_damage':
+                // Another player hit us
+                if (msg.targetId === state.myPlayerId) {
+                    state.player.health -= msg.damage;
+                    state.player.invincibleTimer = 400;
+                    pushChat(`${msg.attackerName} hit you for ${msg.damage}!`, '#ff4444');
+                }
+                break;
         }
     };
 }
@@ -119,6 +127,11 @@ export function sendChat(text) {
         return;
     }
     ws.send(JSON.stringify({ type: 'chat', text }));
+}
+
+export function sendPvpDamage(targetId, damage) {
+    if (!ws || ws.readyState !== WebSocket.OPEN) return;
+    ws.send(JSON.stringify({ type: 'pvp_damage', targetId, damage, attackerName: state.multiplayerName }));
 }
 
 export function sendLocalChat(text) {

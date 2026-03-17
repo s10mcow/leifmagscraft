@@ -812,6 +812,7 @@ export function handleGunFire(dt) {
             if (!hitMob) {
                 for (const mob of state.mobs) {
                     if (mob.dead) continue;
+                    if (mob.type === "possum_pet" && mob.tamed) continue;
                     const def = MOB_DEFS[mob.type];
                     if (cx >= mob.x && cx <= mob.x + def.width && cy >= mob.y && cy <= mob.y + def.height) {
                         hitMob = mob;
@@ -821,6 +822,23 @@ export function handleGunFire(dt) {
                 }
             }
             if (hitMob) break;
+        }
+        // Also check other players for beam hit
+        if (!hitMob && state.multiplayerMode) {
+            const myDim = state.inNether ? 'nether' : state.inWasteland ? 'wasteland' : state.inPossum ? 'possum' : state.inTheVoid ? 'void' : 'overworld';
+            for (const [pid, p] of Object.entries(state.otherPlayers)) {
+                if ((p.dim || 'overworld') !== myDim) continue;
+                for (let step2 = 0; step2 < maxRange; step2 += 8) {
+                    const cx2 = px + nx * step2, cy2 = py + ny * step2;
+                    if (cx2 >= p.x && cx2 <= p.x + 24 && cy2 >= p.y && cy2 <= p.y + 46) {
+                        beamEndX = cx2; beamEndY = cy2;
+                        addFloatingText(p.x + 12, p.y - 10, `-${itemInfo.damage}`, "#00ff66");
+                        createParticles(cx2, cy2, 4, "#00ff66", 3);
+                        import('../multiplayer.js').then(m => m.sendPvpDamage(pid, itemInfo.damage));
+                        break;
+                    }
+                }
+            }
         }
         if (hitMob) {
             const def = MOB_DEFS[hitMob.type];

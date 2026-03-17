@@ -18,7 +18,7 @@ import {
     interact, executeTrade, placeBlock, toggleDoor, teleportToOtherDimension,
     handleGunFire
 } from './game.js';
-import { attackMob, getMobAtCursor, respawnPlayer } from './player.js';
+import { attackMob, getMobAtCursor, getPlayerAtCursor, attackPlayer, respawnPlayer } from './player.js';
 
 // Wire up circular dependency functions
 setToggleDoor(toggleDoor);
@@ -36,6 +36,8 @@ registerFunctions({
     placeBlock,
     attackMob,
     getMobAtCursor,
+    getPlayerAtCursor,
+    attackPlayer,
     respawnPlayer,
 });
 

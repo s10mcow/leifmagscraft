@@ -1004,6 +1004,7 @@ export function setupInput() {
             }
         } else {
             const mob = fn.getMobAtCursor();
+            const otherPlayer = fn.getPlayerAtCursor ? fn.getPlayerAtCursor() : null;
             const held = state.inventory.slots[state.inventory.selectedSlot];
             const heldInfo = (held && held.count > 0) ? ITEM_INFO[held.itemId] : null;
             const isGun = !!(heldInfo && heldInfo.toolType === 'gun');
@@ -1011,6 +1012,9 @@ export function setupInput() {
             if (isGun) {
                 // Gun: fire toward tap/click point
                 state.mouse.leftDown = true;
+            } else if (otherPlayer && state.player.attackCooldown <= 0) {
+                // PvP: attack another player
+                fn.attackPlayer(otherPlayer);
             } else if (mob && state.player.attackCooldown <= 0) {
                 // Mob at cursor: melee or ranged attack by tapping
                 fn.attackMob(mob);

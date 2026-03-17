@@ -533,6 +533,8 @@ export function hasLineOfSight(x1, y1, x2, y2) {
 
 export function attackMob(mob) {
     if (state.player.attackCooldown > 0) return;
+    // Can't attack your own pet Posse
+    if (mob.type === "possum_pet" && mob.tamed) return;
     const def = MOB_DEFS[mob.type];
 
     // Can't hit through walls
@@ -602,4 +604,47 @@ export function getMobAtCursor() {
         }
     }
     return null;
+}
+
+export function getPlayerAtCursor() {
+    if (!state.multiplayerMode) return null;
+    const worldX = state.mouse.x + state.camera.x;
+    const worldY = state.mouse.y + state.camera.y;
+    const myDim = state.inNether ? 'nether' : state.inWasteland ? 'wasteland' : state.inPossum ? 'possum' : state.inTheVoid ? 'void' : 'overworld';
+    for (const [id, p] of Object.entries(state.otherPlayers)) {
+        if ((p.dim || 'overworld') !== myDim) continue;
+        // Other players have same dimensions as our player (24x46)
+        if (worldX >= p.x && worldX <= p.x + 24 &&
+            worldY >= p.y && worldY <= p.y + 46) {
+            const dist = Math.sqrt(
+                Math.pow(state.player.x + state.player.width / 2 - (p.x + 12), 2) +
+                Math.pow(state.player.y + state.player.height / 2 - (p.y + 23), 2)
+            );
+            if (dist < BLOCK_SIZE * PLAYER_REACH) return { id, ...p };
+        }
+    }
+    return null;
+}
+
+export function attackPlayer(target) {
+    if (state.player.attackCooldown > 0) return;
+
+    const tool = getEquippedTool();
+    let damage = 1;
+    if (tool) {
+        if (tool.toolType === "sword") damage = tool.damage;
+        else damage = 2;
+        damageEquippedTool();
+    }
+    if (state.player.rawMeatDebuffTimer > 0) damage = Math.max(1, Math.floor(damage * 0.5));
+    if (state.player.candyBuffType === "strength") damage = Math.floor(damage * 2);
+
+    state.player.attackCooldown = 400;
+    playMobHit();
+
+    addFloatingText(target.x + 12, target.y - 10, `-${damage}`, "#ff4444");
+    createParticles(target.x + 12, target.y + 23, 4, "#ff0000");
+
+    // Send damage to the other player via multiplayer
+    import('./multiplayer.js').then(m => m.sendPvpDamage(target.id, damage));
 }

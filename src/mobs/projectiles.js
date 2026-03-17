@@ -135,7 +135,7 @@ export function updateProjectiles(dt) {
             for (let j = state.mobs.length - 1; j >= 0; j--) {
                 const mob = state.mobs[j];
                 const def = MOB_DEFS[mob.type];
-                if (mob.dead) continue;
+                if (mob.dead || (mob.type === "possum_pet" && mob.tamed)) continue;
                 if (p.x >= mob.x && p.x <= mob.x + def.width &&
                     p.y >= mob.y && p.y <= mob.y + def.height) {
                     const armorReduction = (mob.equipment && mob.equipment.armor) ? 1 : 0;
@@ -148,6 +148,21 @@ export function updateProjectiles(dt) {
                     createParticles(p.x, p.y, 5, "#ff6600", 3);
                     state.projectiles.splice(i, 1);
                     break;
+                }
+            }
+            if (!state.projectiles[i] || state.projectiles[i] !== p) continue;
+            // Flames hit other players (PvP)
+            if (state.multiplayerMode) {
+                const myDim = state.inNether ? 'nether' : state.inWasteland ? 'wasteland' : state.inPossum ? 'possum' : state.inTheVoid ? 'void' : 'overworld';
+                for (const [pid, op] of Object.entries(state.otherPlayers)) {
+                    if ((op.dim || 'overworld') !== myDim) continue;
+                    if (p.x >= op.x && p.x <= op.x + 24 && p.y >= op.y && p.y <= op.y + 46) {
+                        addFloatingText(op.x + 12, op.y - 10, `-${p.damage}`, "#ff6600");
+                        createParticles(p.x, p.y, 5, "#ff6600", 3);
+                        import('../multiplayer.js').then(m => m.sendPvpDamage(pid, p.damage));
+                        state.projectiles.splice(i, 1);
+                        break;
+                    }
                 }
             }
             if (!state.projectiles[i] || state.projectiles[i] !== p) continue;
@@ -166,7 +181,7 @@ export function updateProjectiles(dt) {
             for (let j = state.mobs.length - 1; j >= 0; j--) {
                 const mob = state.mobs[j];
                 const def = MOB_DEFS[mob.type];
-                if (mob.dead) continue;
+                if (mob.dead || (mob.type === "possum_pet" && mob.tamed)) continue;
                 if (p.x >= mob.x && p.x <= mob.x + def.width &&
                     p.y >= mob.y && p.y <= mob.y + def.height) {
                     mob.health -= p.damage;
@@ -182,6 +197,22 @@ export function updateProjectiles(dt) {
                 }
             }
             if (hitMob) { state.projectiles.splice(i, 1); continue; }
+            // Laser hits other players (PvP)
+            if (state.multiplayerMode) {
+                const myDim = state.inNether ? 'nether' : state.inWasteland ? 'wasteland' : state.inPossum ? 'possum' : state.inTheVoid ? 'void' : 'overworld';
+                let hitPvp = false;
+                for (const [pid, op] of Object.entries(state.otherPlayers)) {
+                    if ((op.dim || 'overworld') !== myDim) continue;
+                    if (p.x >= op.x && p.x <= op.x + 24 && p.y >= op.y && p.y <= op.y + 46) {
+                        addFloatingText(op.x + 12, op.y - 10, `-${p.damage}`, "#00ff66");
+                        createParticles(p.x, p.y, 8, "#00ff66", 4);
+                        import('../multiplayer.js').then(m => m.sendPvpDamage(pid, p.damage));
+                        hitPvp = true;
+                        break;
+                    }
+                }
+                if (hitPvp) { state.projectiles.splice(i, 1); continue; }
+            }
             // Hit block
             const lbx = Math.floor(p.x / BLOCK_SIZE);
             const lby = Math.floor(p.y / BLOCK_SIZE);
@@ -248,6 +279,7 @@ export function updateProjectiles(dt) {
             let hitMob = false;
             for (let j = state.mobs.length - 1; j >= 0; j--) {
                 const mob = state.mobs[j];
+                if (mob.type === "possum_pet" && mob.tamed) continue;
                 const def = MOB_DEFS[mob.type];
                 if (p.x >= mob.x && p.x <= mob.x + def.width &&
                     p.y >= mob.y && p.y <= mob.y + def.height) {
@@ -266,6 +298,22 @@ export function updateProjectiles(dt) {
                 }
             }
             if (hitMob) { state.projectiles.splice(i, 1); continue; }
+            // Player-fired bullets hit other players (PvP)
+            if (!p.fromMob && state.multiplayerMode) {
+                const myDim = state.inNether ? 'nether' : state.inWasteland ? 'wasteland' : state.inPossum ? 'possum' : state.inTheVoid ? 'void' : 'overworld';
+                let hitPlayer = false;
+                for (const [pid, op] of Object.entries(state.otherPlayers)) {
+                    if ((op.dim || 'overworld') !== myDim) continue;
+                    if (p.x >= op.x && p.x <= op.x + 24 && p.y >= op.y && p.y <= op.y + 46) {
+                        addFloatingText(op.x + 12, op.y - 10, `-${p.damage}`, "#ff4444");
+                        createParticles(p.x, p.y, 5, "#ffaa00");
+                        import('../multiplayer.js').then(m => m.sendPvpDamage(pid, p.damage));
+                        hitPlayer = true;
+                        break;
+                    }
+                }
+                if (hitPlayer) { state.projectiles.splice(i, 1); continue; }
+            }
             // Mob-fired bullets hit the player
             if (p.fromMob) {
                 if (p.x >= state.player.x && p.x <= state.player.x + state.player.width &&

@@ -11,8 +11,7 @@ function isWearingFullPosseArmor() {
     const a = state.inventory.armor;
     return a.helmet.itemId && ITEM_INFO[a.helmet.itemId]?.posseArmor &&
            a.chestplate.itemId && ITEM_INFO[a.chestplate.itemId]?.posseArmor &&
-           a.leggings.itemId && ITEM_INFO[a.leggings.itemId]?.posseArmor &&
-           a.boots.itemId && ITEM_INFO[a.boots.itemId]?.posseArmor;
+           a.leggings.itemId && ITEM_INFO[a.leggings.itemId]?.posseArmor;
 }
 
 // --- PLAYER ---
