@@ -421,7 +421,17 @@ export function startNewWorld(worldName) {
             state.player.y = (findSurfaceY(startX) - 2) * BLOCK_SIZE;
             console.log("Player placed at x:", startX, "y:", state.player.y / BLOCK_SIZE);
 
-            // Empty spawn — start with nothing
+            // Spawn loadout
+            addToInventory(ITEMS.NUCLEAR_LASER, 1);
+            addToInventory(ITEMS.POWER_FUSE, 5);
+            state.inventory.armor.helmet    = { itemId: ITEMS.POSSE_HELMET,     count: 1, durability: ITEM_INFO[ITEMS.POSSE_HELMET].durability };
+            state.inventory.armor.chestplate = { itemId: ITEMS.POSSE_CHESTPLATE, count: 1, durability: ITEM_INFO[ITEMS.POSSE_CHESTPLATE].durability };
+            state.inventory.armor.leggings  = { itemId: ITEMS.POSSE_LEGGINGS,   count: 1, durability: ITEM_INFO[ITEMS.POSSE_LEGGINGS].durability };
+            state.inventory.armor.boots     = { itemId: ITEMS.POSSE_BOOTS,      count: 1, durability: ITEM_INFO[ITEMS.POSSE_BOOTS].durability };
+            addToInventory(ITEMS.MINIATURE_NETHER_PORTAL, 1);
+            addToInventory(ITEMS.WASTELAND_TELEPORTER, 1);
+            addToInventory(ITEMS.POSSUM_TELEPORTER, 1);
+            addToInventory(ITEMS.VOID_TELEPORTER, 1);
 
             state.currentWorldName = worldName || ("World " + Date.now());
             state.gameState = "playing";
@@ -469,7 +479,17 @@ export function startMultiplayerWorld(worldName) {
             state.player.x = startX * BLOCK_SIZE;
             state.player.y = (findSurfaceY(startX) - 2) * BLOCK_SIZE;
 
-            // Empty spawn — start with nothing
+            // Spawn loadout
+            addToInventory(ITEMS.NUCLEAR_LASER, 1);
+            addToInventory(ITEMS.POWER_FUSE, 5);
+            state.inventory.armor.helmet    = { itemId: ITEMS.POSSE_HELMET,     count: 1, durability: ITEM_INFO[ITEMS.POSSE_HELMET].durability };
+            state.inventory.armor.chestplate = { itemId: ITEMS.POSSE_CHESTPLATE, count: 1, durability: ITEM_INFO[ITEMS.POSSE_CHESTPLATE].durability };
+            state.inventory.armor.leggings  = { itemId: ITEMS.POSSE_LEGGINGS,   count: 1, durability: ITEM_INFO[ITEMS.POSSE_LEGGINGS].durability };
+            state.inventory.armor.boots     = { itemId: ITEMS.POSSE_BOOTS,      count: 1, durability: ITEM_INFO[ITEMS.POSSE_BOOTS].durability };
+            addToInventory(ITEMS.MINIATURE_NETHER_PORTAL, 1);
+            addToInventory(ITEMS.WASTELAND_TELEPORTER, 1);
+            addToInventory(ITEMS.POSSUM_TELEPORTER, 1);
+            addToInventory(ITEMS.VOID_TELEPORTER, 1);
 
             state.currentWorldName = worldName || ("World " + Date.now());
             state.gameState = "playing";
