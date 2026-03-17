@@ -427,6 +427,9 @@ export function generateNetherWorld() {
         if (shrineX >= 0 && shrineX < WORLD_WIDTH && shrineY >= 0 && shrineY < WORLD_HEIGHT) {
             state.netherWorld[shrineX][shrineY] = BLOCKS.GASLY_SHRINE;
         }
+
+        // Store arena X so nether spawn can be placed at left edge
+        state.gaslyArenaX = cx;
     }
 
     // Nether Fortresses — 2 per world at 25% and 75% x positions

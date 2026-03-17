@@ -133,8 +133,8 @@ export function teleportToOtherDimension() {
 
         switchDimension('nether');
 
-        // Find safe spawn in Nether
-        const spawnX = Math.floor(WORLD_WIDTH / 2);
+        // Spawn at the left edge of Gasly's arena (arena is to the right)
+        const spawnX = Math.max(5, (state.gaslyArenaX || Math.floor(WORLD_WIDTH / 2)) - 5);
         const surfY = findSurfaceY(spawnX);
         state.netherPortalX = spawnX;
         state.netherPortalY = surfY;

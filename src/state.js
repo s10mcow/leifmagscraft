@@ -100,6 +100,7 @@ export const state = {
     voidReturnDim: 'overworld',
     // Dungeon
     dungeonLocation: null,
+    gaslyArenaX: 0, // left edge X of Gasly's arena in nether
 
     // Player
     player: {
